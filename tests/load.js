@@ -13,6 +13,7 @@ const FILES = [
   'assets/rules.js',
   'assets/parser.js',
   'assets/store.js',
+  'assets/ui.js',
 ];
 const fs = require('node:fs');
 for (const f of FILES) {
