@@ -104,3 +104,57 @@ test('no response after 8 weeks → required', () => {
 test('routing aggregate: none → null', () => {
   assert.equal(KK.rules.routing([]), null);
 });
+
+// --- review fixes ---
+test('I5: throwing rule yields an error signal instead of silence', () => {
+  const orig = console.error; const logged = []; console.error = (...a) => logged.push(a);
+  try {
+    const boom = { id: 'x', level: 'critical', routing: 'required', title: 'Тест', source: 'S', when: () => { throw new Error('boom'); }, text: () => '' };
+    const boomText = { id: 'y', level: 'info', routing: null, title: 'Т2', source: 'S', when: () => true, text: () => { throw new Error('t'); } };
+    const sig = KK.rules.evaluate(KK.rules.buildContext(patient(), [], NOW), [boomText, boom]);
+    assert.equal(sig.length, 2);
+    assert.deepEqual({ ruleId: sig[0].ruleId, level: sig[0].level, error: sig[0].error, routing: sig[0].routing }, { ruleId: 'x', level: 'critical', error: true, routing: 'required' });
+    assert.equal(sig[0].title, 'Правило не вычислено: Тест');
+    assert.equal(sig[0].text, 'Ошибка данных — проверьте вручную');
+    assert.equal(sig[1].level, 'important');
+    assert.equal(logged.length, 2);
+  } finally { console.error = orig; }
+});
+
+test('I5: si_phq9 uses answers[8] when flags are missing', () => {
+  const ev = [...dosesFor(14), { type: 'scale', at: at(0), payload: { scaleId: 'phq9', answers: [0, 0, 0, 0, 0, 0, 0, 0, 1], total: 1 } }];
+  const s = run(patient(), ev).find((x) => x.ruleId === 'si_phq9');
+  assert.ok(s && !s.error);
+  assert.match(s.text, /1 из 3/);
+});
+
+test('C-SSRS without band does not crash the rule', () => {
+  const ev = [...dosesFor(14), { type: 'scale', at: at(0), payload: { scaleId: 'cssrs', answers: [0, 0, 0, 0, 0, 0], band: null } }];
+  assert.ok(!run(patient(), ev).some((s) => s.error));
+});
+
+test('I7: gad7_persistent — GAD-7 ≥ 15 not improving after ≥ 28 days', () => {
+  const p = patient({ plan: { drugId: 'aviandr', status: 'confirmed', confirmedAt: at(30), timesPerDay: 2 } });
+  const ev = [...dosesFor(14), scale('gad7', [2, 2, 2, 2, 2, 2, 3], 29), scale('gad7', [3, 2, 2, 2, 2, 2, 3], 0)];
+  const s = run(p, ev).find((x) => x.ruleId === 'gad7_persistent');
+  assert.equal(s.level, 'info');
+  assert.equal(s.routing, 'desirable');
+  assert.equal(s.teamRule, true);
+  assert.match(s.source, /Генерализованное тревожное/);
+  const improving = [...dosesFor(14), scale('gad7', [3, 3, 3, 3, 3, 3, 3], 29), scale('gad7', [3, 2, 2, 2, 2, 2, 3], 0)];
+  assert.ok(!run(p, improving).some((x) => x.ruleId === 'gad7_persistent'));
+  const early = patient({ plan: { drugId: 'aviandr', status: 'confirmed', confirmedAt: at(20), timesPerDay: 2 } });
+  assert.ok(!run(early, ev).some((x) => x.ruleId === 'gad7_persistent'));
+});
+
+test('I7: ae_mild — mild/moderate AE within 7 days → info listing items', () => {
+  const ae = (d, items) => ({ type: 'ae', at: at(d), payload: { items } });
+  const sig = run(patient(), [...dosesFor(14), ae(2, [{ id: 'headache', label: 'Головная боль', severity: 'mild' }, { id: 'nausea', label: 'Тошнота', severity: 'moderate' }])]);
+  const s = sig.find((x) => x.ruleId === 'ae_mild');
+  assert.equal(s.level, 'info');
+  assert.equal(s.routing, null);
+  assert.match(s.text, /Головная боль/);
+  assert.match(s.text, /Тошнота/);
+  assert.ok(!run(patient(), [...dosesFor(14), ae(10, [{ id: 'headache', severity: 'mild' }])]).some((x) => x.ruleId === 'ae_mild'));
+  assert.ok(!run(patient(), [...dosesFor(14), ae(1, [{ id: 'headache', severity: 'severe' }])]).some((x) => x.ruleId === 'ae_mild'));
+});

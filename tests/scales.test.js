@@ -63,3 +63,20 @@ test('interpret returns doctor label with source', () => {
   assert.match(i.label, /умеренн/i);
   assert.match(i.source, /Kroenke/);
 });
+
+test('short answers padded; incomplete PHQ/GAD has no band', () => {
+  const r = scales.score('phq9', [1, 1]);
+  assert.equal(r.answers.length, 9);
+  assert.equal(r.complete, false);
+  assert.equal(r.band, null);
+  assert.equal(r.flags.item9, null);
+  assert.throws(() => scales.score('gad7', [0, 0, 0, 0, 0, 0, 0, 0]), /answers/i);
+});
+
+test('interpret cssrs by answers or band code, no crash', () => {
+  assert.equal(scales.interpret('cssrs', [1, 1, 1, 0, 0, 0], 'doctor').code, 'moderate');
+  assert.equal(scales.interpret('cssrs', 'high', 'doctor').code, 'high');
+  assert.match(scales.interpret('cssrs', 'high', 'doctor').label, /Высокий/);
+  assert.throws(() => scales.interpret('cssrs', 5, 'doctor'), /C-SSRS/);
+  assert.equal(scales.interpret('phq9', 99, 'doctor'), null);
+});

@@ -24,9 +24,18 @@
   function evaluate(ctx, rules = KK.data.rules) {
     const out = [];
     for (const r of rules) {
-      let hit = false;
-      try { hit = !!r.when(ctx); } catch (e) { hit = false; }
-      if (hit) out.push({ ruleId: r.id, level: r.level, routing: r.routing, title: r.title, text: r.text(ctx), source: r.source, teamRule: r.teamRule });
+      try {
+        if (r.when(ctx)) {
+          out.push({ ruleId: r.id, level: r.level, routing: r.routing, title: r.title, text: r.text(ctx), source: r.source, teamRule: r.teamRule,
+            basis: typeof r.basis === 'function' ? r.basis(ctx) || null : null });
+        }
+      } catch (e) {
+        // Сбой правила не должен превращаться в «всё спокойно»: показываем врачу, что проверка не выполнена.
+        if (typeof console !== 'undefined' && typeof console.error === 'function') console.error(`[KK.rules] ${r.id}:`, e);
+        out.push({ ruleId: r.id, level: r.level === 'critical' ? 'critical' : 'important', routing: r.routing,
+          title: 'Правило не вычислено: ' + r.title, text: 'Ошибка данных — проверьте вручную', source: r.source,
+          teamRule: r.teamRule, error: true, basis: null });
+      }
     }
     return out.sort((a, b) => ORDER[a.level] - ORDER[b.level]);
   }
