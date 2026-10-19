@@ -26,7 +26,7 @@
         };
         return `<tr data-href="patient.html?id=${ui.esc(p.id)}" tabindex="0" style="cursor:pointer">
           <td><b>${ui.esc(p.name)}</b><br><span class="hint">${ui.age(p.age)} · ${ui.esc(p.diagnoses.map((d) => d.code).join(', '))}</span></td>
-          <td><div class="row wrap">${D.statusBadge(p)}</div><span class="hint">${ui.esc(p.signals[0]?.title || '')}</span></td>
+          <td><div class="row wrap">${D.statusBadge(p)}${p.routing === 'required' && !p.routingConfirmed ? `<a class="btn" href="routing.html?id=${ui.esc(p.id)}" onclick="event.stopPropagation()">Направить</a>` : ''}</div><span class="hint">${ui.esc(p.signals[0]?.title || '')}</span></td>
           <td>${sp('phq9', 27)}</td><td>${sp('gad7', 21)}</td>
           <td>${p.pdc14 == null ? '<span class="hint">не назначено</span>' : `${Math.round(p.pdc14 * 100)}%${p.missedStreak >= 3 ? ` <span class="badge badge--warn">${p.missedStreak} дн. без приёма</span>` : ''}`}</td>
           <td class="hint">${p.lastActivityAt ? ui.fmtDateTime(p.lastActivityAt) : '—'}</td></tr>`;
