@@ -6,6 +6,9 @@ const { ui } = globalThis.KK;
 test('esc escapes html', () => {
   assert.equal(ui.esc('<b a="1">&</b>'), '&lt;b a=&quot;1&quot;&gt;&amp;&lt;/b&gt;');
 });
+test('age ru', () => {
+  assert.equal(ui.age(63), '63 года'); assert.equal(ui.age(41), '41 год'); assert.equal(ui.age(29), '29 лет'); assert.equal(ui.age(11), '11 лет');
+});
 test('plural ru', () => {
   const f = ['день', 'дня', 'дней'];
   assert.equal(ui.plural(1, f), 'день'); assert.equal(ui.plural(3, f), 'дня');

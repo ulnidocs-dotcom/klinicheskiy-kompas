@@ -35,6 +35,7 @@
       if (b === 1) return one;
       return many;
     },
+    age: (n) => `${n} ${ui.plural(n, ['год', 'года', 'лет'])}`,
     fmtDate(iso) { const d = new Date(iso); return `${d.getDate()} ${MONTHS[d.getMonth()]}`; },
     fmtWeekday(iso) { const d = new Date(iso); const w = WEEK[d.getDay()]; return w.charAt(0).toUpperCase() + w.slice(1); },
     fmtTime(iso) { const d = new Date(iso); return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; },

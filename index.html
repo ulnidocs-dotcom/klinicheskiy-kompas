@@ -25,7 +25,7 @@
 <script src="data/scales.js"></script><script src="data/drugs/classes.js"></script><script src="data/drugs/aviandr.js"></script>
 <script src="data/rules/core.js"></script><script src="data/scenarios.js"></script>
 <script src="assets/scales.js"></script><script src="assets/therapy.js"></script><script src="assets/adherence.js"></script>
-<script src="assets/rules.js"></script><script src="assets/parser.js"></script><script src="assets/store.js"></script>
+<script src="assets/rules.js"></script><script src="assets/parser.js"></script><script src="assets/store.js"></script><script src="assets/ui.js"></script>
 <script>
   const s = KK.store;
   const scen = Object.fromEntries(KK.data.scenarios.map((x) => [x.patient.id, x]));
@@ -37,7 +37,7 @@
   const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   function render() {
     document.getElementById('rows').innerHTML = s.patients().map((p) => `
-      <tr><td><b>${esc(p.name)}</b><br><span class="hint">${p.age} лет · ${esc(p.diagnoses[0].code)}</span></td>
+      <tr><td><b>${esc(p.name)}</b><br><span class="hint">${KK.ui.age(p.age)} ·${esc(p.diagnoses[0].code)}</span></td>
       <td>${esc(scen[p.id].title)}<br><span class="hint">${esc(scen[p.id].summary)}</span></td>
       <td>${badge(p)}</td>
       <td><a class="btn" href="patient/index.html?p=${p.id}">Как пациент</a></td></tr>`).join('');
