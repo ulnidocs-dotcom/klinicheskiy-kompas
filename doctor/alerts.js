@@ -11,10 +11,10 @@
       <div class="page-head"><h1>Алерты</h1>
         <div class="seg row" role="group" aria-label="Фильтр алертов"><button class="btn ${onlyOpen ? 'btn--primary' : ''}" data-f="open" aria-pressed="${onlyOpen}">Открытые</button><button class="btn ${!onlyOpen ? 'btn--primary' : ''}" data-f="all" aria-pressed="${!onlyOpen}">Все</button></div></div>
       <div class="tiles">
-        <div class="tile ${st.open ? 'tile--crit' : ''}"><div class="n">${st.open}</div><div class="hint">Требуют реакции</div></div>
-        <div class="tile"><div class="n">${st.deliveredMedianSec == null ? '—' : Math.round(st.deliveredMedianSec) + ' с'}</div><div class="hint">Медиана доставки врачу</div></div>
-        <div class="tile"><div class="n">${st.ackMedianMin == null ? '—' : Math.round(st.ackMedianMin) + ' мин'}</div><div class="hint">Медиана реакции врача</div></div>
-        <div class="tile"><div class="n">${st.total}</div><div class="hint">Всего</div></div></div>
+        <div class="tile ${st.open ? 'tile--crit' : 'aura aura--subtle aura--sage'}"><div class="n">${st.open}</div><div class="hint">${st.open ? ui.icon('alert', 14) + ' ' : ''}Требуют реакции</div></div>
+        <div class="tile aura aura--subtle aura--blue"><div class="n">${st.deliveredMedianSec == null ? '—' : `${Math.round(st.deliveredMedianSec)}<small>с</small>`}</div><div class="hint">Медиана доставки врачу</div></div>
+        <div class="tile aura aura--subtle aura--lilac"><div class="n">${st.ackMedianMin == null ? '—' : `${Math.round(st.ackMedianMin)}<small>мин</small>`}</div><div class="hint">Медиана реакции врача</div></div>
+        <div class="tile aura aura--subtle aura--amber"><div class="n">${st.total}</div><div class="hint">Всего</div></div></div>
       <table class="table"><thead><tr><th>Уровень</th><th>Пациент</th><th>Сигнал</th><th>Данные</th><th>Доставлено</th><th>Реакция</th></tr></thead>
       <tbody>${list.map((a) => `<tr>
         <td>${D.signalBadge(a)}</td><td><a href="patient.html?id=${a.patientId}">${ui.esc(name(a.patientId))}</a></td>

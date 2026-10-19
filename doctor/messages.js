@@ -17,7 +17,7 @@
         <section class="card stack"><div class="row-between"><h2>${ui.esc(p.name)}</h2><a href="patient.html?id=${ui.esc(pid)}">Карточка</a></div>
           <div class="stack" aria-live="polite">${msgs.map((m) => `<div class="msg ${m.from === 'doctor' ? 'me' : m.from === 'system' ? 'sys' : ''}">${ui.esc(m.text)}<div class="hint">${ui.fmtDateTime(m.at)}</div></div>`).join('') || '<p class="hint">Переписки пока нет</p>'}</div>
           <div class="row wrap">${TPL.map((t) => `<button class="btn btn--ghost" data-tpl="${ui.esc(t)}">${ui.esc(t.slice(0, 32))}…</button>`).join('')}</div>
-          <form id="f" class="row"><label class="sr-only" for="t">Сообщение</label><input id="t" class="grow" style="flex:1;min-height:36px;border:1px solid var(--line);border-radius:8px;padding:0 10px;font:inherit" placeholder="Сообщение пациенту" value="${ui.esc(draft)}"><button class="btn btn--primary">Отправить</button></form>
+          <form id="f" class="row"><label class="sr-only" for="t">Сообщение</label><input id="t" class="input grow" style="flex:1" placeholder="Сообщение пациенту" value="${ui.esc(draft)}"><button class="btn btn--primary">Отправить</button></form>
         </section></div>`));
   }
   document.addEventListener('click', (e) => { const t = e.target.closest('[data-tpl]'); if (t) { draft = t.dataset.tpl; document.getElementById('t').value = draft; } });

@@ -60,7 +60,7 @@
       : kind === 'cancel' ? `<h2 id="dlg-title">Отменить назначение?</h2><p>Напоминания пациенту прекратятся.</p>${field('Причина')}`
       : `<h2 id="dlg-title">Назначение вне инструкции</h2><p>Основание: ${ui.esc(grounds.join('; ') || 'не по инструкции')}. Назначение возможно только как самостоятельное решение врача с обоснованием.</p>${field('Обоснование (обязательно)')}`;
     return `<div class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="dlg-title" id="dlg"><div class="modal stack" style="border-top-color:var(--accent)">${body}
-      ${err ? `<p class="hint" role="alert" style="color:var(--crit)">${ui.esc(err)}</p>` : ''}
+      ${err ? `<p class="hint" role="alert" style="color:var(--crit-ink)">${ui.esc(err)}</p>` : ''}
       <div class="row"><button class="btn ${kind === 'offlabel' ? 'btn--danger' : 'btn--primary'}" data-do="${kind}">Подтвердить</button><button class="btn btn--ghost" data-dlg-close>Отмена</button></div></div></div>`;
   }
   function focusDialog() {

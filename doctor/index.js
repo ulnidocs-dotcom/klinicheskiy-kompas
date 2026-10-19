@@ -13,16 +13,16 @@
       <div class="page-head"><div><h1>Пациенты</h1><p class="muted">${ui.fmtWeekday(now)}, ${ui.fmtDate(now)} · сначала срочные</p></div>
         <label class="field" style="min-width:260px"><span class="sr-only">Поиск</span><input id="q" placeholder="Поиск по фамилии" value="${ui.esc(q)}"></label></div>
       <div class="tiles">
-        <div class="tile ${crit ? 'tile--crit' : ''}"><div class="n">${crit}</div><div class="hint">Критические сигналы</div></div>
-        <div class="tile tile--route"><div class="n">${req}</div><div class="hint">Обязательно к психиатру</div></div>
-        <div class="tile"><div class="n">${missed}</div><div class="hint">Пропускают приём</div></div>
-        <div class="tile"><div class="n">${all.length}</div><div class="hint">Всего под наблюдением</div></div>
+        <div class="tile ${crit ? 'tile--crit' : 'aura aura--subtle aura--rose'}"><div class="n">${crit}</div><div class="hint">${crit ? ui.icon('alert', 14) + ' ' : ''}Критические сигналы</div></div>
+        <div class="tile tile--route aura aura--subtle aura--lilac"><div class="n">${req}</div><div class="hint">Обязательно к психиатру</div></div>
+        <div class="tile aura aura--subtle aura--amber"><div class="n">${missed}</div><div class="hint">Пропускают приём</div></div>
+        <div class="tile aura aura--subtle aura--blue"><div class="n">${all.length}</div><div class="hint">Всего под наблюдением</div></div>
       </div>
       <table class="table"><thead><tr><th>Пациент</th><th>Статус</th><th>PHQ-9</th><th>GAD-7</th><th>Приверженность</th><th>Активность</th></tr></thead>
       <tbody>${list.map((p) => {
         const sp = (id, max) => {
           const vals = store.events(p.id, 'scale').filter((e) => e.payload.scaleId === id).map((e) => e.payload.total);
-          return vals.length ? `<div class="row"><b>${vals.at(-1)}</b>${ui.sparkline(vals.slice(-6), { w: 70, h: 24, max })}</div>` : '<span class="hint">—</span>';
+          return vals.length ? `<div class="row"><b class="score">${vals.at(-1)}</b>${ui.sparkline(vals.slice(-6), { w: 70, h: 24, max })}</div>` : '<span class="hint">—</span>';
         };
         return `<tr data-href="patient.html?id=${ui.esc(p.id)}" tabindex="0" style="cursor:pointer">
           <td><b>${ui.esc(p.name)}</b><br><span class="hint">${ui.age(p.age)} · ${ui.esc(p.diagnoses.map((d) => d.code).join(', '))}</span></td>

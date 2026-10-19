@@ -159,7 +159,7 @@
       const doc = KK.store.doctor();
       const nav = document.body.dataset.nav;
       ui().mount('#side', `
-        <div class="d-brand">${ui().icon('route', 20)}<b>Компас</b></div>
+        <div class="d-brand">${ui().icon('route', 20)}<b>Компас</b><span class="dotrow" aria-hidden="true">· · ·· ····</span></div>
         ${NAV.map((n) => `<a href="${n.href}" ${n.id === nav ? 'aria-current="page"' : ''}>${ui().icon(n.icon, 18)}<span>${n.label}</span>${n.id === 'alerts' && open.length ? `<span class="count ${crit ? 'count--crit' : ''}">${open.length}</span>` : ''}</a>`).join('')}
         <div class="d-me"><div class="d-me__who"><b>${ui().esc(doc.name)}</b><span class="hint">${ui().esc(doc.specialty)} · ${doc.mode === 'psychiatrist' ? 'режим специалиста' : 'режим с подсказками'}</span></div>
           ${KK.theme ? KK.theme.toggleHtml() : ''}</div>`);
