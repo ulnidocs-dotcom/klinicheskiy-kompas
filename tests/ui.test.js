@@ -40,3 +40,23 @@ test('index.html: space between age and diagnosis code', () => {
   assert.doesNotMatch(html, /·\$\{esc\(p\.diagnoses/);
   assert.match(html, /· \$\{esc\(p\.diagnoses/);
 });
+
+test('lineChart pointValues:false hides numbers in point tooltips', () => {
+  const s = [{ label: 'Настроение', color: 'red', points: [{ at: '2026-10-18T10:00:00Z', v: 4 }, { at: '2026-10-19T10:00:00Z', v: 2 }] }];
+  assert.match(ui.lineChart(s, { max: 5 }), /<title>Настроение: 4 ·/);
+  const hidden = ui.lineChart(s, { max: 5, ticks: false, pointValues: false });
+  assert.match(hidden, /<title>Настроение · /);
+  assert.doesNotMatch(hidden, /<title>[^<]*\d+ ·/);
+});
+
+test('preserveFocus restores focus and caret on the re-rendered field', () => {
+  const calls = [];
+  const mkEl = (id) => ({ id, value: 'abc', selectionStart: 2, selectionEnd: 2, focus() { calls.push(['focus', id]); doc.activeElement = this; }, setSelectionRange(a, b) { calls.push(['sel', a, b]); } });
+  const doc = { activeElement: mkEl('t'), getElementById: (id) => (id === 't' ? fresh : null), querySelectorAll: () => [] };
+  const fresh = mkEl('t');
+  const prev = globalThis.document; globalThis.document = doc;
+  try {
+    assert.equal(ui.preserveFocus(() => 42), 42);
+    assert.deepEqual(calls, [['focus', 't'], ['sel', 2, 2]]);
+  } finally { globalThis.document = prev; }
+});

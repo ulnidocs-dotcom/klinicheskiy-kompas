@@ -95,6 +95,24 @@
         `Врач: ${doctor.name}, ${doctor.specialty}`,
       ].join('\n');
     },
+    ASSESS_SCALES: ['phq9', 'gad7', 'cssrs'],
+    // ?scale= из URL — только из белого списка; иначе C-SSRS при сигнале PHQ-9 п.9, иначе PHQ-9.
+    assessScale: (param, siSignal) => (app.ASSESS_SCALES.includes(param) ? param : siSignal ? 'cssrs' : 'phq9'),
+    // C-SSRS: вопросы 3–5 задаются только при «да» на вопрос 2; вопросы 1, 2 и 6 — всегда.
+    cssrsVisible: (answers, i) => i < 2 || i === 5 || answers[1] === 1,
+    // Состояние формы шкалы у врача: какие вопросы видны, всё ли заполнено, что сохранять и что писать в итоге.
+    // Интерпретация показывается только при полностью заполненной форме; скрытые вопросы C-SSRS сохраняются как null.
+    assessForm(sid, answers) {
+      const def = KK.data.scales[sid];
+      const shown = def.items.map((_, i) => i).filter((i) => sid !== 'cssrs' || app.cssrsVisible(answers, i));
+      const filled = shown.every((i) => answers[i] != null);
+      const full = def.items.map((_, i) => (shown.includes(i) && answers[i] != null ? answers[i] : null));
+      const result = KK.scales.score(sid, full);
+      const label = result.band ? result.band.doctorLabel : '';
+      const summary = sid === 'cssrs' ? (filled && label ? label : 'Ответьте на вопросы')
+        : filled && label ? `Сумма: ${result.total} — ${label}` : `Сумма: ${result.total} (ответьте на все вопросы)`;
+      return { shown, filled, full, result, summary };
+    },
     alertStats(alerts) {
       const delivered = alerts.filter((a) => a.deliveredAt).map((a) => (new Date(a.deliveredAt) - new Date(a.dataAt)) / 1000);
       const acked = alerts.filter((a) => a.ackAt).map((a) => (new Date(a.ackAt) - new Date(a.dataAt)) / 60000);

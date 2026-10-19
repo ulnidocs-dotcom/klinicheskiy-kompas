@@ -113,3 +113,43 @@ test('critical modal queue: two undelivered criticals shown one by one, each exa
     globalThis.document = prev.document; KK.store = prev.store;
   }
 });
+
+test('assessScale whitelists ?scale param', () => {
+  assert.equal(D().assessScale('gad7', false), 'gad7');
+  assert.equal(D().assessScale('cssrs', false), 'cssrs');
+  for (const bad of ['__proto__', 'constructor', 'toString', 'x', null]) {
+    assert.equal(D().assessScale(bad, false), 'phq9', String(bad));
+    assert.equal(D().assessScale(bad, true), 'cssrs', String(bad));
+  }
+});
+
+test('assessForm: no interpretation until all visible questions are answered', () => {
+  const empty = D().assessForm('cssrs', []);
+  assert.equal(empty.filled, false);
+  assert.equal(empty.summary, 'Ответьте на вопросы');
+  assert.doesNotMatch(empty.summary, /не выявлен/);
+  const partial = D().assessForm('cssrs', [0, 0]);
+  assert.equal(partial.summary, 'Ответьте на вопросы');
+  const none = D().assessForm('cssrs', [0, 0, undefined, undefined, undefined, 0]);
+  assert.equal(none.filled, true);
+  assert.equal(none.result.band.code, 'none');
+  assert.equal(none.summary, none.result.band.doctorLabel);
+  // При «нет» на вопрос 2 вопросы 3–5 скрыты и сохраняются как null, даже если были отмечены раньше.
+  const hidden = D().assessForm('cssrs', [1, 0, 1, 1, 1, 0]);
+  assert.deepEqual(hidden.full, [1, 0, null, null, null, 0]);
+  assert.equal(hidden.result.band.code, 'low');
+  const phqPart = D().assessForm('phq9', [1, 2]);
+  assert.equal(phqPart.filled, false);
+  assert.equal(phqPart.summary, 'Сумма: 3 (ответьте на все вопросы)');
+  const phqFull = D().assessForm('phq9', [0, 0, 0, 0, 0, 0, 0, 0, 0]);
+  assert.match(phqFull.summary, /^Сумма: 0 — /);
+});
+
+test('C-SSRS with hidden questions saved as null is accepted and scored', () => {
+  const store = KK.createStore({ storage: memStorage(), clock: () => new Date('2026-10-19T12:00:00Z') });
+  store.reset();
+  const f = D().assessForm('cssrs', [1, 0, undefined, undefined, undefined, 0]);
+  const e = store.addEvent('p_anna', 'scale', { scaleId: 'cssrs', answers: f.full });
+  assert.deepEqual(e.payload.answers, [1, 0, null, null, null, 0]);
+  assert.equal(store.patient('p_anna').latest.cssrs.band.code, 'low');
+});

@@ -52,7 +52,7 @@
       return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true"><polyline fill="none" stroke="${color}" stroke-width="2" points="${pts.map((p) => p.join(',')).join(' ')}"/>${pts.map((p) => `<circle cx="${p[0]}" cy="${p[1]}" r="2.5" fill="${color}"/>`).join('')}</svg>`;
     },
     // series: [{ label, color, points: [{ at, v }] }]; bands: [{ from, to, color }] — фоновые зоны (только для врача)
-    lineChart(series, { w = 560, h = 180, max = 27, bands = [], ariaLabel = 'График динамики', ticks = true } = {}) {
+    lineChart(series, { w = 560, h = 180, max = 27, bands = [], ariaLabel = 'График динамики', ticks = true, pointValues = true } = {}) {
       const all = series.flatMap((s) => s.points);
       if (!all.length) return `<p class="hint">Нет данных за период</p>`;
       const t0 = Math.min(...all.map((p) => +new Date(p.at))), t1 = Math.max(...all.map((p) => +new Date(p.at)));
@@ -64,10 +64,28 @@
       const lines = series.map((s) => {
         const pts = s.points.map((p) => [x(p.at), y(p.v)]);
         return `<polyline fill="none" stroke="${s.color}" stroke-width="2.2" points="${pts.map((p) => p.join(',')).join(' ')}"/>` +
-          pts.map((p, i) => `<circle cx="${p[0]}" cy="${p[1]}" r="3.5" fill="${s.color}"><title>${ui.esc(s.label)}: ${s.points[i].v} · ${ui.fmtDate(s.points[i].at)}</title></circle>`).join('');
+          pts.map((p, i) => `<circle cx="${p[0]}" cy="${p[1]}" r="3.5" fill="${s.color}"><title>${ui.esc(s.label)}${pointValues ? `: ${s.points[i].v}` : ''} · ${ui.fmtDate(s.points[i].at)}</title></circle>`).join('');
       }).join('');
       const xl = [t0, t1].map((t, i) => `<text x="${i ? w - R : L}" y="${h - 4}" text-anchor="${i ? 'end' : 'start'}" font-size="11" fill="var(--text-3)">${ui.fmtDate(new Date(t).toISOString())}</text>`).join('');
       return `<svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="${ui.esc(ariaLabel)}">${zones}${tickSvg}${lines}${xl}</svg>`;
+    },
+    // Перерисовка через innerHTML теряет фокус и каретку: запоминаем активное поле (по id, радио — по name/value) и возвращаем.
+    preserveFocus(fn) {
+      const doc = typeof document !== 'undefined' ? document : null;
+      const a = doc && doc.activeElement;
+      let sel = null;
+      try { if (a && typeof a.selectionStart === 'number') sel = [a.selectionStart, a.selectionEnd]; } catch (e) { /* поле без каретки */ }
+      const key = a && a.id ? { id: a.id } : a && a.type === 'radio' && a.name ? { name: a.name, value: a.value } : null;
+      const out = fn();
+      if (key && doc) {
+        const el = key.id ? doc.getElementById(key.id)
+          : [...doc.querySelectorAll('input[type="radio"]')].find((x) => x.name === key.name && x.value === key.value);
+        if (el && el !== doc.activeElement && typeof el.focus === 'function') {
+          el.focus();
+          if (sel && typeof el.setSelectionRange === 'function') { try { el.setSelectionRange(sel[0], sel[1]); } catch (e) { /* */ } }
+        }
+      }
+      return out;
     },
     mount(sel, html) { const el = document.querySelector(sel); if (el) el.innerHTML = html; return el; },
   };
