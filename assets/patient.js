@@ -79,10 +79,9 @@
       if (d <= -0.5) return 'Последние дни даются труднее. Врач видит ваши отметки — можно написать ему.';
       return 'Настроение в последние дни примерно одинаковое.';
     },
-    // Ориентировочное время приёма для подписи слота (данные не меняются: слоты по-прежнему «утро»/«вечер»).
-    SLOT_TIME: { 'утро': '09:00', 'вечер': '21:00' },
+    // Время приёма врач не назначал — показываем только часть дня, без точных часов.
     slotHtml(s) {
-      return `<button class="slot" data-dose="${s.slot}" aria-pressed="${s.taken}"><span class="num num--m">${app.SLOT_TIME[s.slot] || ''}</span>`
+      return `<button class="slot" data-dose="${s.slot}" aria-pressed="${s.taken}">${KK.ui.icon(s.slot === 'утро' ? 'sun' : 'moon', 22)}`
         + `<span class="slot__l">${s.taken ? KK.ui.icon('check', 16) : ''}${s.slot === 'утро' ? 'Утро' : 'Вечер'}${s.taken ? ' · принято' : ''}</span></button>`;
     },
     // Неделя Пн–Вс вокруг даты: [{ iso, label, today, mark }] — для круглых чипов дней.
