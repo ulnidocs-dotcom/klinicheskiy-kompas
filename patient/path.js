@@ -21,7 +21,7 @@
     }).join('');
     const confirmed = p.plan?.status === 'confirmed';
     const takenDays = Array.from({ length: 14 }, (_, k) => KK.util.dayKey(KK.util.shiftDays(now, k - 13))).filter((k) => doseDays.has(k)).length;
-    const scales = store.events(p.id, 'scale').filter((e) => e.payload.scaleId !== 'cssrs').slice(-6).reverse();
+    const scales = app.scaleHistory(store.events(p.id, 'scale'));
 
     ui.mount('#app', `
       <header class="p-head"><h1>Мой путь</h1></header>
@@ -30,15 +30,15 @@
       </div>
       <div class="stack">
         <section class="card stack"><p class="q-title">Настроение и сон</p>
-          ${ui.lineChart(series, { max: 5, ticks: false, w: 320, h: 140, ariaLabel: 'Настроение и сон по дням' })}
+          ${ui.lineChart(series, { max: 5, ticks: false, pointValues: false, w: 320, h: 140, ariaLabel: 'Настроение и сон по дням' })}
           <div class="row hint"><span style="color:var(--chart)">●</span>Настроение<span style="color:var(--chart-2)">●</span>Сон</div>
           <p>${ui.esc(app.checkinSummary(checkins))}</p></section>
         ${confirmed ? `<section class="card stack"><p class="q-title">Приём лекарства</p><div class="cal" aria-label="Дни с отметкой приёма за 2 недели">${cal}</div>
           <p class="hint">Отмечено ${takenDays} ${ui.plural(takenDays, ['день', 'дня', 'дней'])} из 14. Если что-то мешает принимать лекарство — расскажите врачу.</p></section>` : ''}
         <section class="card stack"><p class="q-title">Опросники</p>
           ${scales.length ? scales.map((e) => `<div class="stack" style="padding:8px 0;border-bottom:1px solid var(--line)">
-            <span class="hint">${ui.fmtDate(e.at)} · ${ui.esc(data.scales[e.payload.scaleId].patientTitle)}</span>
-            <span>${ui.esc((KK.scales.interpret(e.payload.scaleId, e.payload.total, 'patient') || {}).label || 'Ответы получены врачом.')}</span></div>`).join('') : '<p class="hint">Пока нет пройденных опросников.</p>'}
+            <span class="hint">${ui.fmtDate(e.at)} · ${ui.esc(data.scales[e.scaleId].patientTitle)}</span>
+            <span>${ui.esc(e.label)}</span></div>`).join('') : '<p class="hint">Пока нет пройденных опросников.</p>'}
         </section>
       </div>`);
   }

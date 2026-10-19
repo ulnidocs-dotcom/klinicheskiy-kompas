@@ -47,6 +47,14 @@
       return d.audience === 'doctor' ? null : d;
     },
     nextScales: (param) => String(param || '').split(',').filter((x) => !!app.patientScale(x)),
+    // «Врач уведомлён» после PHQ-9 — только если по п. 9 действительно открыт алерт врачу.
+    phqAlertOpen: (alerts) => alerts.some((a) => a.ruleId === 'si_phq9' && !a.ackAt),
+    // История опросников для пациента: без C-SSRS и без неполных форм; текст — из сохранённой интерпретации.
+    scaleHistory(events, n = 6) {
+      return events.filter((e) => e.type === 'scale' && e.payload.scaleId !== 'cssrs' && e.payload.complete)
+        .slice(-n).reverse()
+        .map((e) => ({ at: e.at, scaleId: e.payload.scaleId, label: e.payload.band?.patientText || 'Ответы получены врачом.' }));
+    },
     firstName: (p) => p.name.split(' ')[0],
     practiceOfDay(iso = new Date().toISOString()) {
       const list = KK.data.materials.filter((m) => m.cat === 'practice');

@@ -1,8 +1,9 @@
 (function () {
   const { ui, store, patientApp: app } = KK;
-  const ctx = app.start({ tab: null, help: false, back: 'index.html' });
+  const ctx = app.start({ tab: null, help: false, requireLink: false, back: 'index.html' });
   if (!ctx) return;
-  const fromPhq = ui.param('from') === 'phq9';
+  // Экран кризиса доступен всегда (и до подключения). «Врач уведомлён» — только при реально открытом алерте по PHQ-9 п. 9.
+  const fromPhq = ui.param('from') === 'phq9' && app.phqAlertOpen(store.alerts({ patientId: ctx.pid, open: true }));
   let sent = fromPhq;
   let g = -1;
   const GROUND = ['5 вещей, которые вы видите', '4 вещи, которых можете коснуться', '3 звука, которые слышите', '2 запаха вокруг', '1 вкус, который чувствуете'];

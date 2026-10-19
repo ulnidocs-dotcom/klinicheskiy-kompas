@@ -4,6 +4,8 @@
   if (!ctx) return;
   const p = ctx.patient();
   let step = 0;
+  // Экран помощи открывается и до подключения (help.js: requireLink: false).
+  const helpLink = `<a class="hint" href="help.html?p=${encodeURIComponent(ctx.pid)}">${ui.icon('heart', 16)} Нужна помощь сейчас</a>`;
   const state = { code: '', consents: { pd: false, doctor: false, notEmergency: false } };
 
   function view() {
@@ -13,6 +15,7 @@
         <h1>Здравствуйте</h1>
         <p class="muted">Здесь вы и ваш врач видите, как меняется самочувствие. Отметки занимают меньше минуты в день.</p>
         <button class="btn btn--primary btn--block" data-next>Начать</button>
+        ${helpLink}
       </section>`;
     if (step === 1) return `
       <section class="stack-l" style="padding-top:8vh">
@@ -23,6 +26,7 @@
         <p class="hint">Для демо: ${ui.esc(p.inviteCode)}</p>
         <p class="hint" id="err" role="alert"></p>
         <button class="btn btn--primary btn--block" data-check>Продолжить</button>
+        ${helpLink}
       </section>`;
     const c = state.consents;
     return `
@@ -35,6 +39,7 @@
         </div>
         <button class="btn btn--primary btn--block" data-done ${Object.values(c).every(Boolean) ? '' : 'aria-disabled="true"'}>Готово</button>
         <p class="hint" id="err" role="alert"></p>
+        ${helpLink}
       </section>`;
   }
   function render() { ui.mount('#app', view()); }
