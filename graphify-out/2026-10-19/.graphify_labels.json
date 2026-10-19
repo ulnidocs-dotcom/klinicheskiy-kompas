@@ -27,5 +27,18 @@
   "25": "classes.js",
   "26": "core.js",
   "27": "scales.js",
-  "28": "scenarios.js"
+  "28": "scenarios.js",
+  "29": "patient.js",
+  "30": "today.js",
+  "31": "scale.js",
+  "32": "onboarding.js",
+  "33": "patient.test.js",
+  "34": "chat.js",
+  "35": "help.js",
+  "36": "path.js",
+  "37": "profile.js",
+  "38": "therapy.js",
+  "39": "materials.js",
+  "40": "material.js",
+  "41": "materials.js"
 }
