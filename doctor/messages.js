@@ -9,7 +9,7 @@
     const ps = store.patients();
     const p = store.patient(pid);
     const msgs = store.messages(pid);
-    ui.mount('#app', `
+    ui.preserveFocus(() => ui.mount('#app', `
       <div class="page-head"><h1>Сообщения</h1></div>
       <div class="thread">
         <nav class="list card" aria-label="Пациенты">${ps.map((x) => { const last = store.messages(x.id).filter((m) => m.from !== 'system').at(-1);
@@ -18,7 +18,7 @@
           <div class="stack" aria-live="polite">${msgs.map((m) => `<div class="msg ${m.from === 'doctor' ? 'me' : m.from === 'system' ? 'sys' : ''}">${ui.esc(m.text)}<div class="hint">${ui.fmtDateTime(m.at)}</div></div>`).join('') || '<p class="hint">Переписки пока нет</p>'}</div>
           <div class="row wrap">${TPL.map((t) => `<button class="btn btn--ghost" data-tpl="${ui.esc(t)}">${ui.esc(t.slice(0, 32))}…</button>`).join('')}</div>
           <form id="f" class="row"><label class="sr-only" for="t">Сообщение</label><input id="t" class="grow" style="flex:1;min-height:36px;border:1px solid var(--line);border-radius:8px;padding:0 10px;font:inherit" placeholder="Сообщение пациенту" value="${ui.esc(draft)}"><button class="btn btn--primary">Отправить</button></form>
-        </section></div>`);
+        </section></div>`));
   }
   document.addEventListener('click', (e) => { const t = e.target.closest('[data-tpl]'); if (t) { draft = t.dataset.tpl; document.getElementById('t').value = draft; } });
   document.addEventListener('input', (e) => { if (e.target.id === 't') draft = e.target.value; });

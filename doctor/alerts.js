@@ -9,7 +9,7 @@
     const name = (pid) => store.patient(pid)?.name || pid;
     ui.mount('#app', `
       <div class="page-head"><h1>Алерты</h1>
-        <div class="seg row"><button class="btn ${onlyOpen ? 'btn--primary' : ''}" data-f="open">Открытые</button><button class="btn ${!onlyOpen ? 'btn--primary' : ''}" data-f="all">Все</button></div></div>
+        <div class="seg row" role="group" aria-label="Фильтр алертов"><button class="btn ${onlyOpen ? 'btn--primary' : ''}" data-f="open" aria-pressed="${onlyOpen}">Открытые</button><button class="btn ${!onlyOpen ? 'btn--primary' : ''}" data-f="all" aria-pressed="${!onlyOpen}">Все</button></div></div>
       <div class="tiles">
         <div class="tile ${st.open ? 'tile--crit' : ''}"><div class="n">${st.open}</div><div class="hint">Требуют реакции</div></div>
         <div class="tile"><div class="n">${st.deliveredMedianSec == null ? '—' : Math.round(st.deliveredMedianSec) + ' с'}</div><div class="hint">Медиана доставки врачу</div></div>

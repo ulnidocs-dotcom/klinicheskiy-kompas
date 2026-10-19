@@ -164,3 +164,7 @@ test('therapyDecision: no plan, confirmed, off-label for contraindication or off
   assert.equal(td({ plan: { status: 'proposed' } }, { eligible: null, indicated: true }), 'confirm');
   assert.equal(td({ plan: { status: 'cancelled' } }, { eligible: true, indicated: true }), 'confirm');
 });
+
+test('demoDeviceKeys picks patient-app link/prefs keys only', () => {
+  assert.deepEqual(D().demoDeviceKeys(['kk:v1', 'kk:linked:p_anna', 'kk:prefs:p_anna', 'kk:draft:x', 'other']), ['kk:linked:p_anna', 'kk:prefs:p_anna']);
+});

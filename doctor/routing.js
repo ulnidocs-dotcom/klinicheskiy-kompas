@@ -4,12 +4,13 @@
   const id = ui.param('id');
   if (!store.patient(id)) { location.replace('index.html'); return; }
   let text = null;
+  const AUTO_MSG = D.ROUTING_PATIENT_MSG;
   function render() {
     const p = store.patient(id);
     const mode = D.mode();
     const sig = p.signals.filter((s) => s.routing);
     if (text == null) text = D.referralText(p, store.doctor());
-    ui.mount('#app', `
+    ui.preserveFocus(() => ui.mount('#app', `
       ${D.patientHeader(p)}${D.patientTabs(id, 'routing')}
       <div class="grid2">
         <div class="stack">
@@ -22,18 +23,19 @@
             ${p.routingConfirmed ? `<div class="signal"><span class="badge badge--ok">Оформлено</span><span>${ui.fmtDateTime(p.routingConfirmed.at)} · ${p.routingConfirmed.level === 'required' ? 'обязательно' : 'желательно'}</span></div>` : ''}
             <label class="field"><span class="hint">Текст направления (можно отредактировать)</span><textarea id="ref" style="min-height:280px;font-family:var(--font-body)">${ui.esc(text)}</textarea></label>
             <div class="row wrap">
-              ${p.routingConfirmed ? '' : `<button class="btn btn--primary" data-confirm>Подтвердить направление</button>`}
+              ${p.routingConfirmed ? '' : `<button class="btn btn--primary" data-confirm aria-describedby="auto-msg">Подтвердить направление</button>`}
               <button class="btn" data-copy>Скопировать</button></div>
+            ${p.routingConfirmed ? '' : `<p class="hint" id="auto-msg">После подтверждения пациенту автоматически уйдёт сообщение: «${ui.esc(AUTO_MSG)}»</p>`}
             <p class="hint" id="msg" role="status"></p></section>
         </div>
-      </div>`);
+      </div>`));
   }
   document.addEventListener('input', (e) => { if (e.target.id === 'ref') text = e.target.value; });
   document.addEventListener('click', async (e) => {
     if (e.target.closest('[data-confirm]')) {
       const p = store.patient(id);
       store.confirm(id, 'confirm_routing', { level: p.routing || 'desirable', note: text });
-      store.sendMessage(id, 'doctor', 'Я оформил(а) направление на консультацию к врачу-психиатру. Подробности обсудим по телефону.');
+      store.sendMessage(id, 'doctor', AUTO_MSG);
       render();
     }
     if (e.target.closest('[data-copy]')) {

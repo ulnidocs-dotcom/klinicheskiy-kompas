@@ -23,7 +23,10 @@
       store.setDoctor({ name: document.getElementById('name').value.trim() || 'Врач', specialty: spec, mode: D.modeFor(spec), sound: document.getElementById('sound').checked });
       render(); document.getElementById('msg').textContent = 'Сохранено';
     }
-    if (e.target.closest('[data-reset]') && confirm('Сбросить демо-данные?')) { store.reset(); location.href = 'index.html'; }
+    if (e.target.closest('[data-reset]') && confirm('Сбросить демо-данные?')) {
+      try { D.demoDeviceKeys(Object.keys(localStorage)).forEach((k) => localStorage.removeItem(k)); } catch (err) { /* приватный режим */ }
+      store.reset(); location.href = 'index.html';
+    }
   });
   render();
 })();

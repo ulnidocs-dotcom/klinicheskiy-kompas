@@ -9,7 +9,7 @@
     const req = all.filter((p) => p.routing === 'required' && !p.routingConfirmed).length;
     const missed = all.filter((p) => p.missedStreak >= 3).length;
     const now = new Date().toISOString();
-    ui.mount('#app', `
+    ui.preserveFocus(() => ui.mount('#app', `
       <div class="page-head"><div><h1>Пациенты</h1><p class="muted">${ui.fmtWeekday(now)}, ${ui.fmtDate(now)} · сначала срочные</p></div>
         <label class="field" style="min-width:260px"><span class="sr-only">Поиск</span><input id="q" placeholder="Поиск по фамилии" value="${ui.esc(q)}"></label></div>
       <div class="tiles">
@@ -30,10 +30,9 @@
           <td>${sp('phq9', 27)}</td><td>${sp('gad7', 21)}</td>
           <td>${p.pdc14 == null ? '<span class="hint">не назначено</span>' : `${Math.round(p.pdc14 * 100)}%${p.missedStreak >= 3 ? ` <span class="badge badge--warn">${p.missedStreak} дн. без приёма</span>` : ''}`}</td>
           <td class="hint">${p.lastActivityAt ? ui.fmtDateTime(p.lastActivityAt) : '—'}</td></tr>`;
-      }).join('')}</tbody></table>`);
-    const input = document.getElementById('q');
-    input.oninput = () => { q = input.value; const pos = input.selectionStart; render(); const i = document.getElementById('q'); i.focus(); i.setSelectionRange(pos, pos); };
+      }).join('')}</tbody></table>`));
   }
+  document.addEventListener('input', (e) => { if (e.target.id === 'q') { q = e.target.value; render(); } });
   document.addEventListener('click', (e) => { const tr = e.target.closest('tr[data-href]'); if (tr) location.href = tr.dataset.href; });
   document.addEventListener('keydown', (e) => { const tr = e.target.closest?.('tr[data-href]'); if (tr && e.key === 'Enter') location.href = tr.dataset.href; });
   store.subscribe(render);
