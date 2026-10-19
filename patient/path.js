@@ -31,10 +31,14 @@
       <div class="stack">
         <section class="card stack"><p class="q-title">Настроение и сон</p>
           ${ui.lineChart(series, { max: 5, ticks: false, pointValues: false, w: 320, h: 140, ariaLabel: 'Настроение и сон по дням' })}
-          <div class="row hint"><span style="color:var(--chart)">●</span>Настроение<span style="color:var(--chart-2)">●</span>Сон</div>
+          <div class="ticks" aria-hidden="true" style="--pos:96%"><i></i></div>
+          <div class="legend"><span><i style="background:var(--chart)"></i>Настроение</span><span><i style="background:var(--chart-2)"></i>Сон</span></div>
           <p>${ui.esc(app.checkinSummary(checkins))}</p></section>
-        ${confirmed ? `<section class="card stack"><p class="q-title">Приём лекарства</p><div class="cal" aria-label="Дни с отметкой приёма за 2 недели">${cal}</div>
-          <p class="hint">Отмечено ${takenDays} ${ui.plural(takenDays, ['день', 'дня', 'дней'])} из 14. Если что-то мешает принимать лекарство — расскажите врачу.</p></section>` : ''}
+        ${confirmed ? `<section class="tile aura aura--rose stack"><span class="label">Приём лекарства · 2 недели</span>
+          <div class="big-stat"><span class="num" aria-hidden="true">${takenDays}</span><span class="label">${ui.plural(takenDays, ['день', 'дня', 'дней'])} с отметкой<br>из 14</span></div>
+          <span class="sr-only">Отмечено ${takenDays} ${ui.plural(takenDays, ['день', 'дня', 'дней'])} из 14.</span>
+          <div class="cal" aria-hidden="true">${cal}</div>
+          <p class="hint">Если что-то мешает принимать лекарство — расскажите врачу.</p></section>` : ''}
         <section class="card stack"><p class="q-title">Опросники</p>
           ${scales.length ? scales.map((e) => `<div class="stack" style="padding:8px 0;border-bottom:1px solid var(--line)">
             <span class="hint">${ui.fmtDate(e.at)} · ${ui.esc(data.scales[e.scaleId].patientTitle)}</span>

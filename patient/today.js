@@ -17,30 +17,35 @@
   function checkinCard(p) {
     const done = checkinToday(p);
     if (done && qi === 0) return `
-      <section class="card row-between">
-        <div><p class="q-title">Самочувствие отмечено</p><p class="hint">Спасибо. Врач видит ваши отметки.</p></div>
-        <span style="color:var(--accent)">${ui.icon('check')}</span>
+      <section class="tile aura aura--sage stack">
+        <span class="label">Самочувствие</span>
+        <div class="row-between"><p class="tile-title">Отмечено. Спасибо</p><span aria-hidden="true">${ui.icon('check', 26)}</span></div>
+        <p class="hint">Врач видит ваши отметки.</p>
       </section>`;
     const q = Q[qi];
     return `
-      <section class="card stack" aria-labelledby="q">
-        <div class="row-between"><p class="q-title" id="q">${q.title}</p><span class="hint">${qi + 1} из 3</span></div>
+      <section class="tile aura aura--sage stack" aria-labelledby="q">
+        <div class="row-between"><span class="label">Самочувствие</span><span class="label">${qi + 1} из 3</span></div>
+        <p class="tile-title" id="q">${q.title}</p>
         <div class="dots" role="group" aria-labelledby="q">
           ${q.labels.map((l, i) => `<button class="dot" data-v="${i + 1}" aria-label="${l}" aria-pressed="${answer[q.key] === i + 1}"></button>`).join('')}
         </div>
         <div class="dot-labels"><span>${q.ends[0]}</span><span>${q.ends[1]}</span></div>
+        <div class="ticks" aria-hidden="true" style="--pos:${((qi + 0.5) / Q.length) * 100}%"><i></i></div>
       </section>`;
   }
 
   function medsCard(p) {
     if (!p.plan || p.plan.status !== 'confirmed') return `
-      <a class="card link-card" href="therapy.html"><div><p class="q-title">Лечение</p><p class="hint">Врач обсуждает с вами план лечения</p></div><span class="chev">${ui.icon('pill', 20)}</span></a>`;
+      <a class="tile aura aura--rose" href="therapy.html"><span class="label">Лечение</span>
+        <div class="tile-row"><p class="tile-title">Врач обсуждает с вами план лечения</p><span class="chev">${ui.icon('pill', 22)}</span></div></a>`;
     const drug = data.drugs[p.plan.drugId];
     const slots = app.doseSlots(store.events(p.id, 'dose'), new Date().toISOString());
     return `
-      <section class="card card--tint stack">
-        <div class="row-between"><p class="q-title">${ui.esc(drug.name)} · ${ui.esc(drug.dosing.dose)}</p><a class="hint" href="therapy.html">Подробнее</a></div>
-        <div class="slots">${slots.map((s) => `<button class="slot" data-dose="${s.slot}" aria-pressed="${s.taken}">${s.taken ? ui.icon('check', 18) : ''}${s.slot === 'утро' ? 'Утро' : 'Вечер'}</button>`).join('')}</div>
+      <section class="tile aura aura--rose stack">
+        <div class="row-between"><span class="label">Приём лекарства</span><a class="tile-link" href="therapy.html">Подробнее</a></div>
+        <p class="tile-title">${ui.esc(drug.name)} · ${ui.esc(drug.dosing.dose)}</p>
+        <div class="slots">${slots.map(app.slotHtml).join('')}</div>
       </section>`;
   }
 
@@ -49,26 +54,49 @@
     if (!due.length) return '';
     const [first, ...rest] = due;
     return `
-      <a class="card link-card" href="scale.html?id=${first}${rest.length ? `&next=${rest.join(',')}` : ''}">
-        <div><p class="q-title">Короткий опросник</p><p class="hint">${due.length === 2 ? 'Около 4 минут' : 'Около 2 минут'} · можно сделать перерыв</p></div>
-        <span class="chev">${ui.icon('clipboard', 20)}</span></a>`;
+      <a class="tile aura aura--lilac" href="scale.html?id=${first}${rest.length ? `&next=${rest.join(',')}` : ''}">
+        <span class="label">${due.length === 2 ? 'Около 4 минут' : 'Около 2 минут'}</span>
+        <p class="tile-title">Короткий опросник</p>
+        <span class="btn btn--pill" aria-hidden="true">Начать</span></a>`;
   }
 
   function practiceCard() {
     const m = app.practiceOfDay();
     return `
-      <a class="card link-card" href="material.html?id=${m.id}">
-        <div><p class="hint">Практика дня · ${m.minutes} мин</p><p class="q-title">${ui.esc(m.title)}</p></div>
-        <span class="chev">${ui.icon('leaf', 20)}</span></a>`;
+      <a class="tile aura aura--blue" href="material.html?id=${m.id}">
+        <span class="label">Практика дня · ${m.minutes} мин</span>
+        <div class="tile-row"><p class="tile-title">${ui.esc(m.title)}</p><span class="chev">${ui.icon('leaf', 22)}</span></div></a>`;
+  }
+
+  function helpCard() {
+    return `
+      <a class="tile aura aura--amber" href="help.html">
+        <span class="label">Помощь рядом</span>
+        <div class="tile-row"><p class="tile-title">Если сейчас тяжело</p><span class="chev">${ui.icon('heart', 22)}</span></div></a>`;
+  }
+
+  function header(p, now) {
+    const d = new Date(now);
+    const marked = new Set(store.events(p.id, 'checkin').map((e) => KK.util.dayKey(e.at)));
+    const week = app.week(now, marked);
+    return `
+      <header class="p-head">
+        <div class="day" aria-hidden="true"><span class="num">${d.getDate()}</span>
+          <span class="label"><span>${ui.fmtWeekday(now)}</span><span>${ui.fmtDate(now).split(' ')[1]}</span></span></div>
+        <span class="sr-only">${ui.fmtWeekday(now)}, ${ui.fmtDate(now)}</span>
+        <h1>${ui.greeting()}, ${ui.esc(app.firstName(p))}</h1>
+        <ul class="week" aria-label="Эта неделя: дни с отметкой самочувствия">${week.map((w) =>
+          `<li class="${w.today ? 'today' : ''} ${w.mark ? 'mark' : ''}"><span aria-hidden="true">${w.label}</span><span class="sr-only">${ui.fmtWeekday(w.iso)}${w.mark ? ', отмечено' : ''}${w.today ? ', сегодня' : ''}</span></li>`).join('')}</ul>
+      </header>`;
   }
 
   function render() {
     const p = ctx.patient();
     const now = new Date().toISOString();
     ui.mount('#app', `
-      <header class="p-head"><span class="date">${ui.fmtWeekday(now)}, ${ui.fmtDate(now)}</span>
-        <h1>${ui.greeting()}, ${ui.esc(app.firstName(p))}</h1></header>
-      <div class="stack">${checkinCard(p)}${medsCard(p)}${scalesCard(p)}${practiceCard()}</div>`);
+      ${header(p, now)}
+      <div class="stack">${checkinCard(p)}${medsCard(p)}
+        <div class="tile-grid">${scalesCard(p)}${practiceCard()}${helpCard()}</div></div>`);
   }
 
   document.addEventListener('click', (e) => {

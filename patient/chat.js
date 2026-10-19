@@ -18,7 +18,7 @@
       <div class="chips" style="margin-top:16px">${CHIPS.map((c) => `<button class="chip" data-chip="${ui.esc(c)}">${ui.esc(c)}</button>`).join('')}</div>
       <form class="compose" id="f"><label class="sr-only" for="t">Сообщение</label>
         <textarea id="t" rows="1" placeholder="Напишите сообщение">${ui.esc(draft)}</textarea>
-        <button class="btn btn--primary" aria-label="Отправить">${ui.icon('chat', 18)}</button></form>`));
+        <button class="btn btn--primary btn--icon" aria-label="Отправить">${ui.icon('chat', 18)}</button></form>`));
   }
   document.addEventListener('input', (e) => { if (e.target.id === 't') draft = e.target.value; });
   document.addEventListener('click', (e) => {

@@ -11,10 +11,10 @@
   function view() {
     if (step === 0) return `
       <section class="stack-l" style="padding-top:12vh">
-        <div style="color:var(--accent)">${ui.icon('leaf', 40)}</div>
+        <div class="hello-orb" aria-hidden="true"></div>
         <h1>Здравствуйте</h1>
         <p class="muted">Здесь вы и ваш врач видите, как меняется самочувствие. Отметки занимают меньше минуты в день.</p>
-        <button class="btn btn--primary btn--block" data-next>Начать</button>
+        <button class="btn btn--pill btn--block" data-next>Начать</button>
         ${helpLink}
       </section>`;
     if (step === 1) return `
@@ -25,7 +25,7 @@
           <input id="code" autocomplete="one-time-code" inputmode="text" placeholder="KMP-0000" value="${ui.esc(state.code)}"></label>
         <p class="hint">Для демо: ${ui.esc(p.inviteCode)}</p>
         <p class="hint" id="err" role="alert"></p>
-        <button class="btn btn--primary btn--block" data-check>Продолжить</button>
+        <button class="btn btn--pill btn--block" data-check>Продолжить</button>
         ${helpLink}
       </section>`;
     const c = state.consents;
@@ -37,7 +37,7 @@
           <label class="check"><input type="checkbox" data-c="doctor" ${c.doctor ? 'checked' : ''}><span>Мои отметки будут видны только моему лечащему врачу</span></label>
           <label class="check"><input type="checkbox" data-c="notEmergency" ${c.notEmergency ? 'checked' : ''}><span>Понимаю, что приложение не заменяет экстренную помощь. В опасной ситуации звоню 112</span></label>
         </div>
-        <button class="btn btn--primary btn--block" data-done ${Object.values(c).every(Boolean) ? '' : 'aria-disabled="true"'}>Готово</button>
+        <button class="btn btn--pill btn--block" data-done ${Object.values(c).every(Boolean) ? '' : 'aria-disabled="true"'}>Готово</button>
         <p class="hint" id="err" role="alert"></p>
         ${helpLink}
       </section>`;

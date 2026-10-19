@@ -15,10 +15,11 @@
     return `
       <a class="p-back" href="index.html">${ui.icon('back', 18)}Сделать перерыв</a>
       <div class="progress" aria-hidden="true">${def.items.map((_, k) => `<i class="${k <= i ? 'on' : ''}"></i>`).join('')}</div>
+      <div class="ticks" aria-hidden="true" style="--pos:${((i + 0.5) / def.items.length) * 100}%;margin-top:10px"><i></i></div>
       <section class="stack-l" style="margin-top:20px">
         <p class="hint">${ui.esc(def.patientTitle)} · ${i + 1} из ${def.items.length}</p>
         <p class="hint">${ui.esc(def.instruction)}</p>
-        <h2 id="q">${ui.esc(def.items[i])}</h2>
+        <h2 id="q" class="tile-title" style="font-size:1.45em">${ui.esc(def.items[i])}</h2>
         <div class="stack" role="group" aria-labelledby="q">
           ${def.options.map((o) => `<button class="choice" data-v="${o.v}" aria-pressed="${answers[i] === o.v}">${ui.esc(o.label)}</button>`).join('')}
         </div>
@@ -31,12 +32,12 @@
     const nextHref = next.length ? `scale.html?id=${next[0]}${next.length > 1 ? `&next=${next.slice(1).join(',')}` : ''}` : null;
     return `
       <section class="stack-l" style="padding-top:8vh">
-        <div style="color:var(--accent)">${ui.icon('check', 40)}</div>
+        <div class="hello-orb" aria-hidden="true"></div>
         <h1>Спасибо</h1>
         <p>${ui.esc(text)}</p>
         <p class="hint">Ответы отправлены вашему врачу.</p>
-        ${nextHref ? `<a class="btn btn--primary btn--block" href="${nextHref}">Ещё один короткий опросник</a><a class="btn btn--ghost btn--block" href="index.html">Позже</a>`
-          : '<a class="btn btn--primary btn--block" href="index.html">На главную</a>'}
+        ${nextHref ? `<a class="btn btn--pill btn--block" href="${nextHref}">Ещё один короткий опросник</a><a class="btn btn--ghost btn--block" href="index.html">Позже</a>`
+          : '<a class="btn btn--pill btn--block" href="index.html">На главную</a>'}
       </section>`;
   }
 

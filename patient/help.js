@@ -15,13 +15,13 @@
         <h1>Вы не одни</h1>
         <p class="muted">${fromPhq ? 'Спасибо, что ответили честно. Ваш врач уже получил ответы и свяжется с вами.' : 'Сейчас главное — ваша безопасность. Выберите, что подходит.'}</p>
         <div class="stack">
-          <a class="help-call" href="tel:112">${ui.icon('phone')}<span><b>112</b><span class="hint">Если есть опасность для жизни</span></span></a>
-          <a class="help-call" href="tel:+74959895050">${ui.icon('phone')}<span><b>8 495 989-50-50</b><span class="hint">Психологическая помощь МЧС, круглосуточно</span></span></a>
-          <a class="help-call" href="tel:88002000122">${ui.icon('phone')}<span><b>8 800 2000-122</b><span class="hint">Телефон доверия для подростков</span></span></a>
+          <a class="help-call" href="tel:112"><span class="ic">${ui.icon('phone', 20)}</span><span><b>112</b><span class="hint">Если есть опасность для жизни</span></span></a>
+          <a class="help-call" href="tel:+74959895050"><span class="ic">${ui.icon('phone', 20)}</span><span><b>8 495 989-50-50</b><span class="hint">Психологическая помощь МЧС, круглосуточно</span></span></a>
+          <a class="help-call" href="tel:88002000122"><span class="ic">${ui.icon('phone', 20)}</span><span><b>8 800 2000-122</b><span class="hint">Телефон доверия для подростков</span></span></a>
         </div>
-        <section class="card card--help stack">
+        <section class="tile aura aura--amber stack">
           ${sent ? `<p class="row">${ui.icon('check', 20)}<span>Врач уведомлён</span></p><a class="btn btn--block" href="chat.html">Написать врачу</a>`
-            : `<p>Можно сообщить врачу, что вам сейчас плохо. Он увидит это сразу.</p><button class="btn btn--primary btn--block" data-sos>Сообщить врачу</button>`}
+            : `<p>Можно сообщить врачу, что вам сейчас плохо. Он увидит это сразу.</p><button class="btn btn--pill btn--block" data-sos>Сообщить врачу</button>`}
         </section>
         <section class="card stack">
           <h3>Вернуться в «здесь и сейчас»</h3>
