@@ -1,16 +1,16 @@
 # Graph Report - klinicheskiy-kompas  (2026-10-19)
 
 ## Corpus Check
-- 31 files · ~35,957 words
+- 32 files · ~38,781 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 173 nodes · 164 edges · 29 communities (22 shown, 7 thin omitted)
-- Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 2 edges (avg confidence: 0.8)
+- 185 nodes · 181 edges · 29 communities (23 shown, 6 thin omitted)
+- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 3 edges (avg confidence: 0.7)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `ff5c4ace`
+- Built from commit: `e96fb266`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -43,11 +43,11 @@
 3. `«Клинический компас» — HTML-интерфейсы врача и пациента (демо-прототип)` - 13 edges
 4. `Структура файлов` - 12 edges
 5. `def()` - 5 edges
-6. `bandFor()` - 4 edges
-7. `score()` - 4 edges
-8. `at()` - 4 edges
-9. `confirmed()` - 3 edges
-10. `pdc()` - 3 edges
+6. `extract()` - 4 edges
+7. `bandFor()` - 4 edges
+8. `cssrsBand()` - 4 edges
+9. `score()` - 4 edges
+10. `interpret()` - 4 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `pdc()` --calls--> `dayKey()`  [INFERRED]
@@ -58,7 +58,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (29 total, 7 thin omitted)
+## Communities (29 total, 6 thin omitted)
 
 ### Community 0 - "Структура файлов"
 Cohesion: 0.12
@@ -93,7 +93,7 @@ Cohesion: 0.25
 Nodes (7): description, name, private, scripts, serve, test, version
 
 ### Community 8 - "scales.js"
-Cohesion: 0.80
+Cohesion: 0.87
 Nodes (5): bandFor(), cssrsBand(), def(), interpret(), score()
 
 ### Community 10 - "scenarios.test.js"
@@ -101,12 +101,12 @@ Cohesion: 0.40
 Nodes (4): assert, eventsOf(), signals(), test
 
 ### Community 11 - "store.test.js"
-Cohesion: 0.40
+Cohesion: 0.33
 Nodes (5): assert, memStorage(), mk(), NOW, test
 
 ### Community 12 - "serve.js"
-Cohesion: 0.33
-Nodes (5): fs, http, path, root, TYPES
+Cohesion: 0.17
+Nodes (11): assert, path, { resolvePath }, root, test, fs, http, path (+3 more)
 
 ### Community 13 - "therapy.js"
 Cohesion: 0.60
@@ -116,16 +116,20 @@ Nodes (3): check(), isIndicated(), patientClasses()
 Cohesion: 0.40
 Nodes (4): FILES, fs, path, root
 
+### Community 18 - "parser.js"
+Cohesion: 0.60
+Nodes (5): extract(), extractAge(), extractEgfr(), mentions(), negated()
+
 ## Knowledge Gaps
-- **82 isolated node(s):** `name`, `version`, `private`, `description`, `test` (+77 more)
+- **87 isolated node(s):** `name`, `version`, `private`, `description`, `test` (+82 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **7 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **6 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **What connects `name`, `version`, `private` to the rest of the system?**
-  _82 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _87 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Структура файлов` be split into smaller, more focused modules?**
   _Cohesion score 0.125 - nodes in this community are weakly interconnected._
 - **Should `Структура файлов` be split into smaller, more focused modules?**

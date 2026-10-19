@@ -164,6 +164,126 @@
       "norm_label": "extract()"
     },
     {
+      "label": "patient.js",
+      "file_type": "code",
+      "source_file": "assets/patient.js",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "assets_patient",
+      "community": 29,
+      "norm_label": "patient.js"
+    },
+    {
+      "label": "get()",
+      "file_type": "code",
+      "source_file": "assets/patient.js",
+      "source_location": "L4",
+      "_origin": "ast",
+      "id": "assets_patient_get",
+      "community": 29,
+      "norm_label": "get()"
+    },
+    {
+      "label": "set()",
+      "file_type": "code",
+      "source_file": "assets/patient.js",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "assets_patient_set",
+      "community": 29,
+      "norm_label": "set()"
+    },
+    {
+      "label": "pid()",
+      "file_type": "code",
+      "source_file": "assets/patient.js",
+      "source_location": "L17",
+      "_origin": "ast",
+      "id": "assets_patient_pid",
+      "community": 29,
+      "norm_label": "pid()"
+    },
+    {
+      "label": "link()",
+      "file_type": "code",
+      "source_file": "assets/patient.js",
+      "source_location": "L24",
+      "_origin": "ast",
+      "id": "assets_patient_link",
+      "community": 29,
+      "norm_label": "link()"
+    },
+    {
+      "label": "setPrefs()",
+      "file_type": "code",
+      "source_file": "assets/patient.js",
+      "source_location": "L26",
+      "_origin": "ast",
+      "id": "assets_patient_setprefs",
+      "community": 29,
+      "norm_label": "setprefs()"
+    },
+    {
+      "label": "start()",
+      "file_type": "code",
+      "source_file": "assets/patient.js",
+      "source_location": "L28",
+      "_origin": "ast",
+      "id": "assets_patient_start",
+      "community": 29,
+      "norm_label": "start()"
+    },
+    {
+      "label": "practiceOfDay()",
+      "file_type": "code",
+      "source_file": "assets/patient.js",
+      "source_location": "L43",
+      "_origin": "ast",
+      "id": "assets_patient_practiceofday",
+      "community": 29,
+      "norm_label": "practiceofday()"
+    },
+    {
+      "label": "dueScales()",
+      "file_type": "code",
+      "source_file": "assets/patient.js",
+      "source_location": "L48",
+      "_origin": "ast",
+      "id": "assets_patient_duescales",
+      "community": 29,
+      "norm_label": "duescales()"
+    },
+    {
+      "label": "checkinSummary()",
+      "file_type": "code",
+      "source_file": "assets/patient.js",
+      "source_location": "L51",
+      "_origin": "ast",
+      "id": "assets_patient_checkinsummary",
+      "community": 29,
+      "norm_label": "checkinsummary()"
+    },
+    {
+      "label": "doseSlots()",
+      "file_type": "code",
+      "source_file": "assets/patient.js",
+      "source_location": "L60",
+      "_origin": "ast",
+      "id": "assets_patient_doseslots",
+      "community": 29,
+      "norm_label": "doseslots()"
+    },
+    {
+      "label": "toast()",
+      "file_type": "code",
+      "source_file": "assets/patient.js",
+      "source_location": "L65",
+      "_origin": "ast",
+      "id": "assets_patient_toast",
+      "community": 29,
+      "norm_label": "toast()"
+    },
+    {
       "label": "rules.js",
       "file_type": "code",
       "source_file": "assets/rules.js",
@@ -534,6 +654,16 @@
       "norm_label": "classes.js"
     },
     {
+      "label": "materials.js",
+      "file_type": "code",
+      "source_file": "data/materials.js",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "data_materials",
+      "community": 39,
+      "norm_label": "materials.js"
+    },
+    {
       "label": "core.js",
       "file_type": "code",
       "source_file": "data/rules/core.js",
@@ -642,6 +772,266 @@
       "id": "package_scripts_serve",
       "community": 7,
       "norm_label": "serve"
+    },
+    {
+      "label": "chat.js",
+      "file_type": "code",
+      "source_file": "patient/chat.js",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "patient_chat",
+      "community": 34,
+      "norm_label": "chat.js"
+    },
+    {
+      "label": "render()",
+      "file_type": "code",
+      "source_file": "patient/chat.js",
+      "source_location": "L6",
+      "_origin": "ast",
+      "id": "patient_chat_render",
+      "community": 34,
+      "norm_label": "render()"
+    },
+    {
+      "label": "help.js",
+      "file_type": "code",
+      "source_file": "patient/help.js",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "patient_help",
+      "community": 35,
+      "norm_label": "help.js"
+    },
+    {
+      "label": "render()",
+      "file_type": "code",
+      "source_file": "patient/help.js",
+      "source_location": "L10",
+      "_origin": "ast",
+      "id": "patient_help_render",
+      "community": 35,
+      "norm_label": "render()"
+    },
+    {
+      "label": "material.js",
+      "file_type": "code",
+      "source_file": "patient/material.js",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "patient_material",
+      "community": 40,
+      "norm_label": "material.js"
+    },
+    {
+      "label": "materials.js",
+      "file_type": "code",
+      "source_file": "patient/materials.js",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "patient_materials",
+      "community": 41,
+      "norm_label": "materials.js"
+    },
+    {
+      "label": "onboarding.js",
+      "file_type": "code",
+      "source_file": "patient/onboarding.js",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "patient_onboarding",
+      "community": 32,
+      "norm_label": "onboarding.js"
+    },
+    {
+      "label": "view()",
+      "file_type": "code",
+      "source_file": "patient/onboarding.js",
+      "source_location": "L9",
+      "_origin": "ast",
+      "id": "patient_onboarding_view",
+      "community": 32,
+      "norm_label": "view()"
+    },
+    {
+      "label": "render()",
+      "file_type": "code",
+      "source_file": "patient/onboarding.js",
+      "source_location": "L40",
+      "_origin": "ast",
+      "id": "patient_onboarding_render",
+      "community": 32,
+      "norm_label": "render()"
+    },
+    {
+      "label": "path.js",
+      "file_type": "code",
+      "source_file": "patient/path.js",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "patient_path",
+      "community": 36,
+      "norm_label": "path.js"
+    },
+    {
+      "label": "render()",
+      "file_type": "code",
+      "source_file": "patient/path.js",
+      "source_location": "L7",
+      "_origin": "ast",
+      "id": "patient_path_render",
+      "community": 36,
+      "norm_label": "render()"
+    },
+    {
+      "label": "profile.js",
+      "file_type": "code",
+      "source_file": "patient/profile.js",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "patient_profile",
+      "community": 37,
+      "norm_label": "profile.js"
+    },
+    {
+      "label": "render()",
+      "file_type": "code",
+      "source_file": "patient/profile.js",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "patient_profile_render",
+      "community": 37,
+      "norm_label": "render()"
+    },
+    {
+      "label": "scale.js",
+      "file_type": "code",
+      "source_file": "patient/scale.js",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "patient_scale",
+      "community": 31,
+      "norm_label": "scale.js"
+    },
+    {
+      "label": "question()",
+      "file_type": "code",
+      "source_file": "patient/scale.js",
+      "source_location": "L14",
+      "_origin": "ast",
+      "id": "patient_scale_question",
+      "community": 31,
+      "norm_label": "question()"
+    },
+    {
+      "label": "result()",
+      "file_type": "code",
+      "source_file": "patient/scale.js",
+      "source_location": "L29",
+      "_origin": "ast",
+      "id": "patient_scale_result",
+      "community": 31,
+      "norm_label": "result()"
+    },
+    {
+      "label": "finish()",
+      "file_type": "code",
+      "source_file": "patient/scale.js",
+      "source_location": "L43",
+      "_origin": "ast",
+      "id": "patient_scale_finish",
+      "community": 31,
+      "norm_label": "finish()"
+    },
+    {
+      "label": "therapy.js",
+      "file_type": "code",
+      "source_file": "patient/therapy.js",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "patient_therapy",
+      "community": 38,
+      "norm_label": "therapy.js"
+    },
+    {
+      "label": "render()",
+      "file_type": "code",
+      "source_file": "patient/therapy.js",
+      "source_location": "L10",
+      "_origin": "ast",
+      "id": "patient_therapy_render",
+      "community": 38,
+      "norm_label": "render()"
+    },
+    {
+      "label": "today.js",
+      "file_type": "code",
+      "source_file": "patient/today.js",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "patient_today",
+      "community": 30,
+      "norm_label": "today.js"
+    },
+    {
+      "label": "checkinToday()",
+      "file_type": "code",
+      "source_file": "patient/today.js",
+      "source_location": "L12",
+      "_origin": "ast",
+      "id": "patient_today_checkintoday",
+      "community": 30,
+      "norm_label": "checkintoday()"
+    },
+    {
+      "label": "checkinCard()",
+      "file_type": "code",
+      "source_file": "patient/today.js",
+      "source_location": "L17",
+      "_origin": "ast",
+      "id": "patient_today_checkincard",
+      "community": 30,
+      "norm_label": "checkincard()"
+    },
+    {
+      "label": "medsCard()",
+      "file_type": "code",
+      "source_file": "patient/today.js",
+      "source_location": "L35",
+      "_origin": "ast",
+      "id": "patient_today_medscard",
+      "community": 30,
+      "norm_label": "medscard()"
+    },
+    {
+      "label": "scalesCard()",
+      "file_type": "code",
+      "source_file": "patient/today.js",
+      "source_location": "L47",
+      "_origin": "ast",
+      "id": "patient_today_scalescard",
+      "community": 30,
+      "norm_label": "scalescard()"
+    },
+    {
+      "label": "practiceCard()",
+      "file_type": "code",
+      "source_file": "patient/today.js",
+      "source_location": "L57",
+      "_origin": "ast",
+      "id": "patient_today_practicecard",
+      "community": 30,
+      "norm_label": "practicecard()"
+    },
+    {
+      "label": "render()",
+      "file_type": "code",
+      "source_file": "patient/today.js",
+      "source_location": "L65",
+      "_origin": "ast",
+      "id": "patient_today_render",
+      "community": 30,
+      "norm_label": "render()"
     },
     {
       "label": "adherence.test.js",
@@ -767,7 +1157,7 @@
       "label": "fs",
       "file_type": "code",
       "source_file": "tests/load.js",
-      "source_location": "L18",
+      "source_location": "L20",
       "_origin": "ast",
       "id": "tests_load_fs",
       "community": 15,
@@ -801,6 +1191,36 @@
       "_origin": "ast",
       "id": "tests_parser_test_assert",
       "community": 20,
+      "norm_label": "assert"
+    },
+    {
+      "label": "patient.test.js",
+      "file_type": "code",
+      "source_file": "tests/patient.test.js",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "tests_patient_test",
+      "community": 33,
+      "norm_label": "patient.test.js"
+    },
+    {
+      "label": "test",
+      "file_type": "code",
+      "source_file": "tests/patient.test.js",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "tests_patient_test_test",
+      "community": 33,
+      "norm_label": "test"
+    },
+    {
+      "label": "assert",
+      "file_type": "code",
+      "source_file": "tests/patient.test.js",
+      "source_location": "L2",
+      "_origin": "ast",
+      "id": "tests_patient_test_assert",
+      "community": 33,
       "norm_label": "assert"
     },
     {
@@ -2076,6 +2496,127 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "assets/patient.js",
+      "source_location": "L51",
+      "weight": 1.0,
+      "source": "assets_patient",
+      "target": "assets_patient_checkinsummary",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets/patient.js",
+      "source_location": "L60",
+      "weight": 1.0,
+      "source": "assets_patient",
+      "target": "assets_patient_doseslots",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets/patient.js",
+      "source_location": "L48",
+      "weight": 1.0,
+      "source": "assets_patient",
+      "target": "assets_patient_duescales",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets/patient.js",
+      "source_location": "L4",
+      "weight": 1.0,
+      "source": "assets_patient",
+      "target": "assets_patient_get",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets/patient.js",
+      "source_location": "L24",
+      "weight": 1.0,
+      "source": "assets_patient",
+      "target": "assets_patient_link",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets/patient.js",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "assets_patient",
+      "target": "assets_patient_pid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets/patient.js",
+      "source_location": "L43",
+      "weight": 1.0,
+      "source": "assets_patient",
+      "target": "assets_patient_practiceofday",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets/patient.js",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "assets_patient",
+      "target": "assets_patient_set",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets/patient.js",
+      "source_location": "L26",
+      "weight": 1.0,
+      "source": "assets_patient",
+      "target": "assets_patient_setprefs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets/patient.js",
+      "source_location": "L28",
+      "weight": 1.0,
+      "source": "assets_patient",
+      "target": "assets_patient_start",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "assets/patient.js",
+      "source_location": "L65",
+      "weight": 1.0,
+      "source": "assets_patient",
+      "target": "assets_patient_toast",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "assets/patient.js",
+      "source_location": "L30",
+      "weight": 1.0,
+      "source": "assets_patient_start",
+      "target": "assets_patient_pid",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "assets/rules.js",
       "source_location": "L4",
       "weight": 1.0,
@@ -2568,6 +3109,243 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "patient/chat.js",
+      "source_location": "L6",
+      "weight": 1.0,
+      "source": "patient_chat",
+      "target": "patient_chat_render",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "patient/help.js",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "patient_help",
+      "target": "patient_help_render",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "patient/onboarding.js",
+      "source_location": "L40",
+      "weight": 1.0,
+      "source": "patient_onboarding",
+      "target": "patient_onboarding_render",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "patient/onboarding.js",
+      "source_location": "L9",
+      "weight": 1.0,
+      "source": "patient_onboarding",
+      "target": "patient_onboarding_view",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "patient/onboarding.js",
+      "source_location": "L40",
+      "weight": 1.0,
+      "source": "patient_onboarding_render",
+      "target": "patient_onboarding_view",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "patient/path.js",
+      "source_location": "L7",
+      "weight": 1.0,
+      "source": "patient_path",
+      "target": "patient_path_render",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "patient/profile.js",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "patient_profile",
+      "target": "patient_profile_render",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "patient/scale.js",
+      "source_location": "L43",
+      "weight": 1.0,
+      "source": "patient_scale",
+      "target": "patient_scale_finish",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "patient/scale.js",
+      "source_location": "L14",
+      "weight": 1.0,
+      "source": "patient_scale",
+      "target": "patient_scale_question",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "patient/scale.js",
+      "source_location": "L29",
+      "weight": 1.0,
+      "source": "patient_scale",
+      "target": "patient_scale_result",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "patient/scale.js",
+      "source_location": "L47",
+      "weight": 1.0,
+      "source": "patient_scale_finish",
+      "target": "patient_scale_result",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "patient/therapy.js",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "patient_therapy",
+      "target": "patient_therapy_render",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "patient/today.js",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "patient_today",
+      "target": "patient_today_checkincard",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "patient/today.js",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "patient_today",
+      "target": "patient_today_checkintoday",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "patient/today.js",
+      "source_location": "L35",
+      "weight": 1.0,
+      "source": "patient_today",
+      "target": "patient_today_medscard",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "patient/today.js",
+      "source_location": "L57",
+      "weight": 1.0,
+      "source": "patient_today",
+      "target": "patient_today_practicecard",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "patient/today.js",
+      "source_location": "L65",
+      "weight": 1.0,
+      "source": "patient_today",
+      "target": "patient_today_render",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "patient/today.js",
+      "source_location": "L47",
+      "weight": 1.0,
+      "source": "patient_today",
+      "target": "patient_today_scalescard",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "patient/today.js",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "patient_today_checkincard",
+      "target": "patient_today_checkintoday",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "patient/today.js",
+      "source_location": "L71",
+      "weight": 1.0,
+      "source": "patient_today_render",
+      "target": "patient_today_checkincard",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "patient/today.js",
+      "source_location": "L71",
+      "weight": 1.0,
+      "source": "patient_today_render",
+      "target": "patient_today_medscard",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "patient/today.js",
+      "source_location": "L71",
+      "weight": 1.0,
+      "source": "patient_today_render",
+      "target": "patient_today_scalescard",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "EXTRACTED",
+      "source_file": "patient/today.js",
+      "source_location": "L71",
+      "weight": 1.0,
+      "source": "patient_today_render",
+      "target": "patient_today_practicecard",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "tests/adherence.test.js",
       "source_location": "L2",
       "weight": 1.0,
@@ -2639,7 +3417,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "tests/load.js",
-      "source_location": "L18",
+      "source_location": "L20",
       "weight": 1.0,
       "source": "tests_load",
       "target": "tests_load_fs",
@@ -2683,6 +3461,26 @@
       "weight": 1.0,
       "source": "tests_parser_test",
       "target": "tests_parser_test_test",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/patient.test.js",
+      "source_location": "L2",
+      "weight": 1.0,
+      "source": "tests_patient_test",
+      "target": "tests_patient_test_assert",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "tests/patient.test.js",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "tests_patient_test",
+      "target": "tests_patient_test_test",
       "confidence_score": 1.0
     },
     {
@@ -3695,5 +4493,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "e96fb26683baddf2f496fcf3fcf51aed1bef5eda"
+  "built_at_commit": "70a54c4d8f5f71d6b7f996436fb0c5bf4aa78506"
 }
