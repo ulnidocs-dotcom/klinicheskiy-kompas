@@ -16,7 +16,7 @@
   const app = {
     pid() {
       const fromUrl = KK.ui.param('p');
-      if (fromUrl) { try { sessionStorage.setItem('kk:pid', fromUrl); } catch (e) { /* */ } return fromUrl; }
+      if (fromUrl) { if (KK.store.patient(fromUrl)) { try { sessionStorage.setItem('kk:pid', fromUrl); } catch (e) { /* */ } } return fromUrl; }
       try { const s = sessionStorage.getItem('kk:pid'); if (s) return s; } catch (e) { /* */ }
       return KK.store.activePatientId();
     },
