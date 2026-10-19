@@ -1,0 +1,84 @@
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--text);font:400 var(--fs)/1.55 var(--font-body);-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--font-head);font-weight:500;margin:0;line-height:1.25}
+[data-role="doctor"] h1,[data-role="doctor"] h2,[data-role="doctor"] h3{font-family:var(--font-body);font-weight:600}
+h1{font-size:1.55em}h2{font-size:1.25em}h3{font-size:1.05em}
+p{margin:0}
+a{color:var(--accent-strong)}
+.muted{color:var(--text-2)}.hint{color:var(--text-3);font-size:.85em}
+.stack>*+*{margin-top:12px}.stack-l>*+*{margin-top:20px}
+.row{display:flex;align-items:center;gap:12px}.row-between{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:6px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+.card{background:var(--surface);border-radius:var(--radius-m);padding:16px}
+[data-role="doctor"] .card{border:1px solid var(--line);border-radius:12px}
+.card--tint{background:var(--accent-tint)}
+.card--help{background:var(--help-tint);color:var(--text)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:var(--tap);padding:0 18px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--text);font:inherit;font-weight:500;cursor:pointer;transition:background var(--dur)}
+.btn:hover{background:var(--surface-2)}
+.btn--primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn--primary:hover{background:var(--accent-strong)}
+.btn--ghost{background:transparent;border-color:transparent}
+.btn--block{width:100%}
+[data-role="doctor"] .btn{border-radius:8px;min-height:36px;padding:0 14px}
+.btn--danger{background:var(--crit);border-color:var(--crit);color:var(--on-crit)}
+
+.field{display:flex;flex-direction:column;gap:6px}
+.field input,.field textarea,.field select{font:inherit;color:var(--text);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-height:var(--tap)}
+.field textarea{min-height:120px;resize:vertical}
+
+/* Шкала чек-ина: 5 кругов */
+.dots{display:flex;justify-content:space-between;gap:8px}
+.dot{flex:1;aspect-ratio:1;max-width:52px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:transform var(--dur)}
+.dot[data-v="1"]{background:var(--scale-1)}.dot[data-v="2"]{background:var(--scale-2)}.dot[data-v="3"]{background:var(--scale-3)}.dot[data-v="4"]{background:var(--scale-4)}.dot[data-v="5"]{background:var(--scale-5)}
+.dot[aria-pressed="true"]{border-color:var(--text);transform:scale(1.08)}
+
+/* Варианты ответа опросника */
+.choice{display:block;width:100%;text-align:left;padding:14px 16px;min-height:var(--tap);border-radius:var(--radius-m);border:1px solid var(--line);background:var(--surface);font:inherit;color:var(--text);cursor:pointer}
+.choice[aria-pressed="true"]{background:var(--accent-tint);border-color:var(--accent)}
+.progress{display:flex;gap:4px}.progress i{flex:1;height:4px;border-radius:2px;background:var(--line)}.progress i.on{background:var(--accent)}
+
+/* Мобильный каркас пациента */
+.p-app{max-width:480px;margin:0 auto;min-height:100vh;padding:20px 16px 96px}
+.tabbar{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+.tabbar nav{display:flex;max-width:480px;width:100%}
+.tabbar a{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0;min-height:56px;font-size:12px;color:var(--text-3);text-decoration:none}
+.tabbar a[aria-current="page"]{color:var(--accent-strong)}
+.tabbar svg{width:22px;height:22px}
+.help-fab{position:fixed;right:16px;bottom:76px;display:flex;align-items:center;gap:8px;padding:10px 16px;min-height:var(--tap);border-radius:999px;background:var(--help-tint);color:var(--help);border:1px solid var(--help);font:inherit;font-weight:500;text-decoration:none}
+
+/* Каркас врача */
+.d-app{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:100vh}
+.d-side{background:var(--surface);border-right:1px solid var(--line);padding:16px 12px;display:flex;flex-direction:column;gap:2px}
+.d-side a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;color:var(--text-2);text-decoration:none}
+.d-side a[aria-current="page"]{background:var(--accent-tint);color:var(--accent-strong);font-weight:600}
+.d-main{padding:20px 24px;min-width:0}
+@media (max-width:900px){.d-app{grid-template-columns:1fr}.d-side{flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line)}}
+.table{width:100%;border-collapse:collapse;background:var(--surface)}
+.table th,.table td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.table th{font-size:12px;color:var(--text-3);font-weight:600;text-transform:none}
+.table tr:hover td{background:var(--surface-2)}
+
+/* Сигналы безопасности (врач). Различимы не только цветом: заливка vs контур + текст + иконка */
+.badge{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;white-space:nowrap}
+.badge--critical{background:var(--crit);color:var(--on-crit)}
+.badge--required{background:var(--route);color:var(--on-route)}
+.badge--desirable{background:transparent;color:var(--route);border:1.5px dashed var(--route)}
+.badge--warn{background:var(--warn-tint);color:var(--warn)}
+.badge--contra{background:var(--crit-tint);color:var(--crit);border:1.5px solid var(--crit)}
+.badge--ok{background:var(--ok-tint);color:var(--ok)}
+.badge--info{background:var(--surface-2);color:var(--text-2)}
+.signal{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:var(--surface)}
+.signal--critical{border-left:0;border:2px solid var(--crit);background:var(--crit-tint)}
+.signal--required{border:2px solid var(--route);background:var(--route-tint)}
+.signal--desirable{border:1.5px dashed var(--route)}
+.signal--warn{border:1px solid var(--warn);background:var(--warn-tint)}
+.signal .src{grid-column:2;font-size:12px;color:var(--text-3)}
+
+/* Модальный критический алерт */
+.modal-backdrop{position:fixed;inset:0;background:rgba(16,20,28,.45);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
+.modal{background:var(--surface);border-radius:14px;max-width:520px;width:100%;padding:20px;border-top:6px solid var(--crit)}

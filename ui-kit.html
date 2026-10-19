@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ru" data-role="patient">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Компас — витрина компонентов</title>
+<link rel="stylesheet" href="assets/tokens.css"><link rel="stylesheet" href="assets/ui.css">
+</head>
+<body>
+<main class="p-app stack-l">
+  <div class="row-between"><h1>Витрина</h1>
+    <div class="row">
+      <button class="btn" id="role">Роль: пациент</button>
+      <button class="btn" id="theme">Тема</button>
+    </div></div>
+  <section class="card stack"><h2>Как вы сегодня?</h2>
+    <div class="dots" role="group" aria-label="Настроение от 1 до 5">
+      <button class="dot" data-v="1" aria-label="Очень тяжело" aria-pressed="false"></button>
+      <button class="dot" data-v="2" aria-label="Тяжело" aria-pressed="false"></button>
+      <button class="dot" data-v="3" aria-label="Средне" aria-pressed="true"></button>
+      <button class="dot" data-v="4" aria-label="Хорошо" aria-pressed="false"></button>
+      <button class="dot" data-v="5" aria-label="Очень хорошо" aria-pressed="false"></button>
+    </div></section>
+  <section class="card card--tint stack"><h3>Авиандр · 20 мг · утро</h3><button class="btn btn--primary">Отметить приём</button></section>
+  <section class="stack"><button class="choice" aria-pressed="false">Ни разу</button><button class="choice" aria-pressed="true">Несколько дней</button>
+    <div class="progress"><i class="on"></i><i class="on"></i><i></i><i></i></div></section>
+  <section class="card card--help"><p>Если сейчас очень тяжело — помощь рядом.</p></section>
+  <section class="stack" id="doctor-only">
+    <div class="row" style="flex-wrap:wrap">
+      <span class="badge badge--critical">Критично</span><span class="badge badge--required">Обязательно к психиатру</span>
+      <span class="badge badge--desirable">Желательно к психиатру</span><span class="badge badge--warn">Взаимодействие</span>
+      <span class="badge badge--contra">Противопоказание</span><span class="badge badge--ok">Нет противопоказаний</span>
+    </div>
+    <div class="signal signal--required"><span class="badge badge--required">Обязательно</span><b>Тяжёлая депрессивная симптоматика</b><span class="src">КР РОП 2024 (ID 301)</span></div>
+    <div class="signal signal--desirable"><span class="badge badge--desirable">Желательно</span><b>Сочетание тревоги и депрессии</b><span class="src">Правило команды</span></div>
+  </section>
+</main>
+<script>
+  const root = document.documentElement;
+  document.getElementById('theme').onclick = () => { root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark'; };
+  document.getElementById('role').onclick = (e) => {
+    root.dataset.role = root.dataset.role === 'patient' ? 'doctor' : 'patient';
+    e.target.textContent = 'Роль: ' + (root.dataset.role === 'patient' ? 'пациент' : 'врач');
+  };
+  document.querySelectorAll('.dot').forEach((d) => d.onclick = () => {
+    document.querySelectorAll('.dot').forEach((x) => x.setAttribute('aria-pressed', 'false'));
+    d.setAttribute('aria-pressed', 'true');
+  });
+</script>
+</body></html>

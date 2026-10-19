@@ -1,0 +1,55 @@
+@import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;500&family=Manrope:wght@400;500;600&display=swap');
+
+:root {
+  --font-head: 'Lora', Georgia, serif;
+  --font-body: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --radius-s: 10px; --radius-m: 16px; --radius-l: 22px;
+  --tap: 44px;
+  --dur: 180ms;
+}
+
+/* Пациент — «Тихое утро» */
+[data-role="patient"] {
+  --bg: #F6F4EF; --surface: #FFFFFF; --surface-2: #EFECE5;
+  --text: #2F3B37; --text-2: #5C6863; --text-3: #8A948F;
+  --accent: #5F9C88; --accent-strong: #3F7A66; --accent-tint: #E7EFEA; --on-accent: #FFFFFF;
+  --line: #E2DED5;
+  --help: #A8603F; --help-tint: #F6E7DF;
+  --scale-1: #DCE6E1; --scale-2: #C9DDD4; --scale-3: #A9CBBE; --scale-4: #86B6A5; --scale-5: #5F9C88;
+  --chart: #5F9C88; --chart-2: #B9A06E;
+  --fs: 17px;
+}
+/* Пациент — «Мягкие сумерки» */
+[data-role="patient"][data-theme="dark"] {
+  --bg: #1F2433; --surface: #2A3044; --surface-2: #323A55;
+  --text: #E8EAF2; --text-2: #B4BAD0; --text-3: #8E96AD;
+  --accent: #8491C4; --accent-strong: #B1B9DE; --accent-tint: #323A55; --on-accent: #1F2433;
+  --line: #3A4260;
+  --help: #E3A68A; --help-tint: #3D3340;
+  --scale-1: #3A4260; --scale-2: #4B5683; --scale-3: #6371A6; --scale-4: #8491C4; --scale-5: #B1B9DE;
+  --chart: #B1B9DE; --chart-2: #D9C08E;
+}
+@media (prefers-color-scheme: dark) {
+  [data-role="patient"]:not([data-theme="light"]) {
+    --bg: #1F2433; --surface: #2A3044; --surface-2: #323A55;
+    --text: #E8EAF2; --text-2: #B4BAD0; --text-3: #8E96AD;
+    --accent: #8491C4; --accent-strong: #B1B9DE; --accent-tint: #323A55; --on-accent: #1F2433;
+    --line: #3A4260; --help: #E3A68A; --help-tint: #3D3340;
+    --scale-1: #3A4260; --scale-2: #4B5683; --scale-3: #6371A6; --scale-4: #8491C4; --scale-5: #B1B9DE;
+    --chart: #B1B9DE; --chart-2: #D9C08E;
+  }
+}
+
+/* Врач — нейтральная плотная тема */
+[data-role="doctor"] {
+  --bg: #F4F5F7; --surface: #FFFFFF; --surface-2: #F0F2F5;
+  --text: #1C2430; --text-2: #4A5565; --text-3: #7B8594;
+  --accent: #2F6F8F; --accent-strong: #235770; --accent-tint: #E4EFF4; --on-accent: #FFFFFF;
+  --line: #E1E4E9;
+  --crit: #B42318; --crit-tint: #FEE4E2; --on-crit: #FFFFFF;
+  --route: #6B3FA0; --route-tint: #F1EAFA; --on-route: #FFFFFF;
+  --warn: #B54708; --warn-tint: #FEF0C7;
+  --ok: #2E7D4F; --ok-tint: #E3F4EA;
+  --chart: #2F6F8F; --chart-2: #B54708;
+  --fs: 14px;
+}
