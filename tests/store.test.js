@@ -183,3 +183,17 @@ test('confirm guards: no plan → clear error; change_plan cannot set status; ca
   const db = JSON.parse(storage.getItem('kk:v1')); delete db.patients.p_anna.plan; storage.setItem('kk:v1', JSON.stringify(db));
   assert.throws(() => t.confirm('p_anna', 'confirm_plan', {}), /нет плана|no plan/i);
 });
+
+test('patient lookups ignore prototype keys (__proto__, constructor, toString)', () => {
+  const s = mk();
+  for (const k of ['__proto__', 'constructor', 'toString', 'hasOwnProperty']) {
+    assert.equal(s.patient(k), null, k);
+    assert.deepEqual(s.events(k), [], k);
+    assert.deepEqual(s.messages(k), [], k);
+    assert.deepEqual(s.signals(k), [], k);
+    assert.throws(() => s.addEvent(k, 'sos', {}), /Unknown patient/, k);
+    assert.throws(() => s.sendMessage(k, 'patient', 'x'), /Unknown patient/, k);
+    assert.throws(() => s.confirm(k, 'confirm_routing', {}), /Unknown patient/, k);
+  }
+  assert.ok(s.patient('p_anna'));
+});

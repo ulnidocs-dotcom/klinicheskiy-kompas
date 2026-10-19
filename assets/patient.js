@@ -40,6 +40,13 @@
       return { pid, patient: () => KK.store.patient(pid) };
     },
 
+    // Опросник, доступный пациенту: только собственные ключи KK.data.scales (без __proto__ и т.п.) и не «врачебные».
+    patientScale(id) {
+      if (typeof id !== 'string' || !Object.hasOwn(KK.data.scales, id)) return null;
+      const d = KK.data.scales[id];
+      return d.audience === 'doctor' ? null : d;
+    },
+    nextScales: (param) => String(param || '').split(',').filter((x) => !!app.patientScale(x)),
     firstName: (p) => p.name.split(' ')[0],
     practiceOfDay(iso = new Date().toISOString()) {
       const list = KK.data.materials.filter((m) => m.cat === 'practice');

@@ -40,3 +40,12 @@ test('checkinSummary is gentle text', () => {
   assert.match(t, /настроение/i);
   assert.doesNotMatch(t, /\d/);
 });
+
+test('patientScale/nextScales whitelist own, patient-facing scales only', () => {
+  const app = KK.patientApp;
+  assert.ok(app.patientScale('phq9'));
+  for (const k of ['__proto__', 'constructor', 'toString', '', null, undefined]) assert.equal(app.patientScale(k), null, String(k));
+  if (KK.data.scales.cssrs.audience === 'doctor') assert.equal(app.patientScale('cssrs'), null);
+  assert.deepEqual(app.nextScales('gad7,__proto__,constructor,phq9,nope'), ['gad7', 'phq9']);
+  assert.deepEqual(app.nextScales(null), []);
+});

@@ -45,6 +45,9 @@
       write();
     }
 
+    // Только собственные ключи: id из URL вида "__proto__" не должен находить Object.prototype.
+    const has = (id) => typeof id === 'string' && Object.hasOwn(db.patients, id);
+
     function signalsFor(id) {
       const p = db.patients[id];
       return KK.rules.evaluate(KK.rules.buildContext(p, db.events[id] || [], nowIso()));
@@ -67,8 +70,8 @@
     }
 
     function view(id) {
+      if (!has(id)) return null;
       const p = db.patients[id];
-      if (!p) return null;
       const signals = signalsFor(id);
       const ev = db.events[id] || [];
       const ctx = KK.rules.buildContext(p, ev, nowIso());
@@ -106,11 +109,11 @@
         });
       },
       patient: (id) => (need(), view(id)),
-      signals: (id) => (need(), signalsFor(id)),
-      events(id, type) { need(); const ev = db.events[id] || []; return type ? ev.filter((e) => e.type === type) : ev.slice(); },
+      signals: (id) => (need(), has(id) ? signalsFor(id) : []),
+      events(id, type) { need(); const ev = has(id) ? db.events[id] || [] : []; return type ? ev.filter((e) => e.type === type) : ev.slice(); },
       addEvent(patientId, type, payload) {
         need();
-        if (!db.patients[patientId]) throw new Error(`Unknown patient ${patientId}`);
+        if (!has(patientId)) throw new Error(`Unknown patient ${patientId}`);
         const p = type === 'scale' ? KK.scales.score(payload.scaleId, payload.answers) : payload;
         const e = { id: KK.util.uid('ev'), type, at: nowIso(), payload: p };
         db.events[patientId].push(e);
@@ -138,8 +141,8 @@
       },
       confirm(patientId, action, details = {}) {
         need();
+        if (!has(patientId)) throw new Error(`Unknown patient ${patientId}`);
         const p = db.patients[patientId];
-        if (!p) throw new Error(`Unknown patient ${patientId}`);
         if (['confirm_plan', 'off_label', 'cancel_plan', 'change_plan'].includes(action) && !p.plan) {
           throw new Error(`У пациента нет плана терапии (no plan): действие ${action} невозможно`);
         }
@@ -168,9 +171,10 @@
         write();
       },
       audit: (patientId) => (need(), db.audit.filter((a) => !patientId || a.patientId === patientId)),
-      messages: (id) => (need(), (db.messages[id] || []).slice()),
+      messages: (id) => (need(), has(id) ? (db.messages[id] || []).slice() : []),
       sendMessage(patientId, from, text) {
         need();
+        if (!has(patientId)) throw new Error(`Unknown patient ${patientId}`);
         const m = { id: KK.util.uid('msg'), at: nowIso(), from, text: String(text).slice(0, 2000) };
         (db.messages[patientId] = db.messages[patientId] || []).push(m);
         write();
@@ -178,6 +182,7 @@
       },
       importParsed(patientId, parsed) {
         need();
+        if (!has(patientId)) throw new Error(`Unknown patient ${patientId}`);
         const p = db.patients[patientId];
         p.labs = Object.assign({}, p.labs, parsed.labs);
         for (const m of parsed.meds) if (!p.meds.some((x) => x.name.toLowerCase().startsWith(m.name.toLowerCase()))) p.meds.push(m);

@@ -1,11 +1,11 @@
 (function () {
-  const { ui, store, patientApp: app, data } = KK;
+  const { ui, store, patientApp: app } = KK;
   const ctx = app.start({ tab: null, back: 'index.html' });
   if (!ctx) return;
   const id = ui.param('id');
-  const def = data.scales[id];
-  if (!def || def.audience === 'doctor') { location.replace('index.html'); return; }
-  const next = (ui.param('next') || '').split(',').filter((x) => data.scales[x] && data.scales[x].audience !== 'doctor');
+  const def = app.patientScale(id);
+  if (!def) { location.replace('index.html'); return; }
+  const next = app.nextScales(ui.param('next'));
   const DRAFT = `kk:draft:${ctx.pid}:${id}`;
   let answers = []; let i = 0; let busy = false;
   try { const d = JSON.parse(sessionStorage.getItem(DRAFT)); if (d) { answers = d.answers; i = d.i; } } catch (e) { /* */ }
