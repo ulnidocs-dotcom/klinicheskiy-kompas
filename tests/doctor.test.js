@@ -64,3 +64,52 @@ function memStorage() {
   const m = new Map();
   return { getItem: (k) => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: (k) => m.delete(k) };
 }
+
+test('nextCriticalToShow: only when nothing is open, skips delivered and acked', () => {
+  const a = { id: 'a', level: 'critical', ackAt: null, deliveredAt: null };
+  const b = { id: 'b', level: 'critical', ackAt: null, deliveredAt: '2026-10-19T12:00:00Z' };
+  const c = { id: 'c', level: 'critical', ackAt: '2026-10-19T12:00:00Z', deliveredAt: null };
+  const d = { id: 'd', level: 'important', ackAt: null, deliveredAt: null };
+  assert.equal(D().nextCriticalToShow([b, c, d, a], undefined).id, 'a');
+  assert.equal(D().nextCriticalToShow([a], 'x'), null);
+  assert.equal(D().nextCriticalToShow([b, c, d], undefined), null);
+});
+
+test('critical modal queue: two undelivered criticals shown one by one, each exactly once', () => {
+  const store = KK.createStore({ storage: memStorage(), clock: () => new Date('2026-10-19T12:00:00Z') });
+  store.reset();
+  store.addEvent('p_anna', 'sos', { source: 'patient_button' });
+  const crit = () => store.alerts({ open: true }).filter((a) => a.level === 'critical');
+  assert.ok(crit().filter((a) => !a.deliveredAt).length >= 2);
+  const shown = [];
+  const root = {
+    dataset: {}, _html: '',
+    get innerHTML() { return this._html; },
+    set innerHTML(v) { this._html = v; if (v) shown.push(this.dataset.open); },
+    contains: () => false, querySelector: () => ({ focus() {} }),
+  };
+  const prev = { document: globalThis.document, store: KK.store };
+  globalThis.document = { getElementById: (id) => (id === 'modal-root' ? root : null), activeElement: null };
+  KK.store = store;
+  try {
+    // Как в D.start: каждое изменение стора синхронно зовёт showCriticalModal.
+    store.subscribe(() => D().showCriticalModal());
+    D().showCriticalModal();
+    assert.equal(shown.length, 1);
+    const first = shown[0];
+    assert.equal(root.dataset.open, first);
+    // Повторный вход из markDelivered не должен «доставить» второй алерт без показа.
+    assert.equal(crit().filter((a) => a.deliveredAt && a.id !== first).length, 0);
+    D().closeCriticalModal(first, 'Связался с пациентом');
+    assert.equal(shown.length, 2);
+    assert.notEqual(shown[1], first);
+    while (root.dataset.open) D().closeCriticalModal(root.dataset.open, 'Просмотрено');
+    D().showCriticalModal();
+    assert.equal(new Set(shown).size, shown.length, 'каждый показан ровно один раз');
+    assert.ok(!shown.includes(undefined));
+    assert.ok(crit().every((a) => shown.includes(a.id) || a.deliveredAt));
+    assert.equal(store.alerts().find((a) => a.id === first).ackAction, 'Связался с пациентом');
+  } finally {
+    globalThis.document = prev.document; KK.store = prev.store;
+  }
+});

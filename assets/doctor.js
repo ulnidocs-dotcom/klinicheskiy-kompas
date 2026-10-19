@@ -32,6 +32,16 @@
     ae_mild: 'Лёгкие нежелательные явления: обсудите с пациентом, оцените динамику; при нарастании — коррекция терапии.',
     unknown_data: 'Запросите недостающие анализы или загрузите выписку (вкладка «Импорт»).',
   };
+  let showing = false; // повторный вход в showCriticalModal (подписчики стора вызываются синхронно)
+  let lastFocus = null;
+  let audioCtx = null;
+  function audio() {
+    try {
+      if (!audioCtx) { const C = g.AudioContext || g.webkitAudioContext; if (!C) return null; audioCtx = new C(); }
+      if (audioCtx.state === 'suspended' && audioCtx.resume) audioCtx.resume().catch(() => {});
+      return audioCtx;
+    } catch (e) { return null; }
+  }
   const median = (xs) => { if (!xs.length) return null; const s = [...xs].sort((a, b) => a - b); const m = Math.floor(s.length / 2); return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
 
   const app = {
@@ -102,7 +112,8 @@
     beep() {
       if (KK.store.doctor().sound === false) return;
       try {
-        const ctx = new (g.AudioContext || g.webkitAudioContext)();
+        const ctx = audio();
+        if (!ctx) return;
         [0, 0.28].forEach((t) => {
           const o = ctx.createOscillator(), gn = ctx.createGain();
           o.frequency.value = 740; gn.gain.setValueAtTime(0.0001, ctx.currentTime + t);
@@ -138,39 +149,82 @@
           <div class="row wrap">${app.statusBadge(p)}${contra.map((c) => `<span class="badge badge--contra">${e(c.label)}</span>`).join('')}${unknown.length ? `<span class="badge badge--warn">Нет данных: ${unknown.length}</span>` : ''}${p.routingConfirmed ? `<span class="badge badge--ok">Направлен ${ui().fmtDate(p.routingConfirmed.at)}</span>` : ''}</div></div>
       </header>`;
     },
+    // Какой критический алерт показать следующим: только если окно свободно; каждый — ровно один раз (до доставки).
+    nextCriticalToShow(alerts, openId) {
+      if (openId) return null;
+      return alerts.find((a) => a.level === 'critical' && !a.ackAt && !a.deliveredAt) || null;
+    },
     showCriticalModal() {
-      const pending = KK.store.alerts({ open: true }).find((a) => a.level === 'critical' && !a.deliveredAt);
+      if (showing) return;
       const root = document.getElementById('modal-root');
-      if (!pending || !root || root.dataset.open === pending.id) return;
-      const p = KK.store.patient(pending.patientId);
-      KK.store.markDelivered(pending.id);
-      app.beep();
-      root.dataset.open = pending.id;
-      const e = ui().esc;
-      root.innerHTML = `<div class="modal-backdrop" role="alertdialog" aria-modal="true" aria-labelledby="mt">
+      if (!root) return;
+      const pending = app.nextCriticalToShow(KK.store.alerts({ open: true }), root.dataset.open);
+      if (!pending) return;
+      showing = true;
+      try {
+        const p = KK.store.patient(pending.patientId);
+        const e = ui().esc;
+        if (!root.dataset.open && document.activeElement && !root.contains(document.activeElement)) lastFocus = document.activeElement;
+        // Сначала занимаем окно и рисуем, потом отмечаем доставку: markDelivered синхронно зовёт подписчиков,
+        // и повторный вход не должен «доставить» следующий алерт, не показав его.
+        root.dataset.open = pending.id;
+        root.innerHTML = `<div class="modal-backdrop" role="alertdialog" aria-modal="true" aria-labelledby="mt">
         <div class="modal stack"><span class="badge badge--critical">${ui().icon('alert', 14)}Критический сигнал</span>
-          <h2 id="mt">${e(p.name)}: ${e(pending.title)}</h2><p>${e(pending.text)}</p>
+          <h2 id="mt">${e(p ? p.name : pending.patientId)}: ${e(pending.title)}</h2><p>${e(pending.text)}</p>
           ${app.mode() === 'nonPsychiatrist' && HINTS[pending.ruleId] ? `<p class="hint-box">${e(HINTS[pending.ruleId])}</p>` : ''}
           <p class="hint">Данные поступили ${ui().fmtDateTime(pending.dataAt)} · ${e(pending.source)}</p>
-          <div class="row wrap"><a class="btn btn--danger" href="patient.html?id=${p.id}" data-ack-open="${pending.id}">Открыть карточку</a>
-            <button class="btn" data-ack="${pending.id}" data-action="Связался с пациентом">Связался с пациентом</button>
+          <div class="row wrap"><a class="btn btn--danger" href="patient.html?id=${e(pending.patientId)}" data-ack-open="${e(pending.id)}">Открыть карточку</a>
+            <button class="btn" data-ack="${e(pending.id)}" data-action="Связался с пациентом">Связался с пациентом</button>
             <button class="btn btn--ghost" data-close>Позже</button></div></div></div>`;
-      root.querySelector('.btn').focus();
+        KK.store.markDelivered(pending.id);
+        app.beep();
+        root.querySelector('.btn')?.focus();
+      } finally {
+        showing = false;
+      }
+    },
+    // Закрыть окно; при ackId — подтвердить алерт. Затем показать следующий ожидающий критический.
+    closeCriticalModal(ackId, action) {
+      const root = document.getElementById('modal-root');
+      if (root) { root.innerHTML = ''; delete root.dataset.open; }
+      if (ackId) KK.store.ackAlert(ackId, action);
+      app.showCriticalModal();
+      if (root && !root.dataset.open) {
+        if (lastFocus && lastFocus.isConnected && typeof lastFocus.focus === 'function') lastFocus.focus();
+        lastFocus = null;
+      }
     },
     start({ nav } = {}) {
       if (nav) document.body.dataset.nav = nav;
       app.renderSide();
       app.showCriticalModal();
       KK.store.subscribe(() => { app.renderSide(); app.showCriticalModal(); });
+      // Браузер разрешает звук только после жеста пользователя — разблокируем AudioContext заранее.
+      const unlock = () => { audio(); document.removeEventListener('click', unlock, true); document.removeEventListener('keydown', unlock, true); };
+      document.addEventListener('click', unlock, true);
+      document.addEventListener('keydown', unlock, true);
       document.addEventListener('click', (ev) => {
         const root = document.getElementById('modal-root');
         const ack = ev.target.closest('[data-ack]');
-        if (ack) { KK.store.ackAlert(ack.dataset.ack, ack.dataset.action); root.innerHTML = ''; delete root.dataset.open; }
-        if (ev.target.closest('[data-close]')) { root.innerHTML = ''; delete root.dataset.open; app.showCriticalModal(); }
+        if (ack) {
+          const id = ack.dataset.ack;
+          if (root && (root.contains(ack) || root.dataset.open === id)) app.closeCriticalModal(id, ack.dataset.action);
+          else KK.store.ackAlert(id, ack.dataset.action);
+        }
+        if (root && ev.target.closest('[data-close]') && root.contains(ev.target)) app.closeCriticalModal();
       });
       document.addEventListener('keydown', (ev) => {
         const root = document.getElementById('modal-root');
-        if (ev.key === 'Escape' && root?.dataset.open) { root.innerHTML = ''; delete root.dataset.open; }
+        if (!root?.dataset.open) return;
+        if (ev.key === 'Escape') { ev.preventDefault(); app.closeCriticalModal(); return; }
+        if (ev.key === 'Tab') {
+          const items = [...root.querySelectorAll('a[href], button:not([disabled]), textarea, input, select')];
+          if (!items.length) return;
+          const first = items[0], last = items[items.length - 1];
+          const inside = root.contains(document.activeElement);
+          if (ev.shiftKey && (document.activeElement === first || !inside)) { ev.preventDefault(); last.focus(); }
+          else if (!ev.shiftKey && (document.activeElement === last || !inside)) { ev.preventDefault(); first.focus(); }
+        }
       });
       return { doctor: KK.store.doctor(), mode: app.mode() };
     },
