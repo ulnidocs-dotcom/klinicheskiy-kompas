@@ -3,40 +3,74 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Компас — витрина компонентов</title>
-<link rel="stylesheet" href="assets/tokens.css"><link rel="stylesheet" href="assets/ui.css">
+<link rel="stylesheet" href="assets/tokens.css"><link rel="stylesheet" href="assets/ui.css"><link rel="stylesheet" href="assets/patient.css">
+<script src="assets/theme.js"></script>
+<style>
+  .kit{max-width:720px;margin:0 auto;padding:20px 16px 48px}
+  .swatches{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+  .swatches .tile{min-height:120px;display:flex;flex-direction:column;justify-content:space-between}
+</style>
 </head>
 <body>
-<main class="p-app stack-l">
+<main class="kit stack-l">
   <div class="row-between"><h1>Витрина</h1>
     <div class="row">
       <button class="btn" id="role">Роль: пациент</button>
-      <button class="btn" id="theme">Тема</button>
+      <span data-theme-slot></span>
     </div></div>
-  <section class="card stack"><h2>Как вы сегодня?</h2>
-    <div class="dots" role="group" aria-label="Настроение от 1 до 5">
+
+  <section class="stack"><span class="label">Цифры точечной матрицей — только нейтральные крупные числа</span>
+    <div class="row" style="flex-wrap:wrap;gap:24px"><span class="num num--xl">20</span><span class="num num--l">09:00</span><span class="num num--m">11</span></div></section>
+
+  <section class="stack"><span class="label">Ауры: шалфей — самочувствие, роза — лекарство, сирень — опросник, синий — практика, янтарь — помощь</span>
+    <div class="swatches">
+      <div class="tile aura aura--sage"><span class="label">Самочувствие</span><p class="tile-title">Шалфей</p></div>
+      <div class="tile aura aura--rose"><span class="label">Лекарство</span><p class="tile-title">Роза</p></div>
+      <div class="tile aura aura--lilac"><span class="label">Опросник</span><p class="tile-title">Сирень</p></div>
+      <div class="tile aura aura--blue"><span class="label">Практика</span><p class="tile-title">Кобальт</p></div>
+      <div class="tile aura aura--amber"><span class="label">Помощь</span><p class="tile-title">Янтарь</p></div>
+    </div></section>
+
+  <section class="tile aura aura--sage stack"><div class="row-between"><span class="label">Самочувствие</span><span class="label">1 из 3</span></div>
+    <p class="tile-title" id="kq">Какое сегодня настроение?</p>
+    <div class="dots" role="group" aria-labelledby="kq">
       <button class="dot" data-v="1" aria-label="Очень тяжело" aria-pressed="false"></button>
       <button class="dot" data-v="2" aria-label="Тяжело" aria-pressed="false"></button>
-      <button class="dot" data-v="3" aria-label="Средне" aria-pressed="true"></button>
-      <button class="dot" data-v="4" aria-label="Хорошо" aria-pressed="false"></button>
-      <button class="dot" data-v="5" aria-label="Очень хорошо" aria-pressed="false"></button>
-    </div></section>
-  <section class="card card--tint stack"><h3>Авиандр · 20 мг · утро</h3><button class="btn btn--primary">Отметить приём</button></section>
+      <button class="dot" data-v="3" aria-label="Так себе" aria-pressed="true"></button>
+      <button class="dot" data-v="4" aria-label="Неплохо" aria-pressed="false"></button>
+      <button class="dot" data-v="5" aria-label="Хорошо" aria-pressed="false"></button>
+    </div>
+    <div class="dot-labels"><span>тяжело</span><span>хорошо</span></div>
+    <div class="ticks" aria-hidden="true" style="--pos:17%"><i></i></div></section>
+
+  <section class="tile aura aura--rose stack"><span class="label">Приём лекарства</span><p class="tile-title">Авиандр · 20 мг</p>
+    <div class="slots">
+      <button class="slot" aria-pressed="true"><span class="num num--m">09:00</span><span class="slot__l">Утро · принято</span></button>
+      <button class="slot" aria-pressed="false"><span class="num num--m">21:00</span><span class="slot__l">Вечер</span></button>
+    </div>
+    <button class="btn btn--pill btn--block">Отметить приём</button></section>
+
   <section class="stack"><button class="choice" aria-pressed="false">Ни разу</button><button class="choice" aria-pressed="true">Несколько дней</button>
-    <div class="progress"><i class="on"></i><i class="on"></i><i></i><i></i></div></section>
+    <div class="progress"><i class="on"></i><i class="on"></i><i></i><i></i></div>
+    <div class="seg" role="group" aria-label="Тема"><button aria-pressed="true">Дневная</button><button aria-pressed="false">Ночная</button><button aria-pressed="false">Как в системе</button></div></section>
+
   <section class="card card--help"><p>Если сейчас очень тяжело — помощь рядом.</p></section>
-  <section class="stack" id="doctor-only">
+
+  <section class="stack" id="doctor-only"><span class="label">Сигналы безопасности (врач): заливка / контур / пунктир + слово</span>
     <div class="row" style="flex-wrap:wrap">
       <span class="badge badge--critical">Критично</span><span class="badge badge--required">Обязательно к психиатру</span>
       <span class="badge badge--desirable">Желательно к психиатру</span><span class="badge badge--warn">Взаимодействие</span>
       <span class="badge badge--contra">Противопоказание</span><span class="badge badge--ok">Нет противопоказаний</span>
     </div>
+    <div class="signal signal--critical"><span class="badge badge--critical">Критично</span><b>Суицидальные мысли (PHQ-9, вопрос 9)</b><span class="src">КР РОП 2024 (ID 301)</span></div>
     <div class="signal signal--required"><span class="badge badge--required">Обязательно</span><b>Тяжёлая депрессивная симптоматика</b><span class="src">КР РОП 2024 (ID 301)</span></div>
     <div class="signal signal--desirable"><span class="badge badge--desirable">Желательно</span><b>Сочетание тревоги и депрессии</b><span class="src">Правило команды</span></div>
+    <div class="signal signal--warn"><span class="badge badge--warn">Осторожно</span><b>Взаимодействие с трамадолом</b><span class="src">Инструкция</span></div>
   </section>
 </main>
+<script src="assets/kk.js"></script><script src="assets/tg.js"></script>
 <script>
   const root = document.documentElement;
-  document.getElementById('theme').onclick = () => { root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark'; };
   document.getElementById('role').onclick = (e) => {
     root.dataset.role = root.dataset.role === 'patient' ? 'doctor' : 'patient';
     e.target.textContent = 'Роль: ' + (root.dataset.role === 'patient' ? 'пациент' : 'врач');

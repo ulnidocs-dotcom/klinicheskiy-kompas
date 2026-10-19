@@ -4,28 +4,54 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Клинический компас — демо</title>
 <link rel="stylesheet" href="assets/tokens.css"><link rel="stylesheet" href="assets/ui.css">
+<script src="assets/theme.js"></script>
+<style>
+  .launch{max-width:1040px;margin:0 auto;padding:20px 20px 48px}
+  .corners{display:grid;grid-template-columns:1fr auto 1fr;align-items:start;gap:16px}
+  .corners>:last-child{justify-self:end;text-align:right}
+  .corners .label{font-size:13px;color:var(--text-2)}
+  .launch .display{font-size:clamp(44px,9vw,104px);font-weight:300;letter-spacing:-.035em;line-height:.95;margin:40px 0 28px}
+  .dotline{font-size:14px;color:var(--text-3);letter-spacing:.3em;white-space:nowrap}
+  .lead{max-width:560px;font-size:16px;margin:36px 0 28px}
+  .doors{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-bottom:28px}
+  .door{border-radius:var(--radius-l);padding:22px 20px;min-height:220px;display:flex;flex-direction:column;justify-content:space-between;gap:20px}
+  .launch .door h2{font-size:30px;font-weight:300;letter-spacing:-.02em}
+  .door .btn--pill{align-self:flex-start;border-radius:999px;min-height:48px;padding:0 6px 0 22px}
+  .top-right{display:flex;align-items:center;gap:10px;justify-content:flex-end}
+  @media (max-width:560px){.corners{grid-template-columns:1fr 1fr}.corners .mid{display:none}.table th:nth-child(2),.table td:nth-child(2){display:none}}
+</style>
 </head>
 <body>
-<main style="max-width:880px;margin:0 auto;padding:32px 16px" class="stack-l">
-  <header class="stack">
-    <h1>Клинический компас</h1>
-    <p class="muted">Демо-прототип цифрового ассистента врача для ведения пациентов с тревожной и депрессивной симптоматикой. Данные вымышлены и хранятся только в этом браузере.</p>
-  </header>
+<main class="launch">
+  <div class="corners">
+    <span class="label">Демо-прототип<br>ассистента врача</span>
+    <span class="label mid">Тревога · депрессия</span>
+    <div class="top-right"><span class="label">Данные вымышлены</span><span data-theme-slot></span></div>
+  </div>
+  <h1 class="display">Клинический<br>компас</h1>
+  <div class="corners">
+    <span class="label">Кабинет врача<br>и дневник пациента</span>
+    <span class="dotline mid" aria-hidden="true">· · · ·· ·· ····</span>
+    <span class="label">От догадок —<br>к данным</span>
+  </div>
+  <p class="muted lead">Демо-прототип цифрового ассистента врача для ведения пациентов с тревожной и депрессивной симптоматикой. Данные вымышлены и хранятся только в этом браузере.</p>
+  <section class="doors">
+    <div class="door aura aura--blue"><span class="label">Десктоп · сигналы, шкалы, терапия, маршрутизация</span><h2>Врач</h2>
+      <a class="btn btn--pill" href="doctor/index.html">Открыть кабинет врача</a></div>
+    <div class="door aura aura--rose"><span class="label">Телефон · Telegram Mini App</span><h2>Пациент</h2>
+      <a class="btn btn--pill" href="patient/index.html?p=p_anna">Открыть кабинет пациента</a></div>
+  </section>
   <section class="card stack">
     <div class="row-between"><h2>Сценарии «Авиандр»</h2><button class="btn" id="reset">Сбросить демо</button></div>
     <table class="table"><thead><tr><th>Пациент</th><th>Сценарий</th><th>Сигналы</th><th></th></tr></thead><tbody id="rows"></tbody></table>
     <p class="hint">Совет: откройте «Пациент» и «Врач» в двух вкладках — данные, которые вводит пациент, сразу появятся у врача.</p>
-  </section>
-  <section class="row" style="flex-wrap:wrap">
-    <a class="btn btn--primary" href="doctor/index.html">Открыть кабинет врача</a>
-    <a class="btn" href="patient/index.html?p=p_anna">Открыть кабинет пациента</a>
   </section>
 </main>
 <script src="assets/kk.js"></script>
 <script src="data/scales.js"></script><script src="data/drugs/classes.js"></script><script src="data/drugs/aviandr.js"></script>
 <script src="data/rules/core.js"></script><script src="data/scenarios.js"></script>
 <script src="assets/scales.js"></script><script src="assets/therapy.js"></script><script src="assets/adherence.js"></script>
-<script src="assets/rules.js"></script><script src="assets/parser.js"></script><script src="assets/store.js"></script><script src="assets/ui.js"></script>
+<script src="assets/rules.js"></script><script src="assets/parser.js"></script><script src="assets/store.js"></script><script src="assets/ui.js"></script><script src="assets/tg.js"></script>
 <script>
   const s = KK.store;
   const scen = Object.fromEntries(KK.data.scenarios.map((x) => [x.patient.id, x]));
