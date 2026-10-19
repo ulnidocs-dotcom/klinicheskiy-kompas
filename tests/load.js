@@ -16,6 +16,7 @@ const FILES = [
   'assets/store.js',
   'assets/ui.js',
   'assets/patient.js',
+  'assets/doctor.js',
 ];
 const fs = require('node:fs');
 for (const f of FILES) {
