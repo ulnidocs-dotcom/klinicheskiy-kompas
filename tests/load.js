@@ -7,6 +7,7 @@ const FILES = [
   'data/drugs/aviandr.js',
   'data/rules/core.js',
   'data/scenarios.js',
+  'data/materials.js',
   'assets/scales.js',
   'assets/therapy.js',
   'assets/adherence.js',
@@ -14,6 +15,7 @@ const FILES = [
   'assets/parser.js',
   'assets/store.js',
   'assets/ui.js',
+  'assets/patient.js',
 ];
 const fs = require('node:fs');
 for (const f of FILES) {
