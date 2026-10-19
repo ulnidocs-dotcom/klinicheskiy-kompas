@@ -51,5 +51,7 @@
   "49": "patient.js",
   "50": "profile.js",
   "51": "routing.js",
-  "52": "materials.js"
+  "52": "materials.js",
+  "53": "build.test.js",
+  "54": "contrast.test.js"
 }

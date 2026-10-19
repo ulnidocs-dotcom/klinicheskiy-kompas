@@ -1,16 +1,16 @@
-# Graph Report - klinicheskiy-kompas  (2026-10-19)
+# Graph Report - klinicheskiy-kompas  (2026-10-20)
 
 ## Corpus Check
-- 58 files · ~51,510 words
+- 62 files · ~64,742 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 292 nodes · 282 edges · 53 communities (42 shown, 11 thin omitted)
-- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 5 edges (avg confidence: 0.74)
+- 332 nodes · 332 edges · 55 communities (44 shown, 11 thin omitted)
+- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 10 edges (avg confidence: 0.65)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `f9df1864`
+- Built from commit: `8c6c0e9b`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -36,6 +36,7 @@
 - [[_COMMUNITY_parser.test.js|parser.test.js]]
 - [[_COMMUNITY_scales.test.js|scales.test.js]]
 - [[_COMMUNITY_ui.test.js|ui.test.js]]
+- [[_COMMUNITY_store.js|store.js]]
 - [[_COMMUNITY_patient.js|patient.js]]
 - [[_COMMUNITY_today.js|today.js]]
 - [[_COMMUNITY_scale.js|scale.js]]
@@ -45,6 +46,8 @@
 - [[_COMMUNITY_Клинический компас — демо-прототип|Клинический компас — демо-прототип]]
 - [[_COMMUNITY_doctor.test.js|doctor.test.js]]
 - [[_COMMUNITY_therapy.js|therapy.js]]
+- [[_COMMUNITY_build.test.js|build.test.js]]
+- [[_COMMUNITY_contrast.test.js|contrast.test.js]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `Структура файлов` - 13 edges
@@ -52,11 +55,11 @@
 3. `«Клинический компас» — HTML-интерфейсы врача и пациента (демо-прототип)` - 13 edges
 4. `Структура файлов` - 12 edges
 5. `Клинический компас — демо-прототип` - 8 edges
-6. `showCriticalModal()` - 5 edges
-7. `def()` - 5 edges
-8. `render()` - 5 edges
-9. `extract()` - 4 edges
-10. `pid()` - 4 edges
+6. `render()` - 7 edges
+7. `showCriticalModal()` - 5 edges
+8. `def()` - 5 edges
+9. `current()` - 5 edges
+10. `build()` - 5 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `render()` --indirect_call--> `pid()`  [INFERRED]
@@ -67,11 +70,13 @@
   assets/adherence.js → assets/kk.js
 - `missedStreak()` --calls--> `dayKey()`  [INFERRED]
   assets/adherence.js → assets/kk.js
+- `createStore()` --calls--> `read()`  [INFERRED]
+  assets/store.js → assets/theme.js
 
 ## Import Cycles
 - None detected.
 
-## Communities (53 total, 11 thin omitted)
+## Communities (55 total, 11 thin omitted)
 
 ### Community 0 - "Структура файлов"
 Cohesion: 0.12
@@ -133,13 +138,17 @@ Nodes (4): FILES, fs, path, root
 Cohesion: 0.60
 Nodes (5): extract(), extractAge(), extractEgfr(), mentions(), negated()
 
+### Community 23 - "store.js"
+Cohesion: 0.27
+Nodes (8): createStore(), current(), read(), set(), sync(), systemDark(), toggle(), toggleHtml()
+
 ### Community 29 - "patient.js"
-Cohesion: 0.12
+Cohesion: 0.11
 Nodes (4): pid(), start(), render(), render()
 
 ### Community 30 - "today.js"
-Cohesion: 0.52
-Nodes (6): checkinCard(), checkinToday(), medsCard(), practiceCard(), render(), scalesCard()
+Cohesion: 0.42
+Nodes (8): checkinCard(), checkinToday(), header(), helpCard(), medsCard(), practiceCard(), render(), scalesCard()
 
 ### Community 42 - "doctor.js"
 Cohesion: 0.17
@@ -149,8 +158,16 @@ Nodes (11): audio(), beep(), closeCriticalModal(), nextCriticalToShow(), patient
 Cohesion: 0.22
 Nodes (8): Где расширять, Демо-сценарии, Запуск, Источники, Клинический компас — демо-прототип, Ограничения демо, Принципы, Структура
 
+### Community 53 - "build.test.js"
+Cohesion: 0.17
+Nodes (13): assert, { build }, fs, os, path, test, build(), fs (+5 more)
+
+### Community 54 - "contrast.test.js"
+Cohesion: 0.17
+Nodes (9): assert, css, fs, lum(), PAIRS, path, ratio(), SETS (+1 more)
+
 ## Knowledge Gaps
-- **98 isolated node(s):** `name`, `version`, `private`, `description`, `test` (+93 more)
+- **114 isolated node(s):** `name`, `version`, `private`, `description`, `test` (+109 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **11 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -158,7 +175,7 @@ Nodes (8): Где расширять, Демо-сценарии, Запуск, �
 _Questions this graph is uniquely positioned to answer:_
 
 - **What connects `name`, `version`, `private` to the rest of the system?**
-  _98 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _114 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Структура файлов` be split into smaller, more focused modules?**
   _Cohesion score 0.125 - nodes in this community are weakly interconnected._
 - **Should `Структура файлов` be split into smaller, more focused modules?**
@@ -168,4 +185,4 @@ _Questions this graph is uniquely positioned to answer:_
 - **Should `«Клинический компас» — HTML-интерфейсы врача и пациента (демо-прототип)` be split into smaller, more focused modules?**
   _Cohesion score 0.14285714285714285 - nodes in this community are weakly interconnected._
 - **Should `patient.js` be split into smaller, more focused modules?**
-  _Cohesion score 0.11764705882352941 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.10526315789473684 - nodes in this community are weakly interconnected._

@@ -1,137 +1,137 @@
 {
   ".claude/launch.json": {
-    "mtime": 1792410742.6235962,
-    "ast_hash": "807d43dc7a0a321f9354982aa5af11fc",
+    "mtime": 1792428222.7958028,
+    "ast_hash": "09b01be1095f5c2da245c4d0e51c7c2f",
     "semantic_hash": ""
   },
   "assets/adherence.js": {
-    "mtime": 1792411840.6818275,
-    "ast_hash": "6db0db29f085500bcc98ac1d6a3ed82a",
+    "mtime": 1792428222.8046255,
+    "ast_hash": "b8611f9286b472f973811700aa17c5d8",
     "semantic_hash": ""
   },
   "assets/kk.js": {
-    "mtime": 1792410750.640765,
-    "ast_hash": "f9b6aef60f0d08c54e1c76da2b139078",
+    "mtime": 1792428222.8046255,
+    "ast_hash": "ab7b2f551705c1f4c4cf9b318196a643",
     "semantic_hash": ""
   },
   "assets/parser.js": {
-    "mtime": 1792411767.6866107,
-    "ast_hash": "f9c4eb5767c5e4e6e4053176e2097382",
+    "mtime": 1792428222.8069248,
+    "ast_hash": "d5d39744091d51f4a4b9ef421f82d0cb",
     "semantic_hash": ""
   },
   "assets/rules.js": {
-    "mtime": 1792411840.6818275,
-    "ast_hash": "003a98249cc604904a1264f44e1fdf07",
+    "mtime": 1792428222.8079848,
+    "ast_hash": "4b6d2eb79ed2a784ac37b106aabf1eb3",
     "semantic_hash": ""
   },
   "assets/scales.js": {
-    "mtime": 1792425877.105667,
-    "ast_hash": "b55f74f41174fa09bdfd51326f04804b",
+    "mtime": 1792428222.8097332,
+    "ast_hash": "09db7686b4f34c2321655ee0d8f9274a",
     "semantic_hash": ""
   },
   "assets/store.js": {
-    "mtime": 1792427181.8997734,
-    "ast_hash": "68599fd61d6f6f1a4da50258c5315a64",
+    "mtime": 1792428222.8097332,
+    "ast_hash": "45613bcce697ae15c52de9677cb7d786",
     "semantic_hash": ""
   },
   "assets/tg.js": {
-    "mtime": 1792411165.3162396,
-    "ast_hash": "61759be3bfae5011aaf3d9bfe9c18c24",
+    "mtime": 1792428222.8097332,
+    "ast_hash": "61e01ce2fedeec89a439d7fb32ff4f02",
     "semantic_hash": ""
   },
   "assets/therapy.js": {
-    "mtime": 1792410938.7135744,
-    "ast_hash": "0b7cb1aef76c92cd376961aa36a8b26b",
+    "mtime": 1792428222.8097332,
+    "ast_hash": "64294fa8b9de6a7eece23dd3d4db6792",
     "semantic_hash": ""
   },
   "assets/ui.js": {
-    "mtime": 1792427217.4305952,
-    "ast_hash": "ba75f917c3d5defdf834d735ff9235a4",
+    "mtime": 1792428222.8124666,
+    "ast_hash": "f06ce22867aa7f07cdbc74746491c5fd",
     "semantic_hash": ""
   },
   "data/drugs/aviandr.js": {
-    "mtime": 1792411840.6818275,
-    "ast_hash": "e60c12d278dfdc99fb6aa2c49c0d039e",
+    "mtime": 1792428222.8124666,
+    "ast_hash": "748f62d0655a96a25af7dc89be69afde",
     "semantic_hash": ""
   },
   "data/drugs/classes.js": {
-    "mtime": 1792410925.4884636,
-    "ast_hash": "6708195f3aa991851904676f1495cffd",
+    "mtime": 1792428222.8124666,
+    "ast_hash": "fd74be95afff77c5ed04fd16882a1a15",
     "semantic_hash": ""
   },
   "data/rules/core.js": {
-    "mtime": 1792425899.4464712,
-    "ast_hash": "3785031b0178c589d1f14691c57acb13",
+    "mtime": 1792428222.8164525,
+    "ast_hash": "42200eaeaad95d88656c452ba391133f",
     "semantic_hash": ""
   },
   "data/scales.js": {
-    "mtime": 1792410904.471059,
-    "ast_hash": "dc924a4f5f9ced992faf91798da76325",
+    "mtime": 1792428222.8164525,
+    "ast_hash": "927243859c9c1b04eb4d94ed764b46dd",
     "semantic_hash": ""
   },
   "data/scenarios.js": {
-    "mtime": 1792411048.9991665,
-    "ast_hash": "5107cc2d89c701eafc982754012192bf",
+    "mtime": 1792428222.8164525,
+    "ast_hash": "860d8cd1d78595b90549913ae215aaba",
     "semantic_hash": ""
   },
   "package.json": {
-    "mtime": 1792410750.584216,
-    "ast_hash": "c0c77ef372937ce7877fb32febc8f3c2",
+    "mtime": 1792428222.8503766,
+    "ast_hash": "2b1329f35a0a7fb473ff3c08dcbfc830",
     "semantic_hash": ""
   },
   "tests/adherence.test.js": {
-    "mtime": 1792411826.7943525,
-    "ast_hash": "03b004bc4158119c338651ed68c9ca5e",
+    "mtime": 1792428222.8618689,
+    "ast_hash": "ef956bb419b7a1ad6cca9df23b946b53",
     "semantic_hash": ""
   },
   "tests/kk.test.js": {
-    "mtime": 1792410742.559826,
-    "ast_hash": "ce7f72b88e19a70b071c8858ddea0834",
+    "mtime": 1792428222.8618689,
+    "ast_hash": "d6017a496ab5836ead970a799682c4f5",
     "semantic_hash": ""
   },
   "tests/load.js": {
-    "mtime": 1792426503.8340554,
-    "ast_hash": "6c30080675df1af9b27983f8ddcd9207",
+    "mtime": 1792428222.8618689,
+    "ast_hash": "2fc5efc1c2388431e14c18878e0266ce",
     "semantic_hash": ""
   },
   "tests/parser.test.js": {
-    "mtime": 1792411711.6126568,
-    "ast_hash": "9989a4ccec31419dfae547819d92899d",
+    "mtime": 1792428222.8676207,
+    "ast_hash": "4cd80daeb0d734dca6f9adb2dd08edeb",
     "semantic_hash": ""
   },
   "tests/rules.test.js": {
-    "mtime": 1792411826.778133,
-    "ast_hash": "2b8c09a137782e0824f7bd58c34a8438",
+    "mtime": 1792428222.8676207,
+    "ast_hash": "1ce288e23ea8b11c07cda802e9d440ca",
     "semantic_hash": ""
   },
   "tests/scales.test.js": {
-    "mtime": 1792411826.8101182,
-    "ast_hash": "c5fcb80729af7ed54b51700ebbc7c72f",
+    "mtime": 1792428222.869636,
+    "ast_hash": "6cc972ebd0393dc18f8b2c2d348c41e0",
     "semantic_hash": ""
   },
   "tests/scenarios.test.js": {
-    "mtime": 1792411034.2985568,
-    "ast_hash": "ba3e20072aae549d5d1d168bf6ff661d",
+    "mtime": 1792428222.869636,
+    "ast_hash": "d49a7fff2711fcdd7da8b317bdaf1698",
     "semantic_hash": ""
   },
   "tests/store.test.js": {
-    "mtime": 1792427182.0107913,
-    "ast_hash": "0cf59481781211c43d7c636b36851e06",
+    "mtime": 1792428222.870813,
+    "ast_hash": "a3d7cf2ebd071a2797d0b8bc4f85ee82",
     "semantic_hash": ""
   },
   "tests/therapy.test.js": {
-    "mtime": 1792411826.8287234,
-    "ast_hash": "f9ab51ac3fc52a74e2e9795b2141399c",
+    "mtime": 1792428222.870813,
+    "ast_hash": "dad098fd3d439ddbcebd6bf52694e67a",
     "semantic_hash": ""
   },
   "tests/ui.test.js": {
-    "mtime": 1792427217.4667706,
-    "ast_hash": "af4aacb12819ed151d921ad4879619f6",
+    "mtime": 1792428222.870813,
+    "ast_hash": "50cbf3eaeb637da70fb041d81008a544",
     "semantic_hash": ""
   },
   "tools/serve.js": {
-    "mtime": 1792426119.5730824,
-    "ast_hash": "f3131f34508d373ee5cbb9c21902c160",
+    "mtime": 1792428222.870813,
+    "ast_hash": "2015f7d516533206b53d4d6b20af066b",
     "semantic_hash": ""
   },
   "docs/superpowers/plans/2026-10-19-kompas-1-core.md": {
@@ -150,263 +150,288 @@
     "semantic_hash": ""
   },
   "docs/superpowers/specs/2026-10-19-klinicheskiy-kompas-ui-design.md": {
-    "mtime": 1792425917.8532515,
-    "ast_hash": "c89f115f6727fd83f9d92f2f0ca8c736",
+    "mtime": 1792429896.7706246,
+    "ast_hash": "ed64e2b23dcc67bcb7ab244759493f7a",
     "semantic_hash": ""
   },
   "index.html": {
-    "mtime": 1792426431.673655,
-    "ast_hash": "5cbe151b519cccd8a3613e38e4a9417b",
+    "mtime": 1792429718.9917464,
+    "ast_hash": "e6ae221271264d2ebc869f92405031e3",
     "semantic_hash": ""
   },
   "ui-kit.html": {
-    "mtime": 1792411165.3162396,
-    "ast_hash": "5d56326eb2b52f4abdaf8c3a65f6ba9c",
+    "mtime": 1792429706.4488876,
+    "ast_hash": "c5f3e827e973a2442ee965217d6ddf4c",
     "semantic_hash": ""
   },
   "tests/serve.test.js": {
-    "mtime": 1792425992.3629172,
-    "ast_hash": "0809bfbf2d671b722e8996fef04ba007",
+    "mtime": 1792428222.870813,
+    "ast_hash": "de388f0acbd803bb9533202c281f0eb2",
     "semantic_hash": ""
   },
   "assets/patient.js": {
-    "mtime": 1792427404.0388,
-    "ast_hash": "02de33ee50b6baac6107b3aa5e6eed25",
+    "mtime": 1792429320.356543,
+    "ast_hash": "0f91cbc0081c93c30e1ad96bb4948500",
     "semantic_hash": ""
   },
   "data/materials.js": {
-    "mtime": 1792426223.2195964,
-    "ast_hash": "e60e52e945b55ae7729f26a6c2d36282",
+    "mtime": 1792428222.8164525,
+    "ast_hash": "3e777886477ab200cc0c109e9c32817c",
     "semantic_hash": ""
   },
   "patient/chat.js": {
-    "mtime": 1792427421.721207,
-    "ast_hash": "27281b0810458b852074bec35a77ff64",
+    "mtime": 1792429477.5650592,
+    "ast_hash": "931d37287f9abead7bc2e9b544d3eff8",
     "semantic_hash": ""
   },
   "patient/help.js": {
-    "mtime": 1792427404.0388,
-    "ast_hash": "8f56824ee161a08a8423a691bb2777e3",
+    "mtime": 1792429477.568029,
+    "ast_hash": "679f618f16ba4cf567dd1676c234174f",
     "semantic_hash": ""
   },
   "patient/material.js": {
-    "mtime": 1792426258.732476,
-    "ast_hash": "4d7ae650e33f48b49c711e0dd0b1178b",
+    "mtime": 1792429499.2032979,
+    "ast_hash": "90747f425c934eaa90644e8061d74d76",
     "semantic_hash": ""
   },
   "patient/materials.js": {
-    "mtime": 1792426258.703157,
-    "ast_hash": "86027f16698d00ca3ca22de96b019c8a",
+    "mtime": 1792429477.568029,
+    "ast_hash": "ff9a8ca570833d361f53aaafe05e86ee",
     "semantic_hash": ""
   },
   "patient/onboarding.js": {
-    "mtime": 1792427404.0468316,
-    "ast_hash": "b54ed5203dd15c24225418d3bfd251c3",
+    "mtime": 1792429477.568029,
+    "ast_hash": "fef3fb282e892b3a0f541f3068251dd1",
     "semantic_hash": ""
   },
   "patient/path.js": {
-    "mtime": 1792427404.0388,
-    "ast_hash": "245988b386d0fc94f1da6370fb3e2db3",
+    "mtime": 1792429515.8235867,
+    "ast_hash": "5eeac41c5d0f7ee0c853be6de4b47067",
     "semantic_hash": ""
   },
   "patient/profile.js": {
-    "mtime": 1792426258.7596877,
-    "ast_hash": "c9ed5d26dda1ca44ae61f0d807ee25a7",
+    "mtime": 1792429368.04664,
+    "ast_hash": "caadd3acb40e6bdb171bd51131e717c2",
     "semantic_hash": ""
   },
   "patient/scale.js": {
-    "mtime": 1792427203.1342995,
-    "ast_hash": "ef1336d3fc8488a0d2bcc3294bcbe38c",
+    "mtime": 1792429477.5650592,
+    "ast_hash": "f7a3225ae12a9e4c8fb8f403abbdf86e",
     "semantic_hash": ""
   },
   "patient/therapy.js": {
-    "mtime": 1792426269.4933763,
-    "ast_hash": "720f347040906818c789b2695fa0a94c",
+    "mtime": 1792429477.5650592,
+    "ast_hash": "34a0da226efe38b239d48e7c1a18027e",
     "semantic_hash": ""
   },
   "patient/today.js": {
-    "mtime": 1792426258.5277457,
-    "ast_hash": "1726b1b4dd1d5240f21d0ccdd41c80d9",
+    "mtime": 1792429436.1283867,
+    "ast_hash": "222b1ce2ef8836e15e0167ce83b83757",
     "semantic_hash": ""
   },
   "tests/patient.test.js": {
-    "mtime": 1792427421.865909,
-    "ast_hash": "188807f92ee298cacac155b71ba6b3cc",
+    "mtime": 1792428222.8676207,
+    "ast_hash": "b14eaceb8ba188f337c95c6a2f6e136b",
     "semantic_hash": ""
   },
   "patient/_template.html": {
-    "mtime": 1792426223.1836293,
-    "ast_hash": "6ca4271469fbd66bfb8ccec4cf6b7cf7",
+    "mtime": 1792429260.0841613,
+    "ast_hash": "06812c2c73add7e530fe80f506fe01a7",
     "semantic_hash": ""
   },
   "patient/chat.html": {
-    "mtime": 1792426258.8320744,
-    "ast_hash": "532d4abc5667d6e374222e2f86edbcb1",
+    "mtime": 1792429260.1260192,
+    "ast_hash": "d22d291c064e773fb0eab842414a1f3e",
     "semantic_hash": ""
   },
   "patient/help.html": {
-    "mtime": 1792426258.8320744,
-    "ast_hash": "9e1e6d4add630a165c3322e331a85342",
+    "mtime": 1792429260.1600635,
+    "ast_hash": "3828985c096db539115791cfcf425415",
     "semantic_hash": ""
   },
   "patient/index.html": {
-    "mtime": 1792426258.8320744,
-    "ast_hash": "6ca4271469fbd66bfb8ccec4cf6b7cf7",
+    "mtime": 1792429260.1942961,
+    "ast_hash": "06812c2c73add7e530fe80f506fe01a7",
     "semantic_hash": ""
   },
   "patient/material.html": {
-    "mtime": 1792426258.8320744,
-    "ast_hash": "76930a9445c7eaf3f82bf54905c139ac",
+    "mtime": 1792429260.2251942,
+    "ast_hash": "bb8fabfc5c09b613ed31e0fe75dfbd57",
     "semantic_hash": ""
   },
   "patient/materials.html": {
-    "mtime": 1792426258.8320744,
-    "ast_hash": "7d6dbbba8e5bf0e48c9b0ea305631f7a",
+    "mtime": 1792429260.2608078,
+    "ast_hash": "e65d63d45ed96ecc5b947d0e152c6ed1",
     "semantic_hash": ""
   },
   "patient/onboarding.html": {
-    "mtime": 1792426258.8320744,
-    "ast_hash": "6b87d11bc80d3f914d267c5e6c9e0c76",
+    "mtime": 1792429260.280928,
+    "ast_hash": "0aff2b574e00c87f7616cd45398c70ff",
     "semantic_hash": ""
   },
   "patient/path.html": {
-    "mtime": 1792426258.8320744,
-    "ast_hash": "970a7b8a474492f83b2c85aee541eb37",
+    "mtime": 1792429260.3270895,
+    "ast_hash": "37bea784adc3f5a3b4ef9e2f906ff9a4",
     "semantic_hash": ""
   },
   "patient/profile.html": {
-    "mtime": 1792426258.8320744,
-    "ast_hash": "f6a682cdd4cbd8da756dfd55420bc8e9",
+    "mtime": 1792429260.359137,
+    "ast_hash": "f4f067698ad3c1abb9f80b08c0eff5d1",
     "semantic_hash": ""
   },
   "patient/scale.html": {
-    "mtime": 1792426258.8320744,
-    "ast_hash": "e83c832bbb2efa139b5c6c85166bafc5",
+    "mtime": 1792429260.3925807,
+    "ast_hash": "e31affb05e93bc3f936761e004c5f9e9",
     "semantic_hash": ""
   },
   "patient/therapy.html": {
-    "mtime": 1792426258.8320744,
-    "ast_hash": "49c546879c3a99ac644902e021ab315f",
+    "mtime": 1792429260.423197,
+    "ast_hash": "1e467e9b2cbd6b4a73c2b3409e9bbf1a",
     "semantic_hash": ""
   },
   "assets/doctor.js": {
-    "mtime": 1792427375.1926436,
-    "ast_hash": "21159ef4bdf6aae17076496d9283d966",
+    "mtime": 1792429624.8197584,
+    "ast_hash": "ebf34b0bdb7ece9d6af329d181f3515c",
     "semantic_hash": ""
   },
   "doctor/alerts.js": {
-    "mtime": 1792427375.1905725,
-    "ast_hash": "294ac4ab272fb49a518ac1d0a44106ae",
+    "mtime": 1792429624.8225622,
+    "ast_hash": "7229222f24197b5b971e4e2c35e89ac4",
     "semantic_hash": ""
   },
   "doctor/assess.js": {
-    "mtime": 1792427255.0251982,
-    "ast_hash": "3dfcb8a56fc5e72ee59f53310e0db013",
+    "mtime": 1792428222.823493,
+    "ast_hash": "4a21c904c2785b2483db94aaf00e899b",
     "semantic_hash": ""
   },
   "doctor/import.js": {
-    "mtime": 1792426567.1972268,
-    "ast_hash": "760c2d0d57afaf8ae3e4054c3326d467",
+    "mtime": 1792428222.823493,
+    "ast_hash": "d7b47a71b973f1e0c4fe7805271a56c3",
     "semantic_hash": ""
   },
   "doctor/index.js": {
-    "mtime": 1792427375.1894753,
-    "ast_hash": "a73c424e96e525b941b6ee3e57f07e16",
+    "mtime": 1792429624.8225622,
+    "ast_hash": "54abf8929669abe8d8b437572216901e",
     "semantic_hash": ""
   },
   "doctor/materials.js": {
-    "mtime": 1792426540.7388172,
-    "ast_hash": "87765525861eaf4d01d0716da10bf849",
+    "mtime": 1792428222.823493,
+    "ast_hash": "36b112a4a3beaa2c8e1be7102caf9dff",
     "semantic_hash": ""
   },
   "doctor/messages.js": {
-    "mtime": 1792427375.1894753,
-    "ast_hash": "a04d73ec60114028290c9de6cbac922b",
+    "mtime": 1792429624.8225622,
+    "ast_hash": "4f576869654430d3c5c7ae6164911cac",
     "semantic_hash": ""
   },
   "doctor/patient.js": {
-    "mtime": 1792426578.741403,
-    "ast_hash": "8daf6423fef5e495c93cfbf2982cc5c3",
+    "mtime": 1792429624.8225622,
+    "ast_hash": "a3ecb25337fca3362ad1b622d6ecd60e",
     "semantic_hash": ""
   },
   "doctor/profile.js": {
-    "mtime": 1792427375.1910794,
-    "ast_hash": "ebd13707f4445444de1a5f6f5f73b4bc",
+    "mtime": 1792429367.9649887,
+    "ast_hash": "c60caf2fd17d745d3221b27d035cef6a",
     "semantic_hash": ""
   },
   "doctor/routing.js": {
-    "mtime": 1792427386.0344357,
-    "ast_hash": "f1e45c775208340b583edccc2e928402",
+    "mtime": 1792428222.8289962,
+    "ast_hash": "ba9a839def7cbaef2611298bee076371",
     "semantic_hash": ""
   },
   "doctor/therapy.js": {
-    "mtime": 1792427338.6730359,
-    "ast_hash": "334aff0c0193948a310b0f508e903e7d",
+    "mtime": 1792429636.5709786,
+    "ast_hash": "c28a159b546295453c953b032fa03470",
     "semantic_hash": ""
   },
   "tests/doctor.test.js": {
-    "mtime": 1792427376.1591651,
-    "ast_hash": "9fd65c949a0e52affcd64481a2cb65f4",
+    "mtime": 1792428222.8618689,
+    "ast_hash": "206cfacb33ae85078eb6904dd0e50747",
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1792426612.2977505,
-    "ast_hash": "9bda5a6aaf7f712105bcf099f4e053c1",
+    "mtime": 1792428222.7958028,
+    "ast_hash": "89282f5d753266e88fae058be599002f",
     "semantic_hash": ""
   },
   "doctor/_template.html": {
-    "mtime": 1792426503.7967343,
-    "ast_hash": "64809b4d760dce99fff9c78303751603",
+    "mtime": 1792429260.4570303,
+    "ast_hash": "90b25c3a6c590cdb5471f6e1aa011392",
     "semantic_hash": ""
   },
   "doctor/alerts.html": {
-    "mtime": 1792426540.4614408,
-    "ast_hash": "dda4845a9b70e8d811f55a5f0a391aa2",
+    "mtime": 1792429260.498877,
+    "ast_hash": "754cc4f70ff9b2523647b00f16ed2839",
     "semantic_hash": ""
   },
   "doctor/assess.html": {
-    "mtime": 1792426540.2044644,
-    "ast_hash": "1f35eb4275c192587a2e7307960b31ad",
+    "mtime": 1792429260.5301368,
+    "ast_hash": "08fea0734005789d5d4c700ec738a4d4",
     "semantic_hash": ""
   },
   "doctor/import.html": {
-    "mtime": 1792426540.559129,
-    "ast_hash": "69755387491b1dd0e761caabc2f62180",
+    "mtime": 1792429260.564231,
+    "ast_hash": "54e73a6c48e658c0cd8651a9d71c3777",
     "semantic_hash": ""
   },
   "doctor/index.html": {
-    "mtime": 1792426540.0027633,
-    "ast_hash": "64809b4d760dce99fff9c78303751603",
+    "mtime": 1792429260.5943708,
+    "ast_hash": "90b25c3a6c590cdb5471f6e1aa011392",
     "semantic_hash": ""
   },
   "doctor/materials.html": {
-    "mtime": 1792426540.7388172,
-    "ast_hash": "355c182633a41dbd64ba5f71d16af5f0",
+    "mtime": 1792429260.609838,
+    "ast_hash": "843e5a2f51b221727ce073ca1e5b59b7",
     "semantic_hash": ""
   },
   "doctor/messages.html": {
-    "mtime": 1792426540.644101,
-    "ast_hash": "ef9b0b76b714c0f4f5a1ab7bd53060df",
+    "mtime": 1792429260.654535,
+    "ast_hash": "54ca9927beaab92fc8b625d97ce5bb79",
     "semantic_hash": ""
   },
   "doctor/patient.html": {
-    "mtime": 1792426540.1093583,
-    "ast_hash": "6e997334f1a32b118be1f7bc57c2d0bd",
+    "mtime": 1792429260.676607,
+    "ast_hash": "0fbea1b0e95821e2ded60451e755d26a",
     "semantic_hash": ""
   },
   "doctor/profile.html": {
-    "mtime": 1792426540.832314,
-    "ast_hash": "2c7c02dac74a973a5d2a060c8e04ba7a",
+    "mtime": 1792429260.703084,
+    "ast_hash": "10cb985d08e6ac7624737c41893febe4",
     "semantic_hash": ""
   },
   "doctor/routing.html": {
-    "mtime": 1792426540.3654425,
-    "ast_hash": "f50d5ce9bbed6d1d91f4b63cb5d6b832",
+    "mtime": 1792429260.7444339,
+    "ast_hash": "4989a97c43c723b715457b39bd192857",
     "semantic_hash": ""
   },
   "doctor/therapy.html": {
-    "mtime": 1792426540.2863078,
-    "ast_hash": "820af942413bc1d774c57ef26d67d54d",
+    "mtime": 1792429260.7739308,
+    "ast_hash": "8293c6f1052fd345ebe63d4bcc8395c1",
+    "semantic_hash": ""
+  },
+  "assets/theme.js": {
+    "mtime": 1792429252.90837,
+    "ast_hash": "247deac71362e61f42de720f2123cba1",
+    "semantic_hash": ""
+  },
+  "tests/build.test.js": {
+    "mtime": 1792429871.4906645,
+    "ast_hash": "58ac2143ae1486191e94df25a3a2a8f8",
+    "semantic_hash": ""
+  },
+  "tests/contrast.test.js": {
+    "mtime": 1792429818.6573899,
+    "ast_hash": "25fecb1762d296c830f3cc44834b5fea",
+    "semantic_hash": ""
+  },
+  "tools/build-artifact.js": {
+    "mtime": 1792429854.1615496,
+    "ast_hash": "a7dd5c00abb00c46edac7424385a024c",
+    "semantic_hash": ""
+  },
+  "docs/reference-veri.jpg": {
+    "mtime": 1792428941.7116635,
+    "ast_hash": "5f0ee5390da18b09f0fc1b802e6f2162",
     "semantic_hash": ""
   }
 }
