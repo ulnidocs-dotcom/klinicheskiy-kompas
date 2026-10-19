@@ -79,3 +79,12 @@ test('cautions: elderly and cardiovascular', () => {
   const ids = KK.therapy.check(drug(), p).cautions.map((c) => c.id).sort();
   assert.deepEqual(ids, ['cvd', 'elderly']);
 });
+
+test('C1: pregnancy/lactation true wins over sex; missing data → unknown', () => {
+  const st = (mut) => { const p = base(); mut(p); return KK.therapy.check(drug(), p).contraindications.find((c) => c.id === 'pregnancy').status; };
+  assert.equal(st((p) => { p.sex = 'm'; p.pregnant = true; }), 'present');
+  assert.equal(st((p) => { p.pregnant = null; p.lactating = true; }), 'present');
+  assert.equal(st((p) => { p.pregnant = true; p.lactating = undefined; }), 'present');
+  assert.equal(st((p) => { delete p.sex; delete p.pregnant; delete p.lactating; }), 'unknown');
+  assert.equal(st((p) => { p.sex = 'm'; delete p.pregnant; delete p.lactating; }), 'absent');
+});

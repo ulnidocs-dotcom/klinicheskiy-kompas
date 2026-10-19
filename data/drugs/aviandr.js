@@ -29,7 +29,12 @@
       { id: 'age', label: 'Возраст до 18 лет',
         check: (p) => (p.age == null ? null : p.age < 18) },
       { id: 'pregnancy', label: 'Беременность и период грудного вскармливания',
-        check: (p) => (p.sex === 'm' ? false : p.pregnant == null || p.lactating == null ? null : p.pregnant || p.lactating) },
+        check: (p) => {
+          if (p.pregnant === true || p.lactating === true) return true;
+          if (p.sex === 'm') return false;
+          if (p.pregnant == null || p.lactating == null) return null;
+          return false;
+        } },
     ],
     cautions: [
       { id: 'cvd', label: 'Сердечно-сосудистые заболевания — с осторожностью', check: (p) => (p.conditions || []).includes('cvd') },
