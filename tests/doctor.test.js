@@ -153,3 +153,14 @@ test('C-SSRS with hidden questions saved as null is accepted and scored', () => 
   assert.deepEqual(e.payload.answers, [1, 0, null, null, null, 0]);
   assert.equal(store.patient('p_anna').latest.cssrs.band.code, 'low');
 });
+
+test('therapyDecision: no plan, confirmed, off-label for contraindication or off-indication', () => {
+  const td = D().therapyDecision;
+  assert.equal(td({ plan: null }, null), 'noPlan');
+  assert.equal(td({ plan: { status: 'confirmed' } }, { eligible: true, indicated: true }), 'cancel');
+  assert.equal(td({ plan: { status: 'proposed' } }, { eligible: false, indicated: true }), 'offlabel');
+  assert.equal(td({ plan: { status: 'proposed' } }, { eligible: true, indicated: false }), 'offlabel');
+  assert.equal(td({ plan: { status: 'proposed', offLabel: { reason: 'x' } } }, { eligible: true, indicated: false }), 'confirm');
+  assert.equal(td({ plan: { status: 'proposed' } }, { eligible: null, indicated: true }), 'confirm');
+  assert.equal(td({ plan: { status: 'cancelled' } }, { eligible: true, indicated: true }), 'confirm');
+});

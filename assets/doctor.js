@@ -113,6 +113,14 @@
         : filled && label ? `Сумма: ${result.total} — ${label}` : `Сумма: ${result.total} (ответьте на все вопросы)`;
       return { shown, filled, full, result, summary };
     },
+    // Какое решение по назначению доступно врачу: нет плана / отменить / только вне инструкции / обычное назначение.
+    // Диагноз вне показаний, как и противопоказание, требует пути off-label с обоснованием.
+    therapyDecision(p, t) {
+      if (!p.plan) return 'noPlan';
+      if (p.plan.status === 'confirmed') return 'cancel';
+      if (t && (t.eligible === false || t.indicated === false) && !p.plan.offLabel) return 'offlabel';
+      return 'confirm';
+    },
     alertStats(alerts) {
       const delivered = alerts.filter((a) => a.deliveredAt).map((a) => (new Date(a.deliveredAt) - new Date(a.dataAt)) / 1000);
       const acked = alerts.filter((a) => a.ackAt).map((a) => (new Date(a.ackAt) - new Date(a.dataAt)) / 60000);
