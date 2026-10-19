@@ -57,7 +57,7 @@ code{font-size:.92em}
 [data-role="doctor"] .btn{border-radius:10px;min-height:36px;padding:0 14px}
 
 /* Пилюля с белым кругом «+» на конце (как «Start tracking» в референсе) */
-.btn--pill{background:var(--pill-bg);border-color:transparent;color:var(--pill-text);padding:0 6px 0 22px;justify-content:space-between;gap:16px;min-height:48px}
+.btn--pill{background:var(--pill-bg);border-color:var(--line);color:var(--pill-text);padding:0 6px 0 22px;justify-content:space-between;gap:16px;min-height:48px}
 .btn--pill:hover{background:var(--pill-bg);filter:brightness(1.12)}
 .btn--pill::after{content:'';flex:none;width:36px;height:36px;border-radius:50%;
   background:linear-gradient(var(--pill-ink),var(--pill-ink)) center/13px 1.8px no-repeat,linear-gradient(var(--pill-ink),var(--pill-ink)) center/1.8px 13px no-repeat,var(--pill-dot)}
@@ -149,3 +149,5 @@ code{font-size:.92em}
 /* Модальное окно */
 .modal-backdrop{position:fixed;inset:0;background:var(--scrim);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
 .modal{background:var(--surface);color:var(--text);border-radius:18px;max-width:520px;width:100%;padding:20px;border-top:6px solid var(--crit)}
+/* На аурах вторичный и третичный текст — усиленный --on-aura-2 (контраст ≥ 4.5 на пике ауры, см. tests/contrast.test.js) */
+.aura{--text-2:var(--on-aura-2);--text-3:var(--on-aura-2)}
