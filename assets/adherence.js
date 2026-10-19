@@ -7,12 +7,17 @@
     const now = new Date(nowIso).getTime();
     const todayStart = new Date(dayKey(nowIso) + 'T00:00:00').getTime();
     const from = Math.max(todayStart - windowDays * DAY, new Date(dayKey(plan.confirmedAt) + 'T00:00:00').getTime());
-    const days = Math.max(1, Math.round((todayStart - from) / DAY));
+    const days = Math.round((todayStart - from) / DAY);
+    if (days < 1) return null; // назначение подтверждено сегодня — полного дня ещё нет
     const expected = days * (plan.timesPerDay || 1);
-    const taken = doses.filter((d) => {
+    const slots = new Set();
+    doses.forEach((d) => {
       const t = new Date(d.at).getTime();
-      return d.type === 'dose' && d.payload?.taken && t >= from && t < todayStart && t <= now;
-    }).length;
+      if (d.type === 'dose' && d.payload?.taken && t >= from && t < todayStart && t <= now) {
+        slots.add(`${dayKey(d.at)}|${d.payload.slot ?? d.at}`);
+      }
+    });
+    const taken = slots.size;
     return Math.min(1, Math.round((taken / expected) * 100) / 100);
   }
   function missedStreak(doses, plan, nowIso) {
@@ -20,8 +25,10 @@
     const takenDays = new Set(doses.filter((d) => d.type === 'dose' && d.payload?.taken).map((d) => dayKey(d.at)));
     const startKey = dayKey(plan.confirmedAt);
     let streak = 0;
+    const day = new Date(nowIso);
     for (let i = 1; i < 60; i++) {
-      const key = dayKey(new Date(new Date(nowIso).getTime() - i * DAY).toISOString());
+      day.setDate(day.getDate() - 1); // календарный шаг: корректно при переходе на летнее/зимнее время
+      const key = dayKey(day.toISOString());
       if (key < startKey || takenDays.has(key)) break;
       streak++;
     }

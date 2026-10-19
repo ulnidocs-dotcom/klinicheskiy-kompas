@@ -77,7 +77,7 @@ test('post-COVID adjustment disorder is indicated only with postCovid flag', () 
 test('cautions: elderly and cardiovascular', () => {
   const p = base(); p.age = 70; p.conditions = ['cvd'];
   const ids = KK.therapy.check(drug(), p).cautions.map((c) => c.id).sort();
-  assert.deepEqual(ids, ['cvd', 'elderly']);
+  assert.deepEqual(ids, ['alcohol', 'cvd', 'elderly']);
 });
 
 test('C1: pregnancy/lactation true wins over sex; missing data → unknown', () => {

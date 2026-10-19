@@ -32,3 +32,13 @@ test('missed streak counts full days without doses', () => {
   assert.equal(adherence.missedStreak(doses, plan(30), NOW), 3);
   assert.equal(adherence.missedStreak([dose(1)], plan(30), NOW), 0);
 });
+
+test('I8: double tap on the same slot counts once', () => {
+  const doses = [];
+  for (let d = 1; d <= 7; d++) doses.push(dose(d, 'утро'), dose(d, 'утро'));
+  assert.equal(adherence.pdc(doses, plan(30), NOW, 7), 0.5);
+});
+
+test('pdc is null on the confirmation day (no full day yet)', () => {
+  assert.equal(adherence.pdc([], plan(0), NOW, 14), null);
+});
