@@ -34,3 +34,9 @@ test('icon returns svg or empty for unknown', () => {
   assert.match(ui.icon('home'), /^<svg/);
   assert.equal(ui.icon('nope'), '');
 });
+
+test('index.html: space between age and diagnosis code', () => {
+  const html = require('node:fs').readFileSync(require('node:path').join(__dirname, '..', 'index.html'), 'utf8');
+  assert.doesNotMatch(html, /·\$\{esc\(p\.diagnoses/);
+  assert.match(html, /· \$\{esc\(p\.diagnoses/);
+});

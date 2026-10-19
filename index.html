@@ -37,7 +37,7 @@
   const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   function render() {
     document.getElementById('rows').innerHTML = s.patients().map((p) => `
-      <tr><td><b>${esc(p.name)}</b><br><span class="hint">${KK.ui.age(p.age)} ·${esc(p.diagnoses[0].code)}</span></td>
+      <tr><td><b>${esc(p.name)}</b><br><span class="hint">${KK.ui.age(p.age)} · ${esc(p.diagnoses[0].code)}</span></td>
       <td>${esc(scen[p.id].title)}<br><span class="hint">${esc(scen[p.id].summary)}</span></td>
       <td>${badge(p)}</td>
       <td><a class="btn" href="patient/index.html?p=${p.id}">Как пациент</a></td></tr>`).join('');
