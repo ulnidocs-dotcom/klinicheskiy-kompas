@@ -1,16 +1,16 @@
 # Graph Report - klinicheskiy-kompas  (2026-10-19)
 
 ## Corpus Check
-- 58 files · ~49,291 words
+- 58 files · ~51,510 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 274 nodes · 261 edges · 53 communities (42 shown, 11 thin omitted)
+- 292 nodes · 282 edges · 53 communities (42 shown, 11 thin omitted)
 - Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 5 edges (avg confidence: 0.74)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `cee30f3f`
+- Built from commit: `f9df1864`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -52,11 +52,11 @@
 3. `«Клинический компас» — HTML-интерфейсы врача и пациента (демо-прототип)` - 13 edges
 4. `Структура файлов` - 12 edges
 5. `Клинический компас — демо-прототип` - 8 edges
-6. `def()` - 5 edges
-7. `render()` - 5 edges
-8. `extract()` - 4 edges
-9. `pid()` - 4 edges
-10. `bandFor()` - 4 edges
+6. `showCriticalModal()` - 5 edges
+7. `def()` - 5 edges
+8. `render()` - 5 edges
+9. `extract()` - 4 edges
+10. `pid()` - 4 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `render()` --indirect_call--> `pid()`  [INFERRED]
@@ -90,7 +90,7 @@ Cohesion: 0.14
 Nodes (13): 10. Клинические сценарии, 11. Проверка, 12. Открытые вопросы, 1. Цель и рамки, 2. Научная база UX-решений, 3. Визуальная система, 4. Архитектура, 5. Экраны пациента (+5 more)
 
 ### Community 4 - "ui.js"
-Cohesion: 0.22
+Cohesion: 0.20
 Nodes (3): fmtDate(), fmtDateTime(), fmtTime()
 
 ### Community 5 - "kk.js"
@@ -134,7 +134,7 @@ Cohesion: 0.60
 Nodes (5): extract(), extractAge(), extractEgfr(), mentions(), negated()
 
 ### Community 29 - "patient.js"
-Cohesion: 0.13
+Cohesion: 0.12
 Nodes (4): pid(), start(), render(), render()
 
 ### Community 30 - "today.js"
@@ -142,8 +142,8 @@ Cohesion: 0.52
 Nodes (6): checkinCard(), checkinToday(), medsCard(), practiceCard(), render(), scalesCard()
 
 ### Community 42 - "doctor.js"
-Cohesion: 0.23
-Nodes (8): beep(), patientHeader(), renderSide(), showCriticalModal(), signalBadge(), signalHtml(), start(), statusBadge()
+Cohesion: 0.17
+Nodes (11): audio(), beep(), closeCriticalModal(), nextCriticalToShow(), patientHeader(), renderSide(), showCriticalModal(), signalBadge() (+3 more)
 
 ### Community 43 - "Клинический компас — демо-прототип"
 Cohesion: 0.22
@@ -168,4 +168,4 @@ _Questions this graph is uniquely positioned to answer:_
 - **Should `«Клинический компас» — HTML-интерфейсы врача и пациента (демо-прототип)` be split into smaller, more focused modules?**
   _Cohesion score 0.14285714285714285 - nodes in this community are weakly interconnected._
 - **Should `patient.js` be split into smaller, more focused modules?**
-  _Cohesion score 0.13333333333333333 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.11764705882352941 - nodes in this community are weakly interconnected._

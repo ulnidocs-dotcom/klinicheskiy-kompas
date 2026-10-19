@@ -1,16 +1,16 @@
 # Graph Report - klinicheskiy-kompas  (2026-10-19)
 
 ## Corpus Check
-- 45 files · ~43,731 words
+- 58 files · ~49,291 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 227 nodes · 218 edges · 42 communities (32 shown, 10 thin omitted)
-- Extraction: 99% EXTRACTED · 1% INFERRED · 0% AMBIGUOUS · INFERRED: 3 edges (avg confidence: 0.7)
+- 274 nodes · 261 edges · 53 communities (42 shown, 11 thin omitted)
+- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 5 edges (avg confidence: 0.74)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `70a54c4d`
+- Built from commit: `cee30f3f`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -41,20 +41,28 @@
 - [[_COMMUNITY_scale.js|scale.js]]
 - [[_COMMUNITY_onboarding.js|onboarding.js]]
 - [[_COMMUNITY_patient.test.js|patient.test.js]]
+- [[_COMMUNITY_doctor.js|doctor.js]]
+- [[_COMMUNITY_Клинический компас — демо-прототип|Клинический компас — демо-прототип]]
+- [[_COMMUNITY_doctor.test.js|doctor.test.js]]
+- [[_COMMUNITY_therapy.js|therapy.js]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `Структура файлов` - 13 edges
 2. `Структура файлов` - 13 edges
 3. `«Клинический компас» — HTML-интерфейсы врача и пациента (демо-прототип)` - 13 edges
 4. `Структура файлов` - 12 edges
-5. `def()` - 5 edges
-6. `render()` - 5 edges
-7. `extract()` - 4 edges
-8. `bandFor()` - 4 edges
-9. `cssrsBand()` - 4 edges
-10. `score()` - 4 edges
+5. `Клинический компас — демо-прототип` - 8 edges
+6. `def()` - 5 edges
+7. `render()` - 5 edges
+8. `extract()` - 4 edges
+9. `pid()` - 4 edges
+10. `bandFor()` - 4 edges
 
 ## Surprising Connections (you probably didn't know these)
+- `render()` --indirect_call--> `pid()`  [INFERRED]
+  doctor/import.js → assets/patient.js
+- `render()` --indirect_call--> `pid()`  [INFERRED]
+  doctor/messages.js → assets/patient.js
 - `pdc()` --calls--> `dayKey()`  [INFERRED]
   assets/adherence.js → assets/kk.js
 - `missedStreak()` --calls--> `dayKey()`  [INFERRED]
@@ -63,7 +71,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (42 total, 10 thin omitted)
+## Communities (53 total, 11 thin omitted)
 
 ### Community 0 - "Структура файлов"
 Cohesion: 0.12
@@ -125,20 +133,32 @@ Nodes (4): FILES, fs, path, root
 Cohesion: 0.60
 Nodes (5): extract(), extractAge(), extractEgfr(), mentions(), negated()
 
+### Community 29 - "patient.js"
+Cohesion: 0.13
+Nodes (4): pid(), start(), render(), render()
+
 ### Community 30 - "today.js"
 Cohesion: 0.52
 Nodes (6): checkinCard(), checkinToday(), medsCard(), practiceCard(), render(), scalesCard()
 
+### Community 42 - "doctor.js"
+Cohesion: 0.23
+Nodes (8): beep(), patientHeader(), renderSide(), showCriticalModal(), signalBadge(), signalHtml(), start(), statusBadge()
+
+### Community 43 - "Клинический компас — демо-прототип"
+Cohesion: 0.22
+Nodes (8): Где расширять, Демо-сценарии, Запуск, Источники, Клинический компас — демо-прототип, Ограничения демо, Принципы, Структура
+
 ## Knowledge Gaps
-- **89 isolated node(s):** `name`, `version`, `private`, `description`, `test` (+84 more)
+- **98 isolated node(s):** `name`, `version`, `private`, `description`, `test` (+93 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **10 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **11 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **What connects `name`, `version`, `private` to the rest of the system?**
-  _89 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _98 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Структура файлов` be split into smaller, more focused modules?**
   _Cohesion score 0.125 - nodes in this community are weakly interconnected._
 - **Should `Структура файлов` be split into smaller, more focused modules?**
@@ -147,3 +167,5 @@ _Questions this graph is uniquely positioned to answer:_
   _Cohesion score 0.14285714285714285 - nodes in this community are weakly interconnected._
 - **Should `«Клинический компас» — HTML-интерфейсы врача и пациента (демо-прототип)` be split into smaller, more focused modules?**
   _Cohesion score 0.14285714285714285 - nodes in this community are weakly interconnected._
+- **Should `patient.js` be split into smaller, more focused modules?**
+  _Cohesion score 0.13333333333333333 - nodes in this community are weakly interconnected._

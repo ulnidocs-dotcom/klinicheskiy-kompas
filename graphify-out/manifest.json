@@ -30,8 +30,8 @@
     "semantic_hash": ""
   },
   "assets/store.js": {
-    "mtime": 1792425974.3156831,
-    "ast_hash": "59b76dab82a75b19302257ec92ec9f02",
+    "mtime": 1792427181.8997734,
+    "ast_hash": "68599fd61d6f6f1a4da50258c5315a64",
     "semantic_hash": ""
   },
   "assets/tg.js": {
@@ -45,8 +45,8 @@
     "semantic_hash": ""
   },
   "assets/ui.js": {
-    "mtime": 1792426431.60875,
-    "ast_hash": "b56129faf42d61bd85989669b47a4412",
+    "mtime": 1792427217.4305952,
+    "ast_hash": "ba75f917c3d5defdf834d735ff9235a4",
     "semantic_hash": ""
   },
   "data/drugs/aviandr.js": {
@@ -115,8 +115,8 @@
     "semantic_hash": ""
   },
   "tests/store.test.js": {
-    "mtime": 1792425952.916067,
-    "ast_hash": "05ef1940189e2d7b198dc097d5ed80ea",
+    "mtime": 1792427182.0107913,
+    "ast_hash": "0cf59481781211c43d7c636b36851e06",
     "semantic_hash": ""
   },
   "tests/therapy.test.js": {
@@ -125,8 +125,8 @@
     "semantic_hash": ""
   },
   "tests/ui.test.js": {
-    "mtime": 1792425992.336702,
-    "ast_hash": "8e97da62348b62f29fdf4c11f9b95c6f",
+    "mtime": 1792427217.4667706,
+    "ast_hash": "af4aacb12819ed151d921ad4879619f6",
     "semantic_hash": ""
   },
   "tools/serve.js": {
@@ -170,8 +170,8 @@
     "semantic_hash": ""
   },
   "assets/patient.js": {
-    "mtime": 1792426445.9765913,
-    "ast_hash": "58b8b8663209a34e1402f04cc8898f10",
+    "mtime": 1792427404.0388,
+    "ast_hash": "02de33ee50b6baac6107b3aa5e6eed25",
     "semantic_hash": ""
   },
   "data/materials.js": {
@@ -180,13 +180,13 @@
     "semantic_hash": ""
   },
   "patient/chat.js": {
-    "mtime": 1792426269.4933763,
-    "ast_hash": "856ad65cc03b4a746dcb5d1da367feed",
+    "mtime": 1792427421.721207,
+    "ast_hash": "27281b0810458b852074bec35a77ff64",
     "semantic_hash": ""
   },
   "patient/help.js": {
-    "mtime": 1792426275.513675,
-    "ast_hash": "daf2bc00da22aac4610af27d9a50a628",
+    "mtime": 1792427404.0388,
+    "ast_hash": "8f56824ee161a08a8423a691bb2777e3",
     "semantic_hash": ""
   },
   "patient/material.js": {
@@ -200,13 +200,13 @@
     "semantic_hash": ""
   },
   "patient/onboarding.js": {
-    "mtime": 1792426258.501168,
-    "ast_hash": "6b4590a6630db53f50698eb32a11d4c7",
+    "mtime": 1792427404.0468316,
+    "ast_hash": "b54ed5203dd15c24225418d3bfd251c3",
     "semantic_hash": ""
   },
   "patient/path.js": {
-    "mtime": 1792426431.6421404,
-    "ast_hash": "1f4dd7befbe302f4b7d704941d8b3491",
+    "mtime": 1792427404.0388,
+    "ast_hash": "245988b386d0fc94f1da6370fb3e2db3",
     "semantic_hash": ""
   },
   "patient/profile.js": {
@@ -215,8 +215,8 @@
     "semantic_hash": ""
   },
   "patient/scale.js": {
-    "mtime": 1792426269.4933763,
-    "ast_hash": "27d2d85647c53bfba4a707fc26667ee7",
+    "mtime": 1792427203.1342995,
+    "ast_hash": "ef1336d3fc8488a0d2bcc3294bcbe38c",
     "semantic_hash": ""
   },
   "patient/therapy.js": {
@@ -230,8 +230,8 @@
     "semantic_hash": ""
   },
   "tests/patient.test.js": {
-    "mtime": 1792426236.66237,
-    "ast_hash": "539349590d75621d7fb6ed7288ce32b7",
+    "mtime": 1792427421.865909,
+    "ast_hash": "188807f92ee298cacac155b71ba6b3cc",
     "semantic_hash": ""
   },
   "patient/_template.html": {
@@ -290,18 +290,18 @@
     "semantic_hash": ""
   },
   "assets/doctor.js": {
-    "mtime": 1792426514.5213544,
-    "ast_hash": "8d7094b8d01720644158d7838b525a9b",
+    "mtime": 1792427375.1926436,
+    "ast_hash": "21159ef4bdf6aae17076496d9283d966",
     "semantic_hash": ""
   },
   "doctor/alerts.js": {
-    "mtime": 1792426540.4614408,
-    "ast_hash": "47f989dbde35ba496780e6e091c2cc7f",
+    "mtime": 1792427375.1905725,
+    "ast_hash": "294ac4ab272fb49a518ac1d0a44106ae",
     "semantic_hash": ""
   },
   "doctor/assess.js": {
-    "mtime": 1792426567.196719,
-    "ast_hash": "803adde5827c7e8616b8c61a991eefc3",
+    "mtime": 1792427255.0251982,
+    "ast_hash": "3dfcb8a56fc5e72ee59f53310e0db013",
     "semantic_hash": ""
   },
   "doctor/import.js": {
@@ -310,8 +310,8 @@
     "semantic_hash": ""
   },
   "doctor/index.js": {
-    "mtime": 1792426591.5637994,
-    "ast_hash": "db45ceae02a2ad56b0854798f3737e06",
+    "mtime": 1792427375.1894753,
+    "ast_hash": "a73c424e96e525b941b6ee3e57f07e16",
     "semantic_hash": ""
   },
   "doctor/materials.js": {
@@ -320,8 +320,8 @@
     "semantic_hash": ""
   },
   "doctor/messages.js": {
-    "mtime": 1792426567.1972268,
-    "ast_hash": "0eb29ce3238c687a7c4b5bf49c8279a1",
+    "mtime": 1792427375.1894753,
+    "ast_hash": "a04d73ec60114028290c9de6cbac922b",
     "semantic_hash": ""
   },
   "doctor/patient.js": {
@@ -330,23 +330,23 @@
     "semantic_hash": ""
   },
   "doctor/profile.js": {
-    "mtime": 1792426540.8343217,
-    "ast_hash": "568660227f7ed31f5b3448448cf06f61",
+    "mtime": 1792427375.1910794,
+    "ast_hash": "ebd13707f4445444de1a5f6f5f73b4bc",
     "semantic_hash": ""
   },
   "doctor/routing.js": {
-    "mtime": 1792426540.3654425,
-    "ast_hash": "11937365b5e173b910fc49fa704a4ead",
+    "mtime": 1792427386.0344357,
+    "ast_hash": "f1e45c775208340b583edccc2e928402",
     "semantic_hash": ""
   },
   "doctor/therapy.js": {
-    "mtime": 1792426567.1972268,
-    "ast_hash": "fc49a81893ea4a07703eac300ddd3d73",
+    "mtime": 1792427338.6730359,
+    "ast_hash": "334aff0c0193948a310b0f508e903e7d",
     "semantic_hash": ""
   },
   "tests/doctor.test.js": {
-    "mtime": 1792426503.7952101,
-    "ast_hash": "15dfea1a1f0432c1c08d3ae7dbf9716c",
+    "mtime": 1792427376.1591651,
+    "ast_hash": "9fd65c949a0e52affcd64481a2cb65f4",
     "semantic_hash": ""
   },
   "README.md": {
