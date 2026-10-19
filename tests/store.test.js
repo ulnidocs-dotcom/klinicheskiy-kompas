@@ -121,3 +121,65 @@ test('I4: importing text without COVID keeps postCovid', () => {
   assert.equal(p.postCovid, true);
   assert.equal(p.therapy.indicated, true);
 });
+
+const mkClock = () => {
+  let t = NOW.getTime();
+  const clock = () => new Date(t);
+  clock.advance = (min) => { t += min * 60000; };
+  return clock;
+};
+
+test('I2: acknowledged SOS does not re-fire on unrelated events; new SOS does', () => {
+  const clock = mkClock();
+  const s = KK.createStore({ storage: memStorage(), clock }); s.reset();
+  clock.advance(5); s.addEvent('p_anna', 'sos', {});
+  const [a] = s.alerts({ patientId: 'p_anna', open: true }).filter((x) => x.ruleId === 'sos');
+  s.ackAlert(a.id, 'Позвонил');
+  clock.advance(5); s.addEvent('p_anna', 'dose', { slot: 'утро', taken: true });
+  assert.equal(s.alerts({ patientId: 'p_anna', open: true }).filter((x) => x.ruleId === 'sos').length, 0);
+  clock.advance(5); s.addEvent('p_anna', 'sos', {});
+  assert.equal(s.alerts({ patientId: 'p_anna', open: true }).filter((x) => x.ruleId === 'sos').length, 1);
+});
+
+test('I2: acknowledged PHQ-9 item 9 alert re-fires only on a new positive PHQ-9', () => {
+  const clock = mkClock();
+  const s = KK.createStore({ storage: memStorage(), clock }); s.reset();
+  const open = () => s.alerts({ patientId: 'p_anna', open: true }).filter((x) => x.ruleId === 'si_phq9');
+  clock.advance(5); s.addEvent('p_anna', 'scale', { scaleId: 'phq9', answers: [1, 1, 1, 1, 1, 1, 1, 1, 1] });
+  assert.equal(open().length, 1);
+  s.ackAlert(open()[0].id, 'Оценил риск');
+  clock.advance(5); s.addEvent('p_anna', 'checkin', { mood: 3, anxiety: 2, sleep: 3 });
+  assert.equal(open().length, 0);
+  clock.advance(5); s.addEvent('p_anna', 'scale', { scaleId: 'phq9', answers: [1, 1, 1, 1, 1, 1, 1, 1, 2] });
+  assert.equal(open().length, 1);
+});
+
+test('I3: two tabs on one storage — stale writer does not lose the other tab\'s changes', () => {
+  const storage = memStorage();
+  const A = KK.createStore({ storage, clock: () => NOW }); A.reset();
+  const B = KK.createStore({ storage, clock: () => NOW });
+  A.addEvent('p_anna', 'sos', {});
+  B.sendMessage('p_anna', 'patient', 'Привет');
+  const C = KK.createStore({ storage, clock: () => NOW });
+  assert.ok(C.events('p_anna', 'sos').length === 1);
+  assert.equal(C.messages('p_anna').at(-1).text, 'Привет');
+  A.sendMessage('p_anna', 'doctor', 'Ответ');
+  assert.equal(B.messages('p_anna').length, 2);
+  assert.equal(B.patient('p_anna').openAlerts.filter((x) => x.ruleId === 'sos').length, 1);
+});
+
+test('confirm guards: no plan → clear error; change_plan cannot set status; cancel clears offLabel', () => {
+  const s = mk();
+  s.confirm('p_anna', 'change_plan', { patch: { status: 'confirmed', confirmedAt: '2026-01-01T00:00:00Z', timesPerDay: 1 } });
+  const p = s.patient('p_anna');
+  assert.equal(p.plan.status, 'proposed');
+  assert.equal(p.plan.confirmedAt, undefined);
+  assert.equal(p.plan.timesPerDay, 1);
+  s.confirm('p_galina', 'off_label', { reason: 'решение врача' });
+  s.confirm('p_galina', 'cancel_plan', {});
+  assert.equal(s.patient('p_galina').plan.offLabel, undefined);
+  const storage = memStorage();
+  const t = KK.createStore({ storage, clock: () => NOW }); t.reset();
+  const db = JSON.parse(storage.getItem('kk:v1')); delete db.patients.p_anna.plan; storage.setItem('kk:v1', JSON.stringify(db));
+  assert.throws(() => t.confirm('p_anna', 'confirm_plan', {}), /нет плана|no plan/i);
+});

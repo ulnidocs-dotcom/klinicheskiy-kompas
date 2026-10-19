@@ -3,6 +3,15 @@
   const KEY = 'kk:v1';
   const LEVEL_RANK = { critical: 0, important: 1, info: 2 };
   const ROUTING_RANK = { required: 0, desirable: 1 };
+  const PROFILE_KEYS = ['age', 'sex', 'pregnant', 'lactating', 'postCovid', 'labs', 'meds', 'allergies', 'conditions', 'diagnoses', 'history', 'plan', 'maoiStoppedDaysAgo'];
+  function hash(str) {
+    let h = 5381;
+    for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) | 0;
+    return (h >>> 0).toString(36);
+  }
+  // Сигнал без события-основания (противопоказание, анамнез, взаимодействие) идентифицируется профилем пациента.
+  const profileHash = (p) => hash(JSON.stringify(PROFILE_KEYS.map((k) => p[k] ?? null)));
+  const PLAN_LOCKED = ['status', 'confirmedAt', 'cancelledAt', 'offLabel'];
 
   function createStore({ storage, clock }) {
     const listeners = new Set();
@@ -10,7 +19,15 @@
     const read = () => { try { return JSON.parse(storage.getItem(KEY)) || null; } catch (e) { return null; } };
     let db = read();
     const write = () => { storage.setItem(KEY, JSON.stringify(db)); listeners.forEach((fn) => fn()); };
-    const need = () => { if (!db) reset(); return db; };
+    // Перед каждой операцией перечитываем хранилище: другая вкладка могла записать свежие данные.
+    const need = () => { db = read() || db; if (!db) reset(); return db; };
+    if (typeof g.addEventListener === 'function') {
+      g.addEventListener('storage', (e) => {
+        if (e.key !== KEY) return;
+        db = read() || db;
+        listeners.forEach((fn) => fn());
+      });
+    }
 
     function reset() {
       const now = nowIso();
@@ -33,13 +50,19 @@
       return KK.rules.evaluate(KK.rules.buildContext(p, db.events[id] || [], nowIso()));
     }
 
+    // Отпечаток = правило + основание (время события-триггера или профиль пациента).
+    // Подтверждённый алерт не поднимается заново, пока не появится новое основание.
     function syncAlerts(id, dataAt) {
+      const p = db.patients[id];
       for (const s of signalsFor(id)) {
         if (s.level === 'info') continue;
-        const open = db.alerts.find((a) => a.patientId === id && a.ruleId === s.ruleId && !a.ackAt);
-        if (open) continue;
+        const fingerprint = `${s.ruleId}|${s.error ? 'error|' : ''}${s.basis || 'profile:' + profileHash(p)}`;
+        const exists = db.alerts.some((a) => a.patientId === id && a.ruleId === s.ruleId &&
+          (a.fingerprint ? a.fingerprint === fingerprint : !a.ackAt));
+        if (exists) continue;
         db.alerts.push({ id: KK.util.uid('al'), patientId: id, ruleId: s.ruleId, level: s.level, routing: s.routing,
-          title: s.title, text: s.text, source: s.source, dataAt, createdAt: nowIso(), deliveredAt: null, ackAt: null, ackAction: null });
+          title: s.title, text: s.text, source: s.source, fingerprint, error: !!s.error, dataAt,
+          createdAt: nowIso(), deliveredAt: null, ackAt: null, ackAction: null });
       }
     }
 
@@ -117,6 +140,9 @@
         need();
         const p = db.patients[patientId];
         if (!p) throw new Error(`Unknown patient ${patientId}`);
+        if (['confirm_plan', 'off_label', 'cancel_plan', 'change_plan'].includes(action) && !p.plan) {
+          throw new Error(`У пациента нет плана терапии (no plan): действие ${action} невозможно`);
+        }
         if (action === 'confirm_plan') {
           const v = view(patientId);
           if (v.therapy?.eligible === false && !p.plan.offLabel) {
@@ -127,8 +153,12 @@
           p.plan.offLabel = { at: nowIso(), reason: details.reason || '' };
         } else if (action === 'cancel_plan') {
           p.plan.status = 'cancelled'; p.plan.cancelledAt = nowIso();
+          delete p.plan.offLabel;
         } else if (action === 'change_plan') {
-          Object.assign(p.plan, details.patch || {});
+          // Статус и решения врача меняются только своими действиями (confirm_plan / off_label / cancel_plan).
+          const patch = Object.assign({}, details.patch || {});
+          PLAN_LOCKED.forEach((k) => delete patch[k]);
+          Object.assign(p.plan, patch);
         } else if (action === 'confirm_routing') {
           p.routingConfirmed = { at: nowIso(), level: details.level, to: details.to || 'психиатр', note: details.note || '' };
         } else {
@@ -161,9 +191,7 @@
       },
       subscribe(fn) {
         listeners.add(fn);
-        const onStorage = (e) => { if (e.key === KEY) { db = read(); fn(); } };
-        if (typeof g.addEventListener === 'function') g.addEventListener('storage', onStorage);
-        return () => { listeners.delete(fn); if (typeof g.removeEventListener === 'function') g.removeEventListener('storage', onStorage); };
+        return () => { listeners.delete(fn); };
       },
     };
     return api;
