@@ -42,7 +42,10 @@
       <td>${badge(p)}</td>
       <td><a class="btn" href="patient/index.html?p=${p.id}">Как пациент</a></td></tr>`).join('');
   }
-  document.getElementById('reset').onclick = () => { s.reset(); render(); };
+  document.getElementById('reset').onclick = () => {
+    try { Object.keys(localStorage).filter((k) => k.startsWith('kk:linked:') || k.startsWith('kk:prefs:')).forEach((k) => localStorage.removeItem(k)); } catch (e) { /* приватный режим */ }
+    s.reset(); render();
+  };
   s.subscribe(render);
   render();
 </script>

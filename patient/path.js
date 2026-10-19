@@ -30,7 +30,7 @@
       </div>
       <div class="stack">
         <section class="card stack"><p class="q-title">Настроение и сон</p>
-          ${ui.lineChart(series, { max: 5, ticks: false, h: 150, ariaLabel: 'Настроение и сон по дням' })}
+          ${ui.lineChart(series, { max: 5, ticks: false, w: 320, h: 140, ariaLabel: 'Настроение и сон по дням' })}
           <div class="row hint"><span style="color:var(--chart)">●</span>Настроение<span style="color:var(--chart-2)">●</span>Сон</div>
           <p>${ui.esc(app.checkinSummary(checkins))}</p></section>
         ${confirmed ? `<section class="card stack"><p class="q-title">Приём лекарства</p><div class="cal" aria-label="Дни с отметкой приёма за 2 недели">${cal}</div>

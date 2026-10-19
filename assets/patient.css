@@ -36,3 +36,8 @@
 .help-call b{display:block}
 .check{display:flex;gap:12px;align-items:flex-start;padding:10px 0}
 .check input{width:22px;height:22px;margin-top:2px;accent-color:var(--accent)}
+.tabbar a.tab-help{color:var(--help)}
+.help-fab--top{top:12px;bottom:auto;right:12px;padding:6px 12px;min-height:36px;font-size:.85em;background:var(--help-tint)}
+.check input{flex:none}
+.help-call svg{flex:none}
+@media (prefers-reduced-motion:reduce){.breath{transition:none!important;transform:none!important}}

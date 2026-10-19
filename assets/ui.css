@@ -18,7 +18,7 @@ a{color:var(--accent-strong)}
 .card--tint{background:var(--accent-tint)}
 .card--help{background:var(--help-tint);color:var(--text)}
 
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:var(--tap);padding:0 18px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--text);font:inherit;font-weight:500;cursor:pointer;transition:background var(--dur)}
+.btn{text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:var(--tap);padding:0 18px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--text);font:inherit;font-weight:500;cursor:pointer;transition:background var(--dur)}
 .btn:hover{background:var(--surface-2)}
 .btn--primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 .btn--primary:hover{background:var(--accent-strong)}

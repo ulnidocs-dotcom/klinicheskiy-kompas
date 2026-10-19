@@ -32,8 +32,9 @@
       if (requireLink && !app.linked(pid)) { location.replace(`onboarding.html?p=${pid}`); return null; }
       const shell = document.getElementById('shell');
       const nav = tab ? `<div class="tabbar"><nav aria-label="Разделы">${TABS.map((t) =>
-        `<a href="${t.href}" ${t.id === tab ? 'aria-current="page"' : ''}>${KK.ui.icon(t.icon)}<span>${t.label}</span></a>`).join('')}</nav></div>` : '';
-      const fab = help ? `<a class="help-fab" href="help.html">${KK.ui.icon('heart', 18)}<span>Мне тяжело</span></a>` : '';
+        `<a href="${t.href}" ${t.id === tab ? 'aria-current="page"' : ''}>${KK.ui.icon(t.icon)}<span>${t.label}</span></a>`).join('')}${help ? `<a class="tab-help" href="help.html">${KK.ui.icon('heart')}<span>Помощь</span></a>` : ''}</nav></div>` : '';
+      // Без таб-бара помощь — компактная кнопка в правом верхнем углу, чтобы не перекрывать текст.
+      const fab = help && !tab ? `<a class="help-fab help-fab--top" href="help.html">${KK.ui.icon('heart', 16)}<span>Мне тяжело</span></a>` : '';
       if (shell) shell.innerHTML = nav + fab;
       if (back) KK.tg.backButton(() => { location.href = back; });
       return { pid, patient: () => KK.store.patient(pid) };
