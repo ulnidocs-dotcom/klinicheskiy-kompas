@@ -59,7 +59,70 @@ test('spans returned for highlighting', () => {
 test('Cyrillic word boundaries: hypertension, breastfeeding, "пациент" vs "пациентка"', () => {
   const r = parser.extract('Пациент 45 лет. Гипертоническая болезнь II ст.');
   assert.ok(r.conditions.includes('cvd'));
-  assert.equal(r.sex, 'm');
+  assert.equal(r.sex, undefined);
   assert.equal(r.age, 45);
   assert.equal(parser.extract('Пациентка на грудном вскармливании').lactating, true);
+});
+
+// --- review fixes ---
+test('C1: «пациент» alone does not set sex', () => {
+  assert.equal(parser.extract('Пациент 34 года, беременность 10 недель.').sex, undefined);
+  assert.equal(parser.extract('Пациент 34 года, беременность 10 недель.').pregnant, true);
+  assert.equal(parser.extract('Женщина 50 лет').sex, 'f');
+  assert.equal(parser.extract('Пол: жен.').sex, 'f');
+});
+
+test('C2: age ignores years and durations', () => {
+  assert.equal(parser.extract('Болеет с 2021 года. Пациентка 17 лет.').age, 17);
+  assert.equal(parser.extract('Беспокоит в течение 3 лет. Пациентка 34 года.').age, 34);
+  assert.equal(parser.extract('Тревога около 2 лет. Женщина 45 лет.').age, 45);
+  assert.equal(parser.extract('Впервые 5 лет назад. Мужчина 40 лет.').age, 40);
+  assert.equal(parser.extract('Возраст: 58').age, 58);
+});
+
+test('C3: eGFR skips formula year, accepts plausible range', () => {
+  assert.equal(parser.extract('СКФ (CKD-EPI 2021) 45 мл/мин').labs.egfr, 45);
+  assert.equal(parser.extract('СКФ 2021').labs.egfr, undefined);
+  assert.equal(parser.extract('СКФ 8 мл/мин').labs.egfr, 8);
+});
+
+test('I1: Child-Pugh in Cyrillic and with "класс/class"', () => {
+  assert.equal(parser.extract('Цирроз, Чайлд-Пью А').labs.childPugh, 'A');
+  assert.equal(parser.extract('Цирроз, Чайлд-Пью В.').labs.childPugh, 'B');
+  assert.equal(parser.extract('Child-Pugh класс B').labs.childPugh, 'B');
+  assert.equal(parser.extract('Child-Pugh class C').labs.childPugh, 'C');
+});
+
+test('I4: postCovid left undefined when not mentioned', () => {
+  assert.equal(parser.extract('СКФ 90').postCovid, undefined);
+  assert.equal(parser.extract('После COVID-19').postCovid, true);
+});
+
+test('I6: negation forms', () => {
+  assert.equal(parser.extract('Отрицает беременность').pregnant, false);
+  assert.equal(parser.extract('Беременность: нет').pregnant, false);
+  assert.equal(parser.extract('Нет беременности').pregnant, false);
+  assert.equal(parser.extract('Беременность не исключена').pregnant, true);
+  assert.ok(!parser.extract('Эпилепсия — нет').conditions.includes('epilepsy'));
+  assert.ok(!parser.extract('Без эпилепсии в анамнезе').conditions.includes('epilepsy'));
+  assert.ok(!parser.extract('Эпилепсия не выявлена').conditions.includes('epilepsy'));
+  const r = parser.extract('Органическое поражение ЦНС исключено. Психотических симптомов нет.');
+  assert.ok(!r.conditions.includes('organic_brain'));
+  assert.ok(!r.history?.psychotic);
+  assert.ok(parser.extract('Органическое поражение головного мозга').conditions.includes('organic_brain'));
+  assert.ok(parser.extract('Органическое поражение ЦНС').conditions.includes('organic_brain'));
+  assert.ok(!parser.extract('Биполярное расстройство отрицает').history?.bipolar);
+  assert.ok(!parser.extract('ИБС — нет').conditions.includes('cvd'));
+  assert.equal(parser.extract('Лактация: нет').lactating, false);
+  assert.ok(parser.extract('Эпилепсия с детства').conditions.includes('epilepsy'));
+});
+
+test('meds: longest match wins, cancelled meds skipped', () => {
+  assert.deepEqual(parser.extract('Эсциталопрам 10 мг').meds.map((m) => m.name), ['Эсциталопрам']);
+  assert.deepEqual(parser.extract('Сертралин отменён месяц назад. Принимает феназепам.').meds.map((m) => m.name), ['Феназепам']);
+});
+
+test('ICD: B12 vitamin is not a diagnosis; dotted and chapter codes are', () => {
+  assert.deepEqual(parser.extract('Витамин B12 в норме').diagnoses, []);
+  assert.deepEqual(parser.extract('F32 и I10, A15.0').diagnoses.map((d) => d.code), ['F32', 'I10', 'A15.0']);
 });

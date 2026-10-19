@@ -107,3 +107,17 @@ test('importParsed merges labs and meds with audit', () => {
   assert.ok(p.meds.some((m) => m.name === 'Трамадол'));
   assert.equal(s.audit('p_anna').at(-1).action, 'import_history');
 });
+
+test('C1: imported "Пациент ... беременность" makes therapy ineligible', () => {
+  const s = mk();
+  s.importParsed('p_anna', KK.parser.extract('Пациент 34 года, беременность 10 недель.'));
+  assert.equal(s.patient('p_anna').therapy.eligible, false);
+});
+
+test('I4: importing text without COVID keeps postCovid', () => {
+  const s = mk();
+  s.importParsed('p_olga', KK.parser.extract('СКФ 90'));
+  const p = s.patient('p_olga');
+  assert.equal(p.postCovid, true);
+  assert.equal(p.therapy.indicated, true);
+});
