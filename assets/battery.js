@@ -90,6 +90,9 @@
     return { pairs, close: pairs.filter((p) => p.rho >= 0.6), note };
   }
 
+  // Обязательный маршрут к психиатру по C-SSRS или анкете (психотические/маниакальные признаки):
+  // понижение допустимо, но с развёрнутой причиной, флагом в аудите и уведомлением врача.
+  const mandatoryHard = (route) => !!(route && route.reasons.some((r) => r.level === 'psychiatrist_required' && (r.kind === 'cssrs' || r.kind === 'form')));
   const levelLabel = (l) => (l && KK.data.intake.levels[l] ? KK.data.intake.levels[l].label : NO_DATA);
 
   // intake: { form: ответы анкеты, cssrs: результат KK.scales.score('cssrs') или массив ответов, dass: ответы/результат DASS-21 }
@@ -112,13 +115,14 @@
     if (!dass || !dass.complete) missing.push('dass21');
 
     const reasons = [];
-    const add = (level, text, source) => reasons.push({ level, text, source, teamRule: true, note });
+    // kind — основание: 'cssrs' | 'dass' | 'form' (для правила «понижение обязательного маршрута»).
+    const add = (level, text, source, kind = 'dass') => reasons.push({ level, text, source, teamRule: true, note, kind });
     // Обязательно к психиатру
-    if (cssrsCode === 'moderate' || cssrsCode === 'high') add('psychiatrist_required', `C-SSRS: ${cssrsBand.doctorLabel}`, `${src.cssrs}; правило команды`);
+    if (cssrsCode === 'moderate' || cssrsCode === 'high') add('psychiatrist_required', `C-SSRS: ${cssrsBand.doctorLabel}`, `${src.cssrs}; правило команды`, 'cssrs');
     if (sc('depression') != null && sc('depression') >= 21) add('psychiatrist_required', `DASS-21 Депрессия = ${sc('depression')} (≥ 21, ${sub('depression').label})`, src.dass);
     if (sc('anxiety') != null && sc('anxiety') >= 15) add('psychiatrist_required', `DASS-21 Тревога = ${sc('anxiety')} (≥ 15, ${sub('anxiety').label})`, src.dass);
-    if (form && form.psychotic === true) add('psychiatrist_required', 'Анкета: пациент отмечает, что видел(а) или слышал(а) то, чего не видят другие', `${src.history}; правило команды`);
-    if (form && form.mania === true) add('psychiatrist_required', 'Анкета: периоды очень приподнятого настроения с малой потребностью во сне', `${src.history}; правило команды`);
+    if (form && form.psychotic === true) add('psychiatrist_required', 'Анкета: пациент отмечает, что видел(а) или слышал(а) то, чего не видят другие', `${src.history}; правило команды`, 'form');
+    if (form && form.mania === true) add('psychiatrist_required', 'Анкета: периоды очень приподнятого настроения с малой потребностью во сне', `${src.history}; правило команды`, 'form');
     // Психотерапия — желательно
     const MOD = { depression: [14, 20], anxiety: [10, 14], stress: [19, 25] };
     for (const k of DASS_KEYS) {
@@ -132,8 +136,11 @@
       const v = sc(k);
       if (v != null && v >= MILD[k][0] && v <= MILD[k][1]) add('consultation', `DASS-21 ${sub(k).title} = ${v} (${sub(k).label})`, src.dass);
     }
+    // Пассивные мысли о смерти (C-SSRS «низкий») — не ниже консультирования.
+    if (cssrsCode === 'low') add('consultation', 'Пассивные мысли о смерти (C-SSRS) — обсудить на встрече', `${src.cssrs}; правило команды`, 'cssrs');
     let level = LEVEL_ORDER.find((l) => reasons.some((r) => r.level === l)) || null;
-    if (!level && dass && dass.complete) {
+    // «Наблюдение» — только когда все обязательные части есть (анкета, C-SSRS, DASS-21).
+    if (!level && !missing.length) {
       level = 'observation';
       add('observation', 'DASS-21: все три подшкалы в пределах нормы', src.dass);
     }
@@ -150,5 +157,5 @@
     return { level, reasons, discrepancies, missing, critical: cssrsCode === 'moderate' || cssrsCode === 'high', dass };
   }
 
-  KK.battery = { NO_DATA, LEVEL_ORDER, BAND_LABELS, dassBand, scoreDass, scoreTipi, spearman, ctoSimilarity, routeIntake, levelLabel };
+  KK.battery = { mandatoryHard, NO_DATA, LEVEL_ORDER, BAND_LABELS, dassBand, scoreDass, scoreTipi, spearman, ctoSimilarity, routeIntake, levelLabel };
 })(typeof window !== 'undefined' ? window : globalThis);

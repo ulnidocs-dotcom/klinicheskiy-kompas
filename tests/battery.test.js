@@ -189,7 +189,7 @@ test('routeIntake: psychiatrist required — DASS D ≥ 21, A ≥ 15, C-SSRS mod
   assert.equal(B.routeIntake(intake({ dass: dass(0, 8, 0) })).level, 'psychiatrist_required'); // Т 16
   assert.equal(B.routeIntake(intake({ cssrs: cs([1, 1, 1, 0, 0, 0]) })).level, 'psychiatrist_required');
   assert.equal(B.routeIntake(intake({ cssrs: cs([1, 1, 1, 1, 0, 0]) })).level, 'psychiatrist_required');
-  assert.equal(B.routeIntake(intake({ cssrs: cs([1, 0, null, null, null, 0]) })).level, 'observation'); // низкий риск сам по себе
+  assert.equal(B.routeIntake(intake({ cssrs: cs([1, 0, null, null, null, 0]) })).level, 'consultation'); // низкий риск — не ниже консультирования (ревью)
   assert.equal(B.routeIntake(intake({ form: Object.assign({}, NO, { psychotic: true }) })).level, 'psychiatrist_required');
   assert.equal(B.routeIntake(intake({ form: Object.assign({}, NO, { mania: true }) })).level, 'psychiatrist_required');
 });

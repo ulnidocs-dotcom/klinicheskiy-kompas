@@ -20,6 +20,8 @@
   const INTAKE_SCALES = { cssrs: 'cssrs', tipi: 'tipi10', dass: 'dass21' };
   const INTAKE_REQUIRED = ['form', 'cssrs', 'tipi', 'dass'];
   const INTAKE_LEVELS = ['psychiatrist_required', 'psychotherapy_desirable', 'consultation', 'observation'];
+  const DRAFT_PREFIX = 'kk:intake-draft:';
+  const levelText = (l) => (KK.data.intake && KK.data.intake.levels[l] ? KK.data.intake.levels[l].label : l);
 
   function createStore({ storage, clock }) {
     const listeners = new Set();
@@ -46,7 +48,18 @@
       syncAlerts(p.id, db.events[p.id].at(-1)?.at || now);
     }
 
+    // Черновики первичной беседы на этом устройстве (kk:intake-draft:*) — сбрасываются вместе с демо.
+    function clearDrafts() {
+      try {
+        if (typeof storage.key !== 'function') return;
+        const ks = [];
+        for (let i = 0; i < storage.length; i++) { const k = storage.key(i); if (k && k.startsWith(DRAFT_PREFIX)) ks.push(k); }
+        ks.forEach((k) => storage.removeItem(k));
+      } catch (e) { /* приватный режим */ }
+    }
+
     function reset() {
+      clearDrafts();
       const now = nowIso();
       db = { version: VERSION, createdAt: now, activePatientId: 'p_anna',
         doctor: { id: 'd1', name: 'Елена Иванова', specialty: 'терапевт', mode: 'nonPsychiatrist' },
@@ -91,7 +104,7 @@
           (a.fingerprint ? a.fingerprint === fingerprint : !a.ackAt));
         if (exists) continue;
         db.alerts.push({ id: KK.util.uid('al'), patientId: id, ruleId: s.ruleId, level: s.level, routing: s.routing,
-          title: s.title, text: s.text, source: s.source, fingerprint, error: !!s.error, dataAt,
+          title: s.title, text: s.text, source: s.source, origin: s.origin || null, fingerprint, error: !!s.error, dataAt,
           createdAt: nowIso(), deliveredAt: null, ackAt: null, ackAction: null });
       }
     }
@@ -103,12 +116,20 @@
       const ev = db.events[id] || [];
       const ctx = KK.rules.buildContext(p, ev, nowIso());
       return Object.assign(JSON.parse(JSON.stringify(p)), {
-        signals, routing: KK.rules.routing(signals),
+        // Решение психолога «психиатр — обязательно» поднимает маршрутизацию и срочность в очереди врача.
+        signals, routing: p.intake?.decision?.level === 'psychiatrist_required' ? 'required' : KK.rules.routing(signals),
         openAlerts: db.alerts.filter((a) => a.patientId === id && !a.ackAt),
         therapy: ctx.therapy, pdc14: ctx.pdc14, missedStreak: ctx.missedStreak, intakeStatus: intakeStatus(id),
-        latest: { phq9: ctx.latest('phq9'), gad7: ctx.latest('gad7'), cssrs: ctx.latest('cssrs') },
+        // C-SSRS врача и самоотчёт первичного приёма — раздельно; риск в правилах — максимум из двух.
+        latest: { phq9: ctx.latest('phq9'), gad7: ctx.latest('gad7'), cssrs: cssrsOf(ev, false), cssrsIntake: cssrsOf(ev, true) },
+        intakeRoute: p.intake?.decision?.level || null,
         lastActivityAt: ev.at(-1)?.at || null,
       });
+    }
+
+    function cssrsOf(ev, intake) {
+      const e = ev.filter((x) => x.type === 'scale' && x.payload.scaleId === 'cssrs' && (x.payload.context === 'intake') === intake).at(-1);
+      return e ? Object.assign({ at: e.at }, e.payload) : null;
     }
 
     function urgency(v) {
@@ -224,12 +245,19 @@
         need(); const a = db.alerts.find((x) => x.id === alertId);
         if (a && !a.deliveredAt) { a.deliveredAt = nowIso(); write(); }
       },
+      // Подтверждение — по ролям (ackBy.doctor / ackBy.psy). ackAt/deliveredAt — только врач:
+      // подтверждение психологом не закрывает алерт для врача и не отменяет его окно.
       ackAlert(alertId, action, actor) {
         need(); const a = db.alerts.find((x) => x.id === alertId);
         if (!a) return;
-        a.ackAt = nowIso(); a.ackAction = action || 'Просмотрено';
-        if (!a.deliveredAt) a.deliveredAt = a.ackAt;
-        audit(a.patientId, 'ack_alert', { alertId, ruleId: a.ruleId, action: a.ackAction }, actor);
+        const role = actor && actor === (db.psychologist || PSYCHOLOGIST).id ? 'psy' : 'doctor';
+        const at = nowIso(), act = action || 'Просмотрено';
+        a.ackBy = Object.assign({}, a.ackBy, { [role]: { at, action: act } });
+        if (role === 'doctor') {
+          a.ackAt = at; a.ackAction = act;
+          if (!a.deliveredAt) a.deliveredAt = at;
+        }
+        audit(a.patientId, 'ack_alert', { alertId, ruleId: a.ruleId, action: act, role }, actor);
         write();
       },
       confirm(patientId, action, details = {}) {
@@ -275,13 +303,15 @@
           at: Object.fromEntries(Object.entries(parts).map(([k, e]) => [k, e ? e.at : null])) };
       },
       // Пациент завершил батарею: нужны анкета, C-SSRS, TIPI-10 и DASS-21 (ЦТО — по желанию).
-      completeIntake(id) {
+      // opts.cto — результат ЦТО (или { skipped: true }): записывается только после проверки, чтобы повтор не дублировал.
+      completeIntake(id, { cto } = {}) {
         need();
         if (!has(id) || !db.patients[id].intake) throw new Error(`У пациента ${id} нет назначенного первичного приёма`);
-        const parts = intakeParts(id);
+        let parts = intakeParts(id);
         const lack = INTAKE_REQUIRED.filter((k) => !parts[k]);
         if (lack.length) throw new Error(`Части батареи не заполнены: ${lack.join(', ')}`);
         const p = db.patients[id];
+        if (cto && !p.intake.completedAt) { pushEvent(id, 'cto', cto); parts = intakeParts(id); }
         if (!p.intake.completedAt) p.intake.completedAt = nowIso();
         audit(id, 'intake_completed', { cto: !!parts.cto && !parts.cto.payload.skipped }, id);
         write();
@@ -294,12 +324,28 @@
         if (!p.intake.completedAt) throw new Error('Батарея не завершена пациентом: решение пока невозможно');
         if (!INTAKE_LEVELS.includes(level)) throw new Error(`Неизвестный уровень маршрута: ${level}`);
         const text = String(note || '').trim().slice(0, 2000);
-        const overridden = !!proposed && level !== proposed;
-        if (overridden && !text) throw new Error('Изменение предложенного маршрута требует причины');
+        // Предложение пересчитывается по данным (если движок батареи загружен), а не берётся на веру у вызывающего.
+        const parts = intakeParts(id);
+        const route = KK.battery ? KK.battery.routeIntake({ form: parts.form?.payload || null, cssrs: parts.cssrs?.payload || null, dass: parts.dass?.payload || null }) : null;
+        if (route) proposed = route.level;
+        // Нет предложения или решение отличается от него — нужна причина.
+        const overridden = level !== proposed;
+        if (overridden && !text) throw new Error(proposed ? 'Изменение предложенного маршрута требует причины' : 'Маршрут не предложен системой: укажите причину решения');
+        const downgrade = !!route && proposed === 'psychiatrist_required' && level !== 'psychiatrist_required' && KK.battery.mandatoryHard(route);
+        if (downgrade && text.length < 20) throw new Error('Понижение обязательного маршрута к психиатру (C-SSRS или анкета): причина не короче 20 символов');
         const psy = db.psychologist || PSYCHOLOGIST; // не api.psychologist(): need() перечитал бы db и p устарел бы
-        p.intake.decision = { at: nowIso(), level, proposed, overridden, note: text, by: psy.id };
-        pushEvent(id, 'intake_decision', { level, proposed, overridden, note: text });
-        audit(id, 'intake_decision', { level, proposed, overridden, note: text }, psy.id);
+        const prev = p.intake.decision;
+        p.intake.decision = { at: nowIso(), level, proposed, overridden, note: text, by: psy.id, revision: prev ? (prev.revision || 1) + 1 : 1 };
+        if (downgrade) p.intake.decision.downgradeMandatory = true;
+        // Сменился маршрут после передачи врачу — передача устарела (история сохраняется), можно передать снова.
+        if (p.intake.handoff && p.intake.handoff.level !== level) p.intake.handoff.outdated = true;
+        pushEvent(id, 'intake_decision', { level, proposed, overridden, note: text, downgrade_mandatory: downgrade });
+        audit(id, 'intake_decision', { level, proposed, overridden, note: text, downgrade_mandatory: downgrade }, psy.id);
+        if (downgrade) {
+          const why = route.reasons.filter((r) => r.level === 'psychiatrist_required').map((r) => r.text).join('; ');
+          (db.inbox = db.inbox || []).push({ id: KK.util.uid('in'), at: nowIso(), from: psy.id, fromName: psy.name, to: p.doctorId || db.doctor.id, patientId: id, kind: 'downgrade',
+            text: `Психолог изменил обязательный маршрут к психиатру на «${levelText(level)}». Основания предложения: ${why}. Причина: ${text}` });
+        }
         write();
       },
       // «Передать лечащему врачу»: сообщение во входящие врача + отметка в первичном приёме.
@@ -310,14 +356,19 @@
         if (!p.intake || !p.intake.decision) throw new Error('Сначала примите решение по маршруту');
         const psy = db.psychologist || PSYCHOLOGIST; // не api.psychologist(): need() перечитал бы db и p устарел бы
         const body = String(text || '').slice(0, 4000);
-        const m = { id: KK.util.uid('in'), at: nowIso(), from: psy.id, fromName: psy.name, to: p.doctorId || db.doctor.id, patientId: id, text: body };
+        const m = { id: KK.util.uid('in'), at: nowIso(), from: psy.id, fromName: psy.name, to: p.doctorId || db.doctor.id, patientId: id, kind: 'handoff', text: body };
         (db.inbox = db.inbox || []).push(m);
-        p.intake.handoff = { at: m.at, text: body, to: m.to };
+        if (p.intake.handoff) (p.intake.handoffHistory = p.intake.handoffHistory || []).push(p.intake.handoff);
+        p.intake.handoff = { at: m.at, text: body, to: m.to, level: p.intake.decision.level };
         audit(id, 'intake_handoff', { to: m.to }, psy.id);
         write();
         return m;
       },
-      inbox: ({ to, patientId } = {}) => (need(), (db.inbox || []).filter((m) => (!to || m.to === to) && (!patientId || m.patientId === patientId))),
+      inbox: ({ to, patientId, unread } = {}) => (need(), (db.inbox || []).filter((m) => (!to || m.to === to) && (!patientId || m.patientId === patientId) && (!unread || !m.readAt))),
+      markInboxRead(msgId) {
+        need(); const m = (db.inbox || []).find((x) => x.id === msgId);
+        if (m && !m.readAt) { m.readAt = nowIso(); write(); }
+      },
       audit: (patientId) => (need(), db.audit.filter((a) => !patientId || a.patientId === patientId)),
       messages: (id) => (need(), has(id) ? (db.messages[id] || []).slice() : []),
       sendMessage(patientId, from, text) {
