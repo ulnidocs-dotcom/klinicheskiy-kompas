@@ -2,7 +2,6 @@
   const KK = g.KK;
   const KEY = 'kk:v1';
   const LEVEL_RANK = { critical: 0, important: 1, info: 2 };
-  const ROUTING_RANK = { required: 0, desirable: 1 };
   const PROFILE_KEYS = ['age', 'sex', 'pregnant', 'lactating', 'postCovid', 'labs', 'meds', 'allergies', 'conditions', 'diagnoses', 'history', 'plan', 'maoiStoppedDaysAgo'];
   function hash(str) {
     let h = 5381;
@@ -132,10 +131,11 @@
       return e ? Object.assign({ at: e.at }, e.payload) : null;
     }
 
+    // Очередь по спеку: критический алерт → «обязательно к психиатру» → важные алерты → «желательно» → пропуски приёма.
     function urgency(v) {
       const lvl = Math.min(3, ...v.openAlerts.map((a) => LEVEL_RANK[a.level]));
-      const r = v.routing ? ROUTING_RANK[v.routing] : 2;
-      return [lvl, r, -(v.missedStreak || 0)];
+      const tier = lvl === 0 ? 0 : v.routing === 'required' ? 1 : lvl === 1 ? 2 : v.routing === 'desirable' ? 3 : 4;
+      return [tier, -(v.missedStreak || 0)];
     }
 
     function audit(patientId, action, details, actor) {
