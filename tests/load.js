@@ -15,6 +15,7 @@ const FILES = [
   'assets/parser.js',
   'assets/store.js',
   'assets/ui.js',
+  'assets/tiles.js',
   'assets/patient.js',
   'assets/doctor.js',
 ];

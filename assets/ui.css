@@ -151,3 +151,56 @@ code{font-size:.92em}
 .modal{background:var(--surface);color:var(--text);border-radius:18px;max-width:520px;width:100%;padding:20px;border-top:6px solid var(--crit)}
 /* На аурах вторичный и третичный текст — усиленный --on-aura-2 (контраст ≥ 4.5 на пике ауры, см. tests/contrast.test.js) */
 .aura{--text-2:var(--on-aura-2);--text-3:var(--on-aura-2)}
+
+/* Плитки данных (KK.tiles, assets/tiles.js) по docs/reference-veri-tiles.jpg: широкая плитка с кольцом + сетка.
+   Аура «по краям, тёмный/светлый центр»: краевой слой не выше --aura-k (контраст проверен на пике ауры),
+   второе пятно слабее — суммарная альфа не превышает --aura-k. Цвет — по типу плитки, не по тяжести. */
+.dtiles{container-type:inline-size}
+.dtiles__g{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.dtiles__g>.dtile:not(.dtile--wide):last-child:nth-child(even){grid-column:1/-1}
+@container (min-width:540px){
+  .dtiles__g{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .dtiles__g>.dtile:not(.dtile--wide):last-child:nth-child(even){grid-column:auto}
+  .dtiles__g>.dtile:not(.dtile--wide):last-child:nth-child(3n){grid-column:span 2}
+  .dtiles__g>.dtile:not(.dtile--wide):last-child:nth-child(3n+2){grid-column:1/-1}
+}
+@container (max-width:300px){.dtiles__g{grid-template-columns:1fr}.dtiles__g>.dtile{grid-column:auto!important}}
+@media (max-width:420px){[data-role="doctor"] .dtiles__g{grid-template-columns:1fr}[data-role="doctor"] .dtiles__g>.dtile{grid-column:auto}}
+.dtile{position:relative;display:flex;flex-direction:column;gap:10px;min-width:0;min-height:148px;padding:16px 18px 18px;border-radius:28px;color:var(--text);text-decoration:none;overflow:hidden}
+.dtile.aura{
+  background:
+    radial-gradient(55% 60% at 45% 50%,rgb(var(--aura-core) / var(--aura-core-alpha)) 0%,rgb(var(--aura-core) / 0) 100%),
+    radial-gradient(42% 55% at 88% 78%,rgb(var(--aura-b) / calc(var(--aura-k) * .4)) 0%,rgb(var(--aura-b) / 0) 100%),
+    radial-gradient(80% 90% at 50% 50%,rgb(var(--aura-a) / 0) 25%,rgb(var(--aura-a) / calc(var(--aura-k) * .75)) 100%),
+    var(--surface)}
+.dtile--wide{grid-column:1/-1;flex-direction:row;align-items:stretch;justify-content:space-between;gap:16px}
+.dtile__main{display:flex;flex-direction:column;gap:10px;min-width:0;flex:1}
+.dtile__l{font-size:14px;line-height:1.25;color:var(--text);letter-spacing:-.005em}
+.dtile__vis{display:flex;align-items:center;min-height:14px;color:var(--text)}
+.dtile:not(.dtile--wide) .dtile__vis{flex:1}
+.dtile--wide .dtile__vis{flex:none;align-items:center}
+.dtile__foot{margin-top:auto;display:flex;align-items:baseline;justify-content:space-between;gap:8px;min-width:0}
+.dtile__v{font-family:var(--font-head);font-weight:300;font-size:40px;line-height:1;letter-spacing:-.03em;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--text)}
+.dtile__v small{font-size:15px;font-weight:400;letter-spacing:0;margin-left:6px;color:var(--text-2)}
+.dtile__v--word{font-size:24px;line-height:1.15;letter-spacing:-.02em;white-space:normal}
+.dtile__side{font-size:14px;color:var(--text-2)}
+.dtile__note{font-size:12px;line-height:1.3;color:var(--text-2)}
+a.dtile:hover{filter:brightness(1.04)}
+a.dtile:focus-visible{border-radius:28px}
+/* Кольцо: тонкий трек + жёлтая дуга value/max, число точечной матрицей */
+.ring{position:relative;flex:none;width:96px;height:96px}
+.ring svg{display:block;width:100%;height:100%}
+.ring__track{fill:none;stroke:var(--text);stroke-opacity:.4;stroke-width:1.2}
+.ring__arc{fill:none;stroke:var(--marker);stroke-width:2.6;stroke-linecap:round}
+.ring__n{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:26px;color:var(--text)}
+/* Полоса диапазона: монохромные деления + жёлтый треугольник */
+.rbar{position:relative;width:100%;height:16px;display:flex;align-items:center}
+.rbar__track{display:flex;gap:3px;width:100%;height:4px}
+.rbar__track i{min-width:2px;border-radius:2px;background:currentColor;opacity:calc(.22 + .5 * var(--k))}
+.rbar__m{position:absolute;top:50%;width:12px;height:10px;background:var(--marker);clip-path:polygon(50% 0,100% 100%,0 100%);transform:translate(-50%,-75%)}
+/* Ряд точек: интервал — разница соседних значений, прозрачность — значение */
+.drow{position:relative;width:calc(100% - 6px);height:8px;margin:0 3px}
+.drow i{position:absolute;top:50%;width:6px;height:6px;margin:-3px 0 0 -3px;border-radius:50%;background:currentColor}
+.drow--empty{width:auto;height:auto;margin:0;color:var(--text-2)}
+.mspark{width:100%;height:28px}.mspark polyline{fill:none;stroke:currentColor;stroke-width:1.6;vector-effect:non-scaling-stroke}
+@media (max-width:360px){.dtile__v{font-size:34px}.ring{width:84px;height:84px}}
