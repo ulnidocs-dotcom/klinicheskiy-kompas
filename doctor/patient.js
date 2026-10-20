@@ -21,7 +21,6 @@
     const mode = D.mode();
     const series = (sid, color) => ({ label: sid === 'phq9' ? 'PHQ-9' : 'GAD-7', color, points: store.events(id, 'scale').filter((e) => e.payload.scaleId === sid).map((e) => ({ at: e.at, v: e.payload.total })) });
     const bands = [{ from: 10, to: 14, color: 'var(--band-warn)' }, { from: 15, to: 27, color: 'var(--band-crit)' }];
-    const last = (sid) => { const r = p.latest[sid]; return r && r.total != null ? r.total : null; };
     const feed = [...store.events(id)].filter((e) => e.type !== 'dose').reverse().slice(0, 12);
     const aes = store.events(id, 'ae').slice(-5).reverse();
     const plan = p.plan;
@@ -37,10 +36,11 @@
       </div>
       <div class="grid2">
         <div class="stack">
+          ${KK.tiles.tileGrid(D.summaryTiles(p, { checkins: store.events(id, 'checkin'), aes: store.events(id, 'ae') }), { label: 'Сводка' })}
           <section class="card stack"><h2>Сигналы</h2>
             ${p.signals.length ? p.signals.map((s) => D.signalHtml(s, mode)).join('') : '<p class="muted">Сигналов нет. Состояние стабильно.</p>'}</section>
           <section class="card stack"><div class="row-between"><h2>Динамика по шкалам</h2><span class="hint">фон: умеренная (10–14) и выше (≥ 15)</span></div>
-            <div class="metrics">${[['phq9', 'PHQ-9', 'var(--chart)'], ['gad7', 'GAD-7', 'var(--chart-2)']].map(([sid, l, c]) => `<div class="metric"><span class="hint"><i class="legend-dot" style="background:${c}"></i>${l} · последнее</span><span class="score">${last(sid) ?? '—'}</span></div>`).join('')}</div>
+            <div class="row wrap">${[['PHQ-9', 'var(--chart)'], ['GAD-7', 'var(--chart-2)']].map(([l, c]) => `<span class="hint"><i class="legend-dot" style="background:${c}"></i>${l}</span>`).join('')}</div>
             ${ui.lineChart([series('phq9', 'var(--chart)'), series('gad7', 'var(--chart-2)')], { max: 27, bands, ariaLabel: 'Динамика PHQ-9 и GAD-7' })}</section>
           <section class="card stack"><h2>Лента событий</h2>
             <ul class="feed">${feed.map((e) => `<li><time>${ui.fmtDateTime(e.at)}</time><span><b>${ui.esc(TYPE[e.type] || e.type)}:</b> ${ui.esc(describe(e))}</span></li>`).join('') || '<li><span class="hint">Нет событий</span></li>'}</ul></section>

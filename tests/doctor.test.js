@@ -168,3 +168,48 @@ test('therapyDecision: no plan, confirmed, off-label for contraindication or off
 test('demoDeviceKeys picks patient-app link/prefs keys only', () => {
   assert.deepEqual(D().demoDeviceKeys(['kk:v1', 'kk:linked:p_anna', 'kk:prefs:p_anna', 'kk:draft:x', 'other']), ['kk:linked:p_anna', 'kk:prefs:p_anna']);
 });
+
+test('summaryTiles: six tiles for every scenario, fixed aura per type, no NaN', () => {
+  const NOW = '2026-10-19T12:00:00.000Z';
+  const store = KK.createStore({ storage: memStorage(), clock: () => new Date(NOW) });
+  store.reset();
+  const auras = [];
+  for (const s of KK.data.scenarios) {
+    const id = s.patient.id;
+    const p = store.patient(id);
+    const list = D().summaryTiles(p, { checkins: store.events(id, 'checkin'), aes: store.events(id, 'ae'), nowIso: NOW });
+    assert.equal(list.length, 6, id);
+    assert.ok(list[0].wide);
+    auras.push(list.map((t) => t.aura).join());
+    const html = KK.tiles.tileGrid(list);
+    assert.doesNotMatch(html, /NaN|undefined|null/, id);
+  }
+  assert.equal(new Set(auras).size, 1, 'аура зависит от типа плитки, а не от тяжести');
+});
+
+test('summaryTiles: incomplete/missing scales → «—» with «нет данных»; adherence/therapy without a plan → «не назначено»', () => {
+  const p = { latest: { phq9: { total: 4, complete: false, at: '2026-10-10T10:00:00Z' }, gad7: null }, plan: null, pdc14: null };
+  const [phq, gad, adh, varb, ae, days] = D().summaryTiles(p, { nowIso: '2026-10-19T12:00:00Z' });
+  assert.equal(phq.value, null); assert.equal(phq.note, 'нет данных');
+  assert.equal(gad.value, null); assert.equal(gad.note, 'нет данных');
+  assert.equal(adh.value, null); assert.equal(adh.note, 'не назначено');
+  assert.equal(varb.value, null); assert.equal(ae.value, 0); assert.equal(ae.note, 'не сообщались');
+  assert.equal(days.value, null); assert.equal(days.note, 'не назначено');
+  assert.match(KK.tiles.tile(phq), /dtile__v">—</);
+});
+
+test('summaryTiles: values from data — PHQ total/band, pdc %, σ of moods, AE in 14 days, days on therapy', () => {
+  const now = '2026-10-19T12:00:00Z';
+  const phq = Object.assign({ at: '2026-10-18T10:00:00Z' }, KK.scales.score('phq9', [2, 2, 1, 1, 1, 1, 1, 1, 0]));
+  const p = { latest: { phq9: phq, gad7: null }, plan: { status: 'confirmed', confirmedAt: '2026-10-05T12:00:00Z' }, pdc14: 0.857 };
+  const ck = (mood, d) => ({ type: 'checkin', at: `2026-10-${d}T09:00:00Z`, payload: { mood } });
+  const ae = (label, d) => ({ type: 'ae', at: `2026-${d}T09:00:00Z`, payload: { items: [{ label, severity: 'mild' }] } });
+  const t = D().summaryTiles(p, { nowIso: now,
+    checkins: [ck(2, 10), ck(4, 11), ck(4, 12), ck(2, 13)],
+    aes: [ae('Головная боль', '09-20'), ae('Сонливость', '10-10'), ae('Сонливость', '10-15'), ae('Тошнота', '10-16')] });
+  assert.equal(t[0].value, 10); assert.equal(t[0].note.startsWith(phq.band.doctorLabel), true);
+  assert.equal(t[2].value, 86);
+  assert.equal(t[3].value, '1,0'); assert.equal(t[3].unit, 'σ');
+  assert.equal(t[4].value, 3); assert.equal(t[4].note, 'чаще: Сонливость');
+  assert.equal(t[5].value, 14); assert.equal(t[5].unit, 'дней');
+});

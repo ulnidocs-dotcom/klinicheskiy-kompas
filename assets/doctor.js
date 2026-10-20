@@ -121,6 +121,40 @@
       if (t && (t.eligible === false || t.indicated === false) && !p.plan.offLabel) return 'offlabel';
       return 'confirm';
     },
+    // Плитки «Сводка» карточки пациента (KK.tiles). Аура закреплена за типом плитки, не за тяжестью.
+    // checkins/aes — события пациента по возрастанию времени; nowIso — «сейчас».
+    summaryTiles(p, { checkins = [], aes = [], nowIso = new Date().toISOString() } = {}) {
+      const T = KK.tiles, ui = KK.ui;
+      const full = (sid) => { const r = p.latest?.[sid]; return r && r.complete && r.total != null ? r : null; };
+      const phq = full('phq9'), gad = full('gad7');
+      const scaleNote = (r) => (r ? `${r.band?.doctorLabel || ''}${r.at ? ` · ${ui.fmtDate(r.at)}` : ''}` : 'нет данных');
+      const confirmed = p.plan?.status === 'confirmed';
+      const moods = checkins.slice(-14).map((c) => c.payload.mood);
+      const sd = moods.length >= 3 ? T.sd(moods) : null;
+      const from = KK.util.shiftDays(nowIso, -14);
+      const recent = aes.filter((e) => new Date(e.at) >= new Date(from) && new Date(e.at) <= new Date(nowIso));
+      const items = recent.flatMap((e) => e.payload.items || []);
+      const freq = new Map();
+      items.forEach((i) => freq.set(i.label, (freq.get(i.label) || 0) + 1));
+      const top = [...freq].sort((a, b) => b[1] - a[1])[0];
+      const days = confirmed && p.plan.confirmedAt ? Math.max(0, KK.util.daysBetween(p.plan.confirmedAt, nowIso)) : null;
+      const pct = p.pdc14 == null ? null : Math.round(p.pdc14 * 100);
+      return [
+        { wide: true, aura: 'lilac', label: 'PHQ-9 · последнее', value: phq ? phq.total : null, unit: 'из 27', note: scaleNote(phq),
+          visual: T.ringGauge({ value: phq ? phq.total : null, max: 27, label: 'PHQ-9' }) },
+        { aura: 'sage', label: 'GAD-7 · последнее', value: gad ? gad.total : null, unit: 'из 21', note: scaleNote(gad),
+          visual: T.rangeBar({ value: gad ? gad.total : null, max: 21, bands: [{ from: 0, to: 4 }, { from: 5, to: 9 }, { from: 10, to: 14 }, { from: 15, to: 21 }] }) },
+        { aura: 'blue', label: 'Приверженность', value: pct, unit: '%', note: pct == null ? 'не назначено' : 'за 14 дн.',
+          visual: pct == null ? '' : T.rangeBar({ value: pct, max: 100 }) },
+        { aura: 'rose', label: 'Колебания настроения', value: sd == null ? null : (Math.round(sd * 10) / 10).toFixed(1).replace('.', ','), unit: 'σ',
+          note: sd == null ? 'мало отметок' : `ст. отклонение, ${moods.length} ${ui.plural(moods.length, ['отметка', 'отметки', 'отметок'])}, шкала 1–5`,
+          visual: T.dotRow(moods, { max: 5 }) },
+        { aura: 'lilac', label: 'Нежелательные явления', value: items.length, unit: 'за 14 дн.',
+          note: top ? `чаще: ${top[0]}` : 'не сообщались' },
+        { aura: 'amber', label: 'Дней на терапии', value: days, unit: days == null ? '' : ui.plural(days, ['день', 'дня', 'дней']),
+          note: days == null ? 'не назначено' : `с ${ui.fmtDate(p.plan.confirmedAt)}` },
+      ];
+    },
     ROUTING_PATIENT_MSG: 'Я оформил(а) направление на консультацию к врачу-психиатру. Подробности обсудим по телефону.',
     // Ключи пациентского приложения на этом устройстве, которые сбрасываются вместе с демо-данными (как на index.html).
     demoDeviceKeys: (keys) => keys.filter((k) => k.startsWith('kk:linked:') || k.startsWith('kk:prefs:')),
