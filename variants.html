@@ -1,0 +1,952 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Вариации · Компас</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Doto:wght@500;700;900&family=JetBrains+Mono:wght@400;500&family=Onest:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --page:#ECEBE7; --ink:#1B1B1A; --ink-2:#5E5D58; --line:#D6D4CE; --card:#F6F5F2;
+  --accent:#FF7A2F; --accent-2:#B98CFF; --focus:#2F5BFF;
+  --f-ui:"Onest",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --f-dot:"Doto","Onest",ui-monospace,monospace;
+  --f-mono:"JetBrains Mono","IBM Plex Mono",ui-monospace,Consolas,monospace;
+  /* A — Закат */
+  --a-bg:#F3F2EF; --a-ink:#151515; --a-mute:#8C8B86; --a-dot:#1A1A1A; --a-dot-off:#D3D2CD; --a-hi:#FF6A1F;
+  --a-sunset:linear-gradient(180deg,#B9B8F0 0%,#D9C1E6 30%,#FFB27A 68%,#FF7A2F 100%);
+  --a-bar:linear-gradient(90deg,#FFD66B,#FFB27A 45%,#A9C6FF);
+  /* B — Виджеты */
+  --b-bg:#EEEEEC;
+  --g-lime:radial-gradient(circle at 35% 75%,#F4FF6E 0,transparent 55%),linear-gradient(160deg,#9BEA5E,#18B48A);
+  --g-pink:radial-gradient(circle at 70% 25%,#FFB0E0 0,transparent 55%),linear-gradient(160deg,#B65CFF,#FF4F9A);
+  --g-orange:radial-gradient(circle at 40% 80%,#FFE58A 0,transparent 55%),linear-gradient(170deg,#FFC66B,#FF6F2C);
+  --g-blue:radial-gradient(circle at 30% 25%,#A8DBFF 0,transparent 55%),linear-gradient(160deg,#4B82FF,#22318F);
+  --g-violet:radial-gradient(circle at 70% 70%,#F59BFF 0,transparent 50%),linear-gradient(160deg,#7A5CFF,#3C1FA8);
+  --g-peach:radial-gradient(circle at 30% 30%,#FFE7C2 0,transparent 55%),linear-gradient(165deg,#FFC48A,#E3895B);
+  --g-amber:radial-gradient(circle at 70% 75%,#FFE69A 0,transparent 55%),linear-gradient(165deg,#F2B04A,#C9773F);
+  --b-pill:#E9FF3B;
+  /* C — Аура */
+  --c-bg:#0B0B0C; --c-ink:#F1EEE8; --c-mute:#8F8C86; --c-pill:rgba(255,255,255,.12);
+  --c-pink:#E2457F; --c-sage:#6F8F7A; --c-lilac:#8F7BD6; --c-amber:#E8A33D; --c-gold:#F5D36B;
+}
+*{box-sizing:border-box}
+html{background:var(--page)}
+body{margin:0;background:var(--page);color:var(--ink);font-family:var(--f-ui);font-weight:400;line-height:1.35;padding-bottom:110px;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;cursor:pointer}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:3px;border-radius:12px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 16px}
+header.top{padding:48px 0 12px}
+header.top h1{font-weight:500;font-size:clamp(44px,9vw,96px);letter-spacing:-.04em;line-height:.95;margin:0 0 14px}
+header.top p{margin:0;max-width:640px;color:var(--ink-2);font-size:17px}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.legend span{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--line);border-radius:999px;padding:6px 10px;background:var(--card)}
+section.fn{padding:44px 0 8px;border-top:1px solid var(--line);margin-top:36px}
+section.fn h2{font-weight:500;font-size:clamp(28px,5vw,40px);letter-spacing:-.02em;margin:0 0 4px;display:flex;align-items:baseline;gap:12px}
+section.fn h2 small{font-family:var(--f-mono);font-size:12px;color:var(--ink-2);letter-spacing:.08em}
+section.fn > .wrap > p{margin:0 0 22px;color:var(--ink-2);max-width:680px}
+.row{display:flex;flex-wrap:wrap;gap:28px;justify-content:center}
+figure.v{margin:0;width:320px;max-width:100%;display:flex;flex-direction:column;gap:10px}
+.vlabel{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+figcaption{display:flex;flex-direction:column;gap:8px}
+.note{font-size:14px;color:var(--ink-2);margin:0}
+.like{align-self:flex-start;min-height:44px;padding:0 18px;border-radius:999px;border:1.5px solid var(--ink);background:transparent;font-weight:500;display:inline-flex;align-items:center;gap:8px}
+.like::before{content:"";width:14px;height:14px;border-radius:50%;border:1.5px solid currentColor}
+.like[aria-pressed="true"]{background:var(--ink);color:#fff}
+.like[aria-pressed="true"]::before{background:var(--accent);border-color:var(--accent)}
+
+/* ===== phone frame ===== */
+.phone{width:320px;max-width:100%;height:660px;border-radius:50px;padding:9px;background:linear-gradient(145deg,#F8F8F6,#C9C8C3);box-shadow:0 1px 0 #fff inset,0 24px 50px -24px rgba(0,0,0,.35),0 0 0 1px #BEBDB8}
+.phone.dk{background:linear-gradient(145deg,#2A2A2C,#0A0A0B);box-shadow:0 24px 50px -24px rgba(0,0,0,.5),0 0 0 1px #000}
+.scr{position:relative;height:100%;border-radius:41px;overflow:hidden;font-size:14px}
+.island{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:92px;height:27px;border-radius:20px;background:#060606;z-index:9}
+.sb{position:absolute;top:16px;right:24px;display:flex;gap:4px;align-items:center;z-index:8}
+.sb i{display:block;width:3px;border-radius:1px;background:currentColor}
+.sb i:nth-child(1){height:5px}.sb i:nth-child(2){height:7px}.sb i:nth-child(3){height:9px}
+.sb b{display:block;width:20px;height:10px;border:1.3px solid currentColor;border-radius:3px;margin-left:4px;position:relative}
+.sb b::after{content:"";position:absolute;inset:1.5px 5px 1.5px 1.5px;background:currentColor;border-radius:1px}
+.bd{position:absolute;inset:50px 0 0;padding:0 18px;display:flex;flex-direction:column}
+.home{position:absolute;bottom:7px;left:50%;transform:translateX(-50%);width:110px;height:4px;border-radius:3px;background:currentColor;opacity:.8;z-index:9}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+/* ===== A — Закат ===== */
+.A{background:var(--a-bg);color:var(--a-ink)}
+.ml{font-family:var(--f-mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--a-mute);line-height:1.3}
+.A .big{font-weight:600;letter-spacing:-.05em;line-height:.85}
+.A .rule{height:1px;background:#DAD9D4;margin:10px 0}
+.A .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px}
+.A .val{font-size:17px;font-weight:500;margin-top:3px}
+.A .bar{height:26px;border-radius:7px;background:#E3E2DE;position:relative;overflow:hidden}
+.A .bar>span{position:absolute;inset:0 auto 0 0;background:var(--a-bar);border-radius:7px}
+.A .bar>em{position:absolute;left:8px;top:50%;transform:translateY(-50%);font-style:normal;font-family:var(--f-mono);font-size:10px}
+.A .chk{width:44px;height:44px;border-radius:50%;border:1.5px solid #1A1A1A;background:transparent;display:grid;place-items:center;flex:none}
+.A .chk[aria-pressed="true"]{background:#1A1A1A;color:#fff}
+.A .chk svg{width:18px;height:18px}
+.A .btn{min-height:46px;border-radius:14px;border:0;background:#151515;color:#fff;font-weight:500;padding:0 18px}
+.dots{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.dots .d{aspect-ratio:1;border-radius:50%;background:var(--a-dot-off)}
+.dots .d.on{background:var(--a-dot)}
+.dots .d.hi{background:var(--a-hi)}
+.dots .d.x{background:transparent}
+.dots .h{font-family:var(--f-mono);font-size:9px;text-align:center;color:var(--a-mute)}
+
+/* ===== B — Виджеты ===== */
+.B{background:var(--b-bg);color:#121212}
+.B h3{font-size:24px;font-weight:600;letter-spacing:-.02em;margin:4px 0 12px}
+.gc{border-radius:24px;padding:12px 13px;color:#fff;position:relative;overflow:hidden}
+.gc .t{font-size:12px;font-weight:600;line-height:1.1}
+.gc .s{font-size:11px;opacity:.75}
+.gc .n{font-weight:300;letter-spacing:-.04em;line-height:1}
+.bbar{position:absolute;left:14px;right:14px;bottom:18px;display:flex;align-items:center;justify-content:space-between;z-index:6}
+.bbar .cb{width:44px;height:44px;border-radius:50%;background:#fff;border:0;display:grid;place-items:center;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.bbar .yp{height:44px;min-width:116px;border-radius:999px;background:var(--b-pill);border:0;font-weight:600;font-size:13px;padding:0 18px;box-shadow:0 4px 14px rgba(200,230,0,.45)}
+.deck{position:relative}
+.deck .gc{box-shadow:0 -6px 18px rgba(0,0,0,.08)}
+
+/* ===== C — Аура ===== */
+.C{background:var(--c-bg);color:var(--c-ink)}
+.aura{position:absolute;border-radius:50%;filter:blur(38px);pointer-events:none}
+.C .bd{z-index:2}
+.C .mute{color:var(--c-mute)}
+.dotnum{font-family:var(--f-dot);font-weight:700;letter-spacing:.02em;line-height:.9}
+.pill{min-height:48px;border-radius:999px;border:0;background:var(--c-pill);color:var(--c-ink);display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 6px 0 18px;font-size:14px;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.pill .plus{width:36px;height:36px;border-radius:50%;background:#fff;color:#111;display:grid;place-items:center;font-size:20px;font-weight:400;flex:none}
+.ctile{border-radius:22px;padding:12px;position:relative;overflow:hidden;background:#1A1A1C}
+.tag{font-size:11px;color:var(--c-mute)}
+
+/* interactive options */
+.opt{border:0;background:transparent}
+.wave path{fill:none}
+
+/* breathing */
+@keyframes breath{0%{transform:scale(.62)}40%{transform:scale(1)}100%{transform:scale(.62)}}
+@keyframes inhale{0%,38%{opacity:1}42%,98%{opacity:0}100%{opacity:1}}
+@keyframes exhale{0%,38%{opacity:0}42%,98%{opacity:1}100%{opacity:0}}
+.breathe{animation:breath 10s ease-in-out infinite}
+.lbl-in{animation:inhale 10s linear infinite}
+.lbl-out{animation:exhale 10s linear infinite}
+.lblstack{position:relative;display:grid}
+.lblstack>*{grid-area:1/1}
+.static-lbl{display:none}
+@media (prefers-reduced-motion:reduce){
+  .breathe,.lbl-in,.lbl-out{animation:none}
+  .lbl-in{opacity:1}.lbl-out{opacity:0}
+  .static-lbl{display:block}
+}
+
+/* selection bar */
+.selbar{position:fixed;left:0;right:0;bottom:0;z-index:50;background:rgba(236,235,231,.92);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-top:1px solid var(--line)}
+.selbar .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:12px;padding-bottom:12px;flex-wrap:wrap}
+.selbar strong{font-weight:500;font-size:16px}
+.selbar .go{min-height:46px;border-radius:999px;border:0;background:var(--ink);color:#fff;padding:0 22px;font-weight:500}
+.selbar textarea{width:100%;min-height:70px;font:inherit;font-size:14px;border-radius:12px;border:1px solid var(--line);padding:10px;background:#fff;color:var(--ink)}
+.selbar .msg{font-size:13px;color:var(--ink-2)}
+footer{padding:40px 0;color:var(--ink-2);font-size:13px}
+@media (max-width:420px){.row{gap:36px}}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <h1>Вариации</h1>
+  <p>Каждая функция дневника пациента в нескольких вариантах. Отметьте понравившиеся — выбор сохранится в этом браузере.</p>
+  <div class="legend"><span>A · Закат — светлый, по мотивам Aether</span><span>B · Виджеты — яркие карточки, по мотивам AI OS</span><span>C · Аура — текущий тёмный стиль</span></div>
+</div></header>
+
+<main>
+
+<!-- ================= 1. СЕГОДНЯ ================= -->
+<section class="fn" data-fn="Сегодня" id="f1"><div class="wrap">
+<h2>Сегодня <small>01</small></h2>
+<p>Главный экран: приветствие, дата, что осталось сделать за день.</p>
+<div class="row">
+
+<figure class="v" data-v="A">
+<div class="phone"><div class="scr A">
+  <div class="island"></div><div class="sb"><i></i><i></i><i></i><b></b></div>
+  <div style="position:absolute;inset:0 0 auto;height:300px;background:var(--a-sunset)"></div>
+  <div class="bd">
+    <div style="position:relative;color:#151515;padding-top:8px">
+      <div class="ml" style="color:#4c4566">Доброе утро, Анна</div>
+      <div class="big" style="font-size:132px;margin-top:22px">20</div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:6px">
+        <div style="font-size:26px;font-weight:600;letter-spacing:-.02em">ОКТЯБРЯ</div><div style="font-size:20px;opacity:.7">Вт</div>
+      </div>
+    </div>
+    <div style="margin-top:30px" class="grid2">
+      <div><div class="ml">Утренний приём</div><div class="val">Принято</div></div>
+      <div><div class="ml">Вечерний приём</div><div class="val">Впереди</div></div>
+      <div><div class="ml">Дней с приёмом</div><div class="val">14 из 14</div></div>
+      <div><div class="ml">Самочувствие</div><div class="val">Отметить</div></div>
+    </div>
+    <div class="rule"></div>
+    <div class="ml" style="margin-bottom:6px">Дела на сегодня · 1 из 3</div>
+    <div class="bar"><span style="width:34%"></span><em>1 / 3</em></div>
+    <button class="btn" style="margin-top:14px">Отметить самочувствие</button>
+  </div>
+  <div class="home"></div>
+</div></div>
+<figcaption><span class="vlabel">A · Закат</span><p class="note">Огромное число даты на закатном градиенте, метрики моно-подписями, градиентная полоса прогресса дня.</p><button class="like" aria-pressed="false">Нравится</button></figcaption>
+</figure>
+
+<figure class="v" data-v="B">
+<div class="phone"><div class="scr B">
+  <div class="island"></div><div class="sb"><i></i><i></i><i></i><b></b></div>
+  <div class="bd">
+    <div style="display:flex;justify-content:space-between;align-items:end;margin-top:6px">
+      <h3 style="margin:0">Сегодня</h3><span style="font-size:12px;color:#777">Вторник, 20 октября</span>
+    </div>
+    <p style="margin:6px 0 14px;color:#555;font-size:13px">Анна, всё по силам. Начните с малого.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="gc" style="background:var(--g-lime);height:150px">
+        <div class="t">Авиандр</div><div class="s">20 мг</div>
+        <div class="n" style="font-size:40px;margin-top:22px">1<span style="font-size:18px;opacity:.8">/2</span></div>
+        <div class="s" style="position:absolute;bottom:12px">утром — принято</div>
+      </div>
+      <div class="gc" style="background:var(--g-pink);height:150px">
+        <div class="t">Самочувствие</div><div class="s">ещё не отмечено</div>
+        <svg viewBox="0 0 120 40" style="width:100%;margin-top:26px" class="wave"><path d="M0 22 C20 6,30 36,52 20 S90 8,120 20" stroke="#fff" stroke-width="1.6" opacity=".9"/></svg>
+        <div class="s" style="position:absolute;bottom:12px">3 вопроса · минута</div>
+      </div>
+      <div class="gc" style="background:var(--g-blue);height:150px">
+        <div class="t">Сон</div><div class="s">прошлая ночь</div>
+        <div style="font-size:20px;font-weight:300;margin-top:30px;letter-spacing:-.02em">как обычно</div>
+      </div>
+      <div class="gc" style="background:var(--g-orange);height:150px">
+        <div class="t">Дыхание</div><div class="s">вдох 4 · выдох 6</div>
+        <div style="width:58px;height:58px;border-radius:50%;margin:18px auto 0;background:radial-gradient(circle,#fff 0,rgba(255,255,255,.2) 70%)"></div>
+      </div>
+    </div>
+  </div>
+  <div class="bbar"><button class="cb" aria-label="Мой путь">◔</button><button class="yp">+ Отметить</button><button class="cb" aria-label="Мне тяжело">♡</button></div>
+  <div class="home"></div>
+</div></div>
+<figcaption><span class="vlabel">B · Виджеты</span><p class="note">Сетка 2×2 из ярких градиентных виджетов, жёлтая пилюля действия в нижней панели.</p><button class="like" aria-pressed="false">Нравится</button></figcaption>
+</figure>
+
+<figure class="v" data-v="C">
+<div class="phone dk"><div class="scr C">
+  <div class="aura" style="width:260px;height:260px;left:-60px;top:40px;background:var(--c-pink);opacity:.55"></div>
+  <div class="aura" style="width:220px;height:220px;right:-70px;top:180px;background:var(--c-sage);opacity:.6"></div>
+  <div class="island"></div><div class="sb"><i></i><i></i><i></i><b></b></div>
+  <div class="bd">
+    <div class="mute" style="margin-top:10px;font-size:13px">Вторник</div>
+    <div class="dotnum" style="font-size:118px;margin-top:6px">20</div>
+    <div style="font-size:22px;font-weight:300">октября</div>
+    <p style="margin:18px 0 0;font-size:17px;font-weight:300">Здравствуйте, Анна.<br><span class="mute">Как вы сегодня?</span></p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:22px">
+      <div class="ctile"><div class="tag">Приём утром</div><div style="font-size:18px;margin-top:14px">принято ✓</div></div>
+      <div class="ctile"><div class="tag">С приёмом</div><div style="font-size:18px;margin-top:14px"><span class="dotnum" style="font-size:22px">14</span> дней</div></div>
+    </div>
+    <div style="margin-top:auto;margin-bottom:30px;display:flex;flex-direction:column;gap:10px">
+      <button class="pill">Отметить самочувствие<span class="plus">+</span></button>
+      <button class="pill">Вечерний приём<span class="plus">+</span></button>
+    </div>
+  </div>
+  <div class="home"></div>
+</div></div>
+<figcaption><span class="vlabel">C · Аура</span><p class="note">Текущий стиль: точечная дата, диффузные ауры, дела дня как пилюли с белым «+».</p><button class="like" aria-pressed="false">Нравится</button></figcaption>
+</figure>
+
+</div></div></section>
+
+<!-- ================= 2. САМОЧУВСТВИЕ ================= -->
+<section class="fn" data-fn="Самочувствие" id="f2"><div class="wrap">
+<h2>Самочувствие <small>02</small></h2>
+<p>Ежедневный чек-ин: настроение, беспокойство, сон — по 5 вариантов. Нажмите вариант, чтобы выбрать.</p>
+<div class="row">
+
+<figure class="v" data-v="A">
+<div class="phone"><div class="scr A">
+  <div class="island"></div><div class="sb"><i></i><i></i><i></i><b></b></div>
+  <div style="position:absolute;right:-60px;top:-40px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,#FFB27A,#FFD3B0 45%,transparent 70%);filter:blur(10px)"></div>
+  <div class="bd">
+    <div class="ml" style="margin-top:8px">Вторник, 20 октября</div>
+    <div style="font-size:30px;font-weight:600;letter-spacing:-.03em;margin:4px 0 14px;line-height:1">Как вы<br>сегодня?</div>
+    <div class="ci" data-choice>
+      <div style="display:flex;justify-content:space-between"><span class="ml">Настроение</span><span class="ml cv" style="color:#151515">как обычно</span></div>
+      <div style="display:flex;justify-content:space-between;margin:6px 0 12px">
+        <button class="opt adot" data-w="совсем плохо" aria-label="Совсем плохо" aria-pressed="false"></button><button class="opt adot" data-w="хуже обычного" aria-label="Хуже обычного" aria-pressed="false"></button><button class="opt adot" data-w="как обычно" aria-label="Как обычно" aria-pressed="true"></button><button class="opt adot" data-w="неплохо" aria-label="Неплохо" aria-pressed="false"></button><button class="opt adot" data-w="хорошо" aria-label="Хорошо" aria-pressed="false"></button>
+      </div>
+    </div>
+    <div class="ci" data-choice>
+      <div style="display:flex;justify-content:space-between"><span class="ml">Беспокойство</span><span class="ml cv" style="color:#151515">немного</span></div>
+      <div style="display:flex;justify-content:space-between;margin:6px 0 12px">
+        <button class="opt adot" data-w="очень сильно" aria-label="Очень сильно" aria-pressed="false"></button><button class="opt adot" data-w="заметно" aria-label="Заметно" aria-pressed="false"></button><button class="opt adot" data-w="немного" aria-label="Немного" aria-pressed="true"></button><button class="opt adot" data-w="почти нет" aria-label="Почти нет" aria-pressed="false"></button><button class="opt adot" data-w="спокойно" aria-label="Спокойно" aria-pressed="false"></button>
+      </div>
+    </div>
+    <div class="ci" data-choice>
+      <div style="display:flex;justify-content:space-between"><span class="ml">Сон</span><span class="ml cv" style="color:#151515">выберите</span></div>
+      <div style="display:flex;justify-content:space-between;margin:6px 0 12px">
+        <button class="opt adot" data-w="почти не спала" aria-label="Почти не спала" aria-pressed="false"></button><button class="opt adot" data-w="плохо" aria-label="Плохо" aria-pressed="false"></button><button class="opt adot" data-w="как обычно" aria-label="Как обычно" aria-pressed="false"></button><button class="opt adot" data-w="хорошо" aria-label="Хорошо" aria-pressed="false"></button><button class="opt adot" data-w="отлично" aria-label="Отлично" aria-pressed="false"></button>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between" class="ml"><span>хуже</span><span>лучше</span></div>
+    <button class="btn" style="margin-top:16px">Сохранить</button>
+  </div>
+  <div class="home"></div>
+</div></div>
+<figcaption><span class="vlabel">A · Закат</span><p class="note">Три ряда крупных точек, как в календаре Aether; выбранная — оранжевая, слово ответа справа моно-шрифтом.</p><button class="like" aria-pressed="false">Нравится</button></figcaption>
+</figure>
+
+<figure class="v" data-v="B">
+<div class="phone"><div class="scr B">
+  <div class="island"></div><div class="sb"><i></i><i></i><i></i><b></b></div>
+  <div class="bd">
+    <h3>Самочувствие</h3>
+    <div class="deck" style="height:430px">
+      <div class="gc" style="position:absolute;left:22px;right:22px;top:0;height:60px;background:var(--g-blue);opacity:.7"><div class="t">Сон</div></div>
+      <div class="gc" style="position:absolute;left:11px;right:11px;top:22px;height:70px;background:var(--g-lime);opacity:.85"><div class="t">Беспокойство</div></div>
+      <div class="gc" style="position:absolute;left:0;right:0;top:46px;bottom:0;background:var(--g-pink);padding:16px" data-choice>
+        <div class="t" style="font-size:14px">Настроение</div><div class="s">1 из 3</div>
+        <div class="cv" style="font-size:34px;font-weight:300;letter-spacing:-.03em;margin:26px 0 22px;line-height:1">как обычно</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <button class="opt bopt" aria-pressed="false" data-w="хорошо">хорошо</button>
+          <button class="opt bopt" aria-pressed="false" data-w="неплохо">неплохо</button>
+          <button class="opt bopt" aria-pressed="true" data-w="как обычно">как обычно</button>
+          <button class="opt bopt" aria-pressed="false" data-w="хуже обычного">хуже обычного</button>
+          <button class="opt bopt" aria-pressed="false" data-w="совсем плохо">совсем плохо</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="bbar"><button class="cb" aria-label="Назад">←</button><button class="yp">Дальше</button><button class="cb" aria-label="Готово">✓</button></div>
+  <div class="home"></div>
+</div></div>
+<figcaption><span class="vlabel">B · Виджеты</span><p class="note">Колода карточек: вопрос дня сверху, следующие выглядывают сзади; ответы — полупрозрачные строки на градиенте.</p><button class="like" aria-pressed="false">Нравится</button></figcaption>
+</figure>
+
+<figure class="v" data-v="C">
+<div class="phone dk"><div class="scr C">
+  <div class="aura" style="width:300px;height:300px;left:0;top:90px;background:var(--c-pink);opacity:.6"></div>
+  <div class="island"></div><div class="sb"><i></i><i></i><i></i><b></b></div>
+  <div class="bd" data-choice>
+    <div style="display:flex;gap:6px;justify-content:center;margin-top:12px"><span style="width:22px;height:4px;border-radius:2px;background:#fff"></span><span style="width:22px;height:4px;border-radius:2px;background:#555"></span><span style="width:22px;height:4px;border-radius:2px;background:#555"></span></div>
+    <div class="mute" style="text-align:center;margin-top:28px;font-size:13px">Настроение</div>
+    <div class="cv" style="text-align:center;font-size:30px;font-weight:300;margin-top:8px;min-height:40px">как обычно</div>
+    <div style="display:flex;justify-content:space-between;margin:70px 4px 0">
+      <button class="opt cdot" aria-pressed="false" data-w="совсем плохо" aria-label="Совсем плохо"></button>
+      <button class="opt cdot" aria-pressed="false" data-w="хуже обычного" aria-label="Хуже обычного"></button>
+      <button class="opt cdot" aria-pressed="true" data-w="как обычно" aria-label="Как обычно"></button>
+      <button class="opt cdot" aria-pressed="false" data-w="неплохо" aria-label="Неплохо"></button>
+      <button class="opt cdot" aria-pressed="false" data-w="хорошо" aria-label="Хорошо"></button>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:10px" class="tag"><span>хуже</span><span>лучше</span></div>
+    <div style="margin-top:auto;margin-bottom:30px"><button class="pill" style="width:100%">Дальше: беспокойство<span class="plus">→</span></button></div>
+  </div>
+  <div class="home"></div>
+</div></div>
+<figcaption><span class="vlabel">C · Аура</span><p class="note">Один вопрос на экран, пять светящихся точек на ауре, слово ответа крупно над ними.</p><button class="like" aria-pressed="false">Нравится</button></figcaption>
+</figure>
+
+</div></div></section>
+
+<!-- ================= 3. ПРИЁМ ЛЕКАРСТВА ================= -->
+<section class="fn" data-fn="Приём лекарства" id="f3"><div class="wrap">
+<h2>Приём лекарства <small>03</small></h2>
+<p>Авиандр 20 мг два раза в день: отметка «принято» утром и вечером, напоминание во время, которое выбрала пациентка.</p>
+<div class="row">
+
+<figure class="v" data-v="A">
+<div class="phone"><div class="scr A">
+  <div class="island"></div><div class="sb"><i></i><i></i><i></i><b></b></div>
+  <div class="bd">
+    <div class="ml" style="margin-top:8px">Авиандр · 2 раза в день</div>
+    <div style="display:flex;align-items:baseline;gap:6px;margin-top:12px"><span class="big" style="font-size:110px">20</span><span style="font-size:24px;font-weight:500">мг</span></div>
+    <div style="height:110px;border-radius:20px;margin:16px 0 6px;background:var(--a-sunset);position:relative">
+      <div style="position:absolute;left:14px;bottom:12px" class="ml"><span style="color:#2a2340">Утром и вечером, как назначил врач</span></div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #DAD9D4">
+      <div><div class="ml">Утром</div><div class="val">Принято</div></div>
+      <button class="chk opt-t" aria-pressed="true" aria-label="Утренний приём отмечен"><svg viewBox="0 0 20 20"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2"/></svg></button>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0">
+      <div><div class="ml">Вечером</div><div class="val">Отметить</div></div>
+      <button class="chk opt-t" aria-pressed="false" aria-label="Отметить вечерний приём"><svg viewBox="0 0 20 20"><path d="M4 10.5l4 4 8-9" fill="none" stroke="currentColor" stroke-width="2"/></svg></button>
+    </div>
+    <div class="ml" style="margin:8px 0 6px">Эта неделя</div>
+    <div class="dots" style="gap:7px"><span class="d on"></span><span class="d on"></span><span class="d hi"></span><span class="d"></span><span class="d"></span><span class="d"></span><span class="d"></span></div>
+  </div>
+  <div class="home"></div>
+</div></div>
+<figcaption><span class="vlabel">A · Закат</span><p class="note">Доза огромными цифрами, две строки «утром / вечером» с круглыми отметками, неделя точками.</p><button class="like" aria-pressed="false">Нравится</button></figcaption>
+</figure>
+
+<figure class="v" data-v="B">
+<div class="phone"><div class="scr B">
+  <div class="island"></div><div class="sb"><i></i><i></i><i></i><b></b></div>
+  <div class="bd">
+    <h3>Напоминание</h3>
+    <div class="gc" style="background:var(--g-lime);height:330px;padding:16px;color:#0c2a1c">
+      <div style="display:flex;justify-content:space-between"><div><div class="t">Авиандр 20 мг</div><div class="s">вечерний приём</div></div><span style="font-size:11px;background:rgba(255,255,255,.55);border-radius:999px;padding:4px 10px;height:22px">вкл</span></div>
+      <div class="dial" data-ticks="60" style="width:210px;height:210px;margin:16px auto 0;position:relative;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.55) 0,rgba(255,255,255,.12) 62%,transparent 63%)">
+        <div style="position:absolute;inset:0;display:grid;place-items:center;text-align:center">
+          <div><div style="font-size:44px;font-weight:300;letter-spacing:-.03em;line-height:1">20:30</div><div style="font-size:11px;margin-top:4px;opacity:.75">ваше время</div></div>
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
+      <div class="gc" style="background:#fff;color:#121212;height:76px"><div class="s" style="opacity:.6">Утром</div><div style="font-size:17px;margin-top:8px">принято ✓</div></div>
+      <div class="gc" style="background:var(--g-orange);height:76px"><div class="s">Вечером</div><div style="font-size:17px;margin-top:8px">впереди</div></div>
+    </div>
+  </div>
+  <div class="bbar"><button class="cb" aria-label="Закрыть">×</button><button class="yp">Принято</button><button class="cb" aria-label="Сохранить">✓</button></div>
+  <div class="home"></div>
+</div></div>
+<figcaption><span class="vlabel">B · Виджеты</span><p class="note">Циферблат-будильник с делениями на лаймовой карточке — время задаёт сама пациентка; ниже два мини-виджета.</p><button class="like" aria-pressed="false">Нравится</button></figcaption>
+</figure>
+
+<figure class="v" data-v="C">
+<div class="phone dk"><div class="scr C">
+  <div class="aura" style="width:280px;height:280px;left:10px;top:60px;background:var(--c-pink);opacity:.75"></div>
+  <div class="aura" style="width:160px;height:160px;left:80px;top:110px;background:#2a0f1c;opacity:.9"></div>
+  <div class="island"></div><div class="sb"><i></i><i></i><i></i><b></b></div>
+  <div class="bd">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px"><span style="font-size:17px">Авиандр</span><span class="pill" style="min-height:30px;padding:0 4px 0 12px;font-size:12px">Напоминание <span style="width:22px;height:22px;border-radius:50%;background:#fff;display:inline-block"></span></span></div>
+    <div style="text-align:center;margin-top:46px"><div class="dotnum" style="font-size:96px">20</div><div style="font-size:15px">мг</div></div>
+    <div class="tag" style="text-align:center;margin-top:46px">два раза в день</div>
+    <div style="margin-top:auto;margin-bottom:30px;display:flex;flex-direction:column;gap:10px">
+      <div class="pill" style="background:rgba(255,255,255,.22)">Утром — принято<span class="plus" style="font-size:15px">✓</span></div>
+      <button class="pill">Вечером — отметить<span class="plus">+</span></button>
+    </div>
+  </div>
+  <div class="home"></div>
+</div></div>
+<figcaption><span class="vlabel">C · Аура</span><p class="note">Доза точечными цифрами в центре розовой ауры, тумблер напоминания и две пилюли приёма.</p><button class="like" aria-pressed="false">Нравится</button></figcaption>
+</figure>
+
+</div></div></section>
+
+<!-- ================= 4. ОПРОСНИК ================= -->
+<section class="fn" data-fn="Опросник" id="f4"><div class="wrap">
+<h2>Опросник <small>04</small></h2>
+<p>Один вопрос на экран, четыре варианта ответа и прогресс. Итог пациенту не показывается — он уходит врачу.</p>
+<div class="row">
+
+<figure class="v" data-v="A">
+<div class="phone"><div class="scr A">
+  <div class="island"></div><div class="sb"><i></i><i></i><i></i><b></b></div>
+  <div class="bd" data-choice>
+    <div style="display:flex;justify-content:space-between;margin-top:8px"><span class="ml">Последние 2 недели</span><span class="ml">3 / 9</span></div>
+    <div class="bar" style="height:8px;margin-top:8px"><span style="width:33%"></span></div>
+    <div style="font-size:26px;font-weight:600;letter-spacing:-.03em;line-height:1.08;margin:30px 0 8px">Как часто вам было трудно расслабиться?</div>
+    <div class="ml" style="margin-bottom:16px">Выберите один вариант</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button class="opt aq" aria-pressed="false"><span>Ни разу</span><i></i></button>
+      <button class="opt aq" aria-pressed="true"><span>Несколько дней</span><i></i></button>
+      <button class="opt aq" aria-pressed="false"><span>Более половины дней</span><i></i></button>
+      <button class="opt aq" aria-pressed="false"><span>Почти каждый день</span><i></i></button>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:auto;margin-bottom:30px" class="ml"><span>← Назад</span><span style="color:#151515">Дальше →</span></div>
+  </div>
+  <div class="home"></div>
+</div></div>
+<figcaption><span class="vlabel">A · Закат</span><p class="note">Крупный вопрос без украшений, ответы — строки с кружком, градиентный прогресс сверху.</p><button class="like" aria-pressed="false">Нравится</button></figcaption>
+</figure>
+
+<figure class="v" data-v="B">
+<div class="phone"><div class="scr B">
+  <div class="island"></div><div class="sb"><i></i><i></i><i></i><b></b></div>
+  <div class="bd" data-choice>
+    <div style="display:flex;align-items:center;gap:12px;margin-top:6px">
+      <svg width="44" height="44" viewBox="0 0 44 44" aria-label="Вопрос 3 из 9"><circle cx="22" cy="22" r="18" fill="none" stroke="#dcdcd8" stroke-width="5"/><circle cx="22" cy="22" r="18" fill="none" stroke="#B65CFF" stroke-width="5" stroke-linecap="round" stroke-dasharray="113" stroke-dashoffset="75" transform="rotate(-90 22 22)"/><text x="22" y="26" text-anchor="middle" font-size="11" font-family="Onest" fill="#121212">3/9</text></svg>
+      <div style="font-size:12px;color:#666;line-height:1.25">Последние<br>2 недели</div>
+    </div>
+    <div style="font-size:22px;font-weight:600;letter-spacing:-.02em;line-height:1.12;margin:20px 0 16px">Как часто вам было трудно расслабиться?</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <button class="opt gc bq" style="background:var(--g-blue)" aria-pressed="false"><span class="t">Ни разу</span></button>
+      <button class="opt gc bq" style="background:var(--g-lime)" aria-pressed="true"><span class="t">Несколько дней</span></button>
+      <button class="opt gc bq" style="background:var(--g-orange)" aria-pressed="false"><span class="t">Более половины дней</span></button>
+      <button class="opt gc bq" style="background:var(--g-pink)" aria-pressed="false"><span class="t">Почти каждый день</span></button>
+    </div>
+  </div>
+  <div class="bbar"><button class="cb" aria-label="Назад">←</button><button class="yp">Дальше</button><button class="cb" aria-label="Пауза">॥</button></div>
+  <div class="home"></div>
+</div></div>
+<figcaption><span class="vlabel">B · Виджеты</span><p class="note">Ответы — четыре цветные плитки 2×2, выбранная с белым контуром; прогресс — маленькое кольцо.</p><button class="like" aria-pressed="false">Нравится</button></figcaption>
+</figure>
+
+<figure class="v" data-v="C">
+<div class="phone dk"><div class="scr C">
+  <div class="aura" style="width:280px;height:200px;right:-80px;top:20px;background:var(--c-lilac);opacity:.55"></div>
+  <div class="aura" style="width:200px;height:200px;left:-60px;bottom:40px;background:var(--c-sage);opacity:.5"></div>
+  <div class="island"></div><div class="sb"><i></i><i></i><i></i><b></b></div>
+  <div class="bd" data-choice>
+    <div style="display:flex;gap:5px;margin-top:12px" aria-label="Вопрос 3 из 9"><span class="pd on"></span><span class="pd on"></span><span class="pd now"></span><span class="pd"></span><span class="pd"></span><span class="pd"></span><span class="pd"></span><span class="pd"></span><span class="pd"></span></div>
+    <div class="tag" style="margin-top:26px">За последние 2 недели</div>
+    <div style="font-size:26px;font-weight:300;line-height:1.15;margin:8px 0 26px">Как часто вам было трудно расслабиться?</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button class="opt pill cq" aria-pressed="false">Ни разу<span class="plus"></span></button>
+      <button class="opt pill cq" aria-pressed="true">Несколько дней<span class="plus"></span></button>
+      <button class="opt pill cq" aria-pressed="false">Более половины дней<span class="plus"></span></button>
+      <button class="opt pill cq" aria-pressed="false">Почти каждый день<span class="plus"></span></button>
+    </div>
+    <div class="tag" style="text-align:center;margin-top:auto;margin-bottom:28px">Можно прерваться и вернуться позже</div>
+  </div>
+  <div class="home"></div>
+</div></div>
+<figcaption><span class="vlabel">C · Аура</span><p class="note">Ответы — стеклянные пилюли, выбранная заливается белым; прогресс точками-шагами.</p><button class="like" aria-pressed="false">Нравится</button></figcaption>
+</figure>
+
+</div></div></section>
+
+<!-- ================= 5. МОЙ ПУТЬ ================= -->
+<section class="fn" data-fn="Мой путь" id="f5"><div class="wrap">
+<h2>Мой путь <small>05</small></h2>
+<p>Динамика: дни с приёмом, настроение и сон — точками и кривой, словами вместо цифр.</p>
+<div class="row">
+
+<figure class="v" data-v="A">
+<div class="phone"><div class="scr A">
+  <div class="island"></div><div class="sb"><i></i><i></i><i></i><b></b></div>
+  <div class="bd">
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:6px"><span class="big" style="font-size:64px">14</span><span style="font-size:14px;color:#8C8B86">из 14 дней</span></div>
+    <div style="font-size:20px;font-weight:600;letter-spacing:-.02em;margin-top:2px">ОКТЯБРЬ <span style="font-weight:400;color:#8C8B86">с приёмом</span></div>
+    <div class="dots" data-cal="a" style="margin-top:12px"></div>
+    <div class="rule" style="margin-top:14px"></div>
+    <div style="display:flex;justify-content:space-between"><span class="ml">Настроение · 2 недели</span><span class="ml" style="color:#151515">ровнее</span></div>
+    <svg viewBox="0 0 280 70" style="width:100%;height:70px;margin-top:4px" aria-label="Настроение становится ровнее">
+      <g stroke="#DAD9D4" stroke-dasharray="2 3"><line x1="0" y1="10" x2="280" y2="10"/><line x1="0" y1="35" x2="280" y2="35"/><line x1="0" y1="60" x2="280" y2="60"/></g>
+      <polyline fill="none" stroke="#151515" stroke-width="1.3" points="0,56 20,50 40,58 60,44 80,48 100,40 120,46 140,36 160,38 180,30 200,34 220,26 240,28 260,24 280,22"/>
+      <circle cx="260" cy="24" r="4.5" fill="#FF6A1F"/>
+    </svg>
+    <div class="grid2" style="margin-top:6px">
+      <div><div class="ml">Сон</div><div class="val">как обычно</div></div>
+      <div><div class="ml">Беспокойство</div><div class="val">ровнее</div></div>
+    </div>
+  </div>
+  <div class="home"></div>
+</div></div>
+<figcaption><span class="vlabel">A · Закат</span><p class="note">Точечный календарь месяца (дни с приёмом чёрные, сегодня оранжевый), тонкая линия настроения с одной точкой.</p><button class="like" aria-pressed="false">Нравится</button></figcaption>
+</figure>
+
+<figure class="v" data-v="B">
+<div class="phone"><div class="scr B">
+  <div class="island"></div><div class="sb"><i></i><i></i><i></i><b></b></div>
+  <div class="bd">
+    <h3>Мой путь</h3>
+    <div class="gc" style="background:linear-gradient(170deg,#9FB4C4,#5C7486);height:200px;padding:16px">
+      <div class="t">Настроение</div><div class="s">две недели</div>
+      <div style="font-size:36px;font-weight:300;letter-spacing:-.03em;margin-top:18px">ровнее</div>
+      <svg viewBox="0 0 260 50" style="width:100%;margin-top:10px" class="wave" aria-hidden="true"><path d="M0 34 C20 10,40 46,62 28 S100 12,124 30 S170 40,190 22 S236 14,260 18" stroke="#F4FF6E" stroke-width="1.6"/><path d="M190 22 l-6 -11 h12z" fill="#F5D500" transform="translate(0,-6)"/></svg>
+    </div>
+    <div class="deck" style="height:220px;margin-top:10px">
+      <div class="gc" style="position:absolute;inset:0 0 auto;height:80px;background:var(--g-lime)"><div class="t">Приём</div><div style="font-size:20px;font-weight:300;margin-top:6px">14 из 14 дней</div></div>
+      <div class="gc" style="position:absolute;left:0;right:0;top:62px;height:80px;background:var(--g-violet)"><div class="t">Сон</div><div style="font-size:20px;font-weight:300;margin-top:6px">как обычно</div></div>
+      <div class="gc" style="position:absolute;left:0;right:0;top:124px;height:80px;background:var(--g-orange)"><div class="t">Беспокойство</div><div style="font-size:20px;font-weight:300;margin-top:6px">ровнее</div></div>
+    </div>
+  </div>
+  <div class="bbar"><button class="cb" aria-label="Неделя">7</button><button class="yp">Показать врачу</button><button class="cb" aria-label="Месяц">30</button></div>
+  <div class="home"></div>
+</div></div>
+<figcaption><span class="vlabel">B · Виджеты</span><p class="note">Карточка «Ring»: волнистая кривая с жёлтым маркером; под ней колода «Приём / Сон / Беспокойство».</p><button class="like" aria-pressed="false">Нравится</button></figcaption>
+</figure>
+
+<figure class="v" data-v="C">
+<div class="phone dk"><div class="scr C">
+  <div class="aura" style="width:240px;height:240px;left:-40px;top:250px;background:var(--c-pink);opacity:.45"></div>
+  <div class="island"></div><div class="sb"><i></i><i></i><i></i><b></b></div>
+  <div class="bd">
+    <div style="display:flex;gap:6px;justify-content:space-between;margin-top:8px">
+      <span class="wd">пн</span><span class="wd">вт</span><span class="wd">ср</span><span class="wd">чт</span><span class="wd">пт</span><span class="wd">сб</span><span class="wd">вс</span>
+    </div>
+    <div style="text-align:center;margin-top:20px"><div style="font-size:15px">Дни с приёмом</div><div class="dotnum" style="font-size:84px;margin-top:6px">14</div><div class="tag">из 14 подряд</div></div>
+    <svg viewBox="0 0 280 50" style="width:100%;margin-top:14px" class="wave" aria-hidden="true"><path d="M0 26 C18 6,30 44,50 26 S84 8,104 26 S140 42,160 26 S196 12,216 24 L280 24" stroke="#F5D36B" stroke-width="1.3"/><path d="M216 24 l-5 -9 h10z" fill="#F5D36B" transform="translate(0,-4)"/></svg>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+      <div class="ctile" style="background:linear-gradient(160deg,#3a4d40,#1a1f1b)"><div class="tag">Настроение</div><div style="font-size:18px;margin-top:16px">ровнее</div></div>
+      <div class="ctile" style="background:linear-gradient(160deg,#4a2a52,#1b141d)"><div class="tag">Сон</div><div style="font-size:18px;margin-top:16px">как обычно</div></div>
+      <div class="ctile" style="background:linear-gradient(160deg,#6b2a45,#1f1216)"><div class="tag">Беспокойство</div><div style="font-size:18px;margin-top:16px">ровнее</div></div>
+      <div class="ctile" style="background:linear-gradient(160deg,#5a4a24,#1e1a12)"><div class="tag">Дыхание</div><div style="font-size:18px;margin-top:16px">5 раз</div></div>
+    </div>
+  </div>
+  <div class="home"></div>
+</div></div>
+<figcaption><span class="vlabel">C · Аура</span><p class="note">Как экран «Sugar» в veri: дни недели кружками, точечное число дней, золотая волна и тёмные градиентные плитки.</p><button class="like" aria-pressed="false">Нравится</button></figcaption>
+</figure>
+
+</div></div></section>
+
+<!-- ================= 6. СОН ================= -->
+<section class="fn" data-fn="Сон" id="f6"><div class="wrap">
+<h2>Сон <small>06</small></h2>
+<p>Как спалось прошлой ночью и неделя сна — без часов и цифр, словами и точками.</p>
+<div class="row">
+
+<figure class="v" data-v="A">
+<div class="phone"><div class="scr A">
+  <div class="island"></div><div class="sb"><i></i><i></i><i></i><b></b></div>
+  <div style="position:absolute;inset:0 0 auto;height:290px;background:linear-gradient(180deg,#8E9BE8 0%,#B7B3EE 40%,#E9C9E6 75%,var(--a-bg) 100%)"></div>
+  <div class="bd">
+    <div style="position:relative">
+      <div class="ml" style="color:#2f2f63;margin-top:8px">Прошлая ночь</div>
+      <div class="big" style="font-size:54px;margin-top:70px;color:#151515">Как<br>обычно</div>
+    </div>
+    <div class="grid2" style="margin-top:56px">
+      <div><div class="ml">Засыпание</div><div class="val">легче</div></div>
+      <div><div class="ml">Пробуждения</div><div class="val">реже</div></div>
+      <div><div class="ml">Утром</div><div class="val">бодрее</div></div>
+      <div><div class="ml">Днём</div><div class="val">как обычно</div></div>
+    </div>
+    <div class="rule"></div>
+    <div class="ml" style="margin-bottom:6px">Неделя</div>
+    <div class="dots"><span class="h">пн</span><span class="h">вт</span><span class="h">ср</span><span class="h">чт</span><span class="h">пт</span><span class="h">сб</span><span class="h">вс</span><span class="d" style="background:#C9C6EE"></span><span class="d" style="background:#9C97E2"></span><span class="d" style="background:#C9C6EE"></span><span class="d" style="background:#6D67D2"></span><span class="d" style="background:#9C97E2"></span><span class="d" style="background:#6D67D2"></span><span class="d hi"></span></div>
+  </div>
+  <div class="home"></div>
+</div></div>
+<figcaption><span class="vlabel">A · Закат</span><p class="note">Ночной градиент вместо закатного, итог ночи одной фразой крупно, неделя — точками разной густоты.</p><button class="like" aria-pressed="false">Нравится</button></figcaption>
+</figure>
+
+<figure class="v" data-v="B">
+<div class="phone"><div class="scr B">
+  <div class="island"></div><div class="sb"><i></i><i></i><i></i><b></b></div>
+  <div class="bd">
+    <h3>Сон</h3>
+    <div class="deck" style="height:420px">
+      <div class="gc" style="position:absolute;inset:0 0 auto;height:110px;background:linear-gradient(170deg,#DADDE3,#9DA3AE);color:#1d1d1d"><div class="t" style="font-size:15px">Луна</div><div class="s">растущая</div></div>
+      <div class="gc" style="position:absolute;left:0;right:0;top:64px;height:356px;background:var(--g-violet);padding:16px" data-choice>
+        <div class="t" style="font-size:15px">Как спалось?</div><div class="s">прошлая ночь</div>
+        <div class="cv" style="font-size:38px;font-weight:300;letter-spacing:-.03em;margin:22px 0 4px">как обычно</div>
+        <svg viewBox="0 0 260 46" style="width:100%" class="wave" aria-hidden="true"><path d="M0 30 C26 10,44 40,70 26 S120 6,150 22 S210 38,260 16" stroke="#FFE36E" stroke-width="1.5"/><path d="M150 22 l-6 -10 h12z" fill="#FFE36E" transform="translate(0,-6)"/></svg>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:22px">
+          <button class="opt bs" aria-pressed="false" data-w="почти не спала">1</button>
+          <button class="opt bs" aria-pressed="false" data-w="плохо">2</button>
+          <button class="opt bs" aria-pressed="true" data-w="как обычно">3</button>
+          <button class="opt bs" aria-pressed="false" data-w="хорошо">4</button>
+          <button class="opt bs" aria-pressed="false" data-w="отлично">5</button>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:6px" class="s"><span>почти не спала</span><span>отлично</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="bbar"><button class="cb" aria-label="Совет для сна">☾</button><button class="yp">Сохранить</button><button class="cb" aria-label="Неделя">≡</button></div>
+  <div class="home"></div>
+</div></div>
+<figcaption><span class="vlabel">B · Виджеты</span><p class="note">Колода «Analytics»: серая карточка луны за фиолетовой карточкой сна с волной и пятью кнопками-ступенями.</p><button class="like" aria-pressed="false">Нравится</button></figcaption>
+</figure>
+
+<figure class="v" data-v="C">
+<div class="phone dk"><div class="scr C">
+  <div class="aura" style="width:300px;height:300px;left:0;top:40px;background:#3A3F9E;opacity:.7"></div>
+  <div class="aura" style="width:160px;height:160px;right:-30px;top:200px;background:var(--c-lilac);opacity:.6"></div>
+  <div class="island"></div><div class="sb"><i></i><i></i><i></i><b></b></div>
+  <div class="bd">
+    <div class="mute" style="font-size:13px;margin-top:10px;text-align:center">Прошлая ночь</div>
+    <div style="width:150px;height:150px;border-radius:50%;margin:40px auto 0;background:radial-gradient(circle at 38% 38%,#F1EEE8 0,#C9C3E8 35%,rgba(140,130,220,.15) 70%,transparent 72%)"></div>
+    <div style="text-align:center;font-size:28px;font-weight:300;margin-top:22px">Спалось как обычно</div>
+    <div class="tag" style="text-align:center;margin-top:4px">засыпать стало легче</div>
+    <div style="display:flex;justify-content:center;gap:9px;margin-top:26px" aria-label="Неделя сна">
+      <span class="sd" style="opacity:.35"></span><span class="sd" style="opacity:.6"></span><span class="sd" style="opacity:.35"></span><span class="sd" style="opacity:.9"></span><span class="sd" style="opacity:.6"></span><span class="sd" style="opacity:.9"></span><span class="sd" style="background:var(--c-gold)"></span>
+    </div>
+    <div style="margin-top:auto;margin-bottom:30px"><button class="pill" style="width:100%">Совет на вечер<span class="plus">+</span></button></div>
+  </div>
+  <div class="home"></div>
+</div></div>
+<figcaption><span class="vlabel">C · Аура</span><p class="note">Синяя ночная аура и «луна»-орб, итог фразой, неделя — светящимися точками разной яркости.</p><button class="like" aria-pressed="false">Нравится</button></figcaption>
+</figure>
+
+</div></div></section>
+
+<!-- ================= 7. ДЫХАНИЕ ================= -->
+<section class="fn" data-fn="Дыхание" id="f7"><div class="wrap">
+<h2>Дыхание <small>07</small></h2>
+<p>Медленное дыхание: вдох на 4 счёта, выдох на 6. Орб растёт на вдохе и сжимается на выдохе; при «уменьшении движения» — статично.</p>
+<div class="row">
+
+<figure class="v" data-v="A">
+<div class="phone"><div class="scr A">
+  <div class="island"></div><div class="sb"><i></i><i></i><i></i><b></b></div>
+  <div class="bd">
+    <div style="display:flex;justify-content:space-between;margin-top:8px"><span class="ml">Медленное дыхание</span><span class="ml">5 циклов</span></div>
+    <div style="height:300px;display:grid;place-items:center;margin-top:20px">
+      <div class="breathe" style="width:260px;height:260px;border-radius:50%;background:radial-gradient(circle at 50% 30%,#FFE1A8 0,#FFB27A 35%,#FF7A2F 60%,rgba(185,140,255,.35) 80%,transparent 72%);filter:blur(2px)"></div>
+    </div>
+    <div class="lblstack" style="text-align:center">
+      <div class="lbl-in"><div class="big" style="font-size:44px">Вдох</div><div class="ml" style="margin-top:6px">4 счёта · через нос</div></div>
+      <div class="lbl-out"><div class="big" style="font-size:44px">Выдох</div><div class="ml" style="margin-top:6px">6 счётов · медленно</div></div>
+    </div>
+    <div class="grid2" style="margin-top:22px">
+      <div><div class="ml">Вдох</div><div class="val">4 счёта</div></div>
+      <div><div class="ml">Выдох</div><div class="val">6 счётов</div></div>
+    </div>
+    <div class="bar" style="height:8px;margin-top:12px"><span style="width:40%"></span></div>
+  </div>
+  <div class="home"></div>
+</div></div>
+<figcaption><span class="vlabel">A · Закат</span><p class="note">Закатный орб «дышит» в центре, слово фазы крупно, ритм 4 · 6 в моно-подписях, полоса прогресса цикла.</p><button class="like" aria-pressed="false">Нравится</button></figcaption>
+</figure>
+
+<figure class="v" data-v="B">
+<div class="phone"><div class="scr B">
+  <div class="island"></div><div class="sb"><i></i><i></i><i></i><b></b></div>
+  <div class="bd">
+    <h3>Дыхание</h3>
+    <div class="gc" style="background:var(--g-lime);height:420px;padding:16px;color:#0c2a1c">
+      <div class="t">Вдох 4 · выдох 6</div><div class="s">около минуты</div>
+      <div class="ring" data-ring="12" style="position:relative;width:240px;height:240px;margin:30px auto 0">
+        <div style="position:absolute;inset:0;display:grid;place-items:center">
+          <div class="breathe" style="width:140px;height:140px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#fff 0,#F4FF6E 40%,rgba(255,255,255,.1) 72%)"></div>
+        </div>
+      </div>
+      <div class="lblstack" style="text-align:center;margin-top:18px">
+        <div class="lbl-in" style="font-size:28px;font-weight:300">вдох · 4</div>
+        <div class="lbl-out" style="font-size:28px;font-weight:300">выдох · 6</div>
+      </div>
+    </div>
+  </div>
+  <div class="bbar"><button class="cb" aria-label="Закрыть">×</button><button class="yp">Пауза</button><button class="cb" aria-label="Звук">♪</button></div>
+  <div class="home"></div>
+</div></div>
+<figcaption><span class="vlabel">B · Виджеты</span><p class="note">Радиальное кольцо из 12 сфер вокруг дышащего центрального орба, как меню приложений AI OS.</p><button class="like" aria-pressed="false">Нравится</button></figcaption>
+</figure>
+
+<figure class="v" data-v="C">
+<div class="phone dk"><div class="scr C">
+  <div class="aura" style="width:300px;height:300px;left:0;top:120px;background:var(--c-sage);opacity:.65"></div>
+  <div class="island"></div><div class="sb"><i></i><i></i><i></i><b></b></div>
+  <div class="bd">
+    <div class="mute" style="text-align:center;font-size:13px;margin-top:12px">Дышите вместе с кругом</div>
+    <div class="dial" data-ticks="72" data-tone="light" style="position:relative;width:260px;height:260px;margin:44px auto 0">
+      <div style="position:absolute;inset:0;display:grid;place-items:center">
+        <div class="breathe" style="width:150px;height:150px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#fff 0,#EDEBE4 35%,rgba(255,255,255,.12) 70%)"></div>
+      </div>
+    </div>
+    <div class="lblstack" style="text-align:center;margin-top:24px">
+      <div class="lbl-in"><div style="font-size:24px;font-weight:300">Вдох</div><div class="dotnum" style="font-size:40px;margin-top:4px">4</div></div>
+      <div class="lbl-out"><div style="font-size:24px;font-weight:300">Выдох</div><div class="dotnum" style="font-size:40px;margin-top:4px">6</div></div>
+    </div>
+    <div style="margin-top:auto;margin-bottom:30px"><button class="pill" style="width:100%">Ещё минуту<span class="plus">+</span></button></div>
+  </div>
+  <div class="home"></div>
+</div></div>
+<figcaption><span class="vlabel">C · Аура</span><p class="note">Шкала-циферблат из делений вокруг белого орба (как экран сенсора veri), счёт — точечными цифрами.</p><button class="like" aria-pressed="false">Нравится</button></figcaption>
+</figure>
+
+</div></div></section>
+
+<!-- ================= 8. МНЕ ТЯЖЕЛО ================= -->
+<section class="fn" data-fn="Мне тяжело" id="f8"><div class="wrap">
+<h2>Мне тяжело <small>08</small></h2>
+<p>Помощь: телефоны, связь с врачом и заземление 5-4-3-2-1. Только тёплые цвета — без красного и тревожных сигналов.</p>
+<div class="row">
+
+<figure class="v" data-v="A">
+<div class="phone"><div class="scr A">
+  <div class="island"></div><div class="sb"><i></i><i></i><i></i><b></b></div>
+  <div style="position:absolute;inset:0 0 auto;height:230px;background:linear-gradient(180deg,#F6D9B8 0%,#F4C7A1 45%,#F7E3CF 80%,var(--a-bg) 100%)"></div>
+  <div class="bd">
+    <div style="position:relative;margin-top:8px">
+      <div class="ml" style="color:#7a4a2c">Вы не одна</div>
+      <div style="font-size:30px;font-weight:600;letter-spacing:-.03em;line-height:1.05;margin-top:40px;color:#2a1a10">Давайте сделаем это вместе, шаг за шагом</div>
+    </div>
+    <div style="margin-top:22px">
+      <a href="tel:112" class="arow"><span><span class="ml">Экстренная помощь</span><b>112</b></span><span class="call">Позвонить</span></a>
+      <a href="tel:84959895050" class="arow"><span><span class="ml">Психологическая помощь МЧС</span><b>8 495 989-50-50</b></span><span class="call">Позвонить</span></a>
+      <a href="tel:88002000122" class="arow"><span><span class="ml">Телефон доверия для подростков</span><b>8 800 2000-122</b></span><span class="call">Позвонить</span></a>
+    </div>
+    <button class="btn" style="margin-top:12px;background:#C8734F">Сообщить врачу</button>
+    <div class="ml" style="margin-top:14px">Заземление · 5 4 3 2 1</div>
+    <div style="font-size:12px;color:#5d4a3d;margin-top:4px">Назовите 5 вещей, которые видите, 4 — которые слышите…</div>
+  </div>
+  <div class="home"></div>
+</div></div>
+<figcaption><span class="vlabel">A · Закат</span><p class="note">Персиковый рассвет вместо заката, телефоны строками с моно-подписями, терракотовая кнопка «Сообщить врачу».</p><button class="like" aria-pressed="false">Нравится</button></figcaption>
+</figure>
+
+<figure class="v" data-v="B">
+<div class="phone"><div class="scr B" style="background:#F2EEE9">
+  <div class="island"></div><div class="sb"><i></i><i></i><i></i><b></b></div>
+  <div class="bd">
+    <h3 style="margin-bottom:6px">Мне тяжело</h3>
+    <p style="margin:0 0 12px;font-size:13px;color:#6b5b50">Вы не одна. Выберите, что сейчас ближе.</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <a href="tel:112" class="gc" style="background:var(--g-amber);height:104px;text-decoration:none"><div class="t">Экстренно</div><div class="n" style="font-size:40px;margin-top:20px">112</div></a>
+      <button class="gc" style="background:var(--g-peach);height:104px;border:0;text-align:left;color:#3a2316"><div class="t">Сообщить врачу</div><div class="s" style="margin-top:34px;opacity:.8">врач получит сообщение</div></button>
+    </div>
+    <a href="tel:84959895050" class="gc" style="display:block;margin-top:10px;background:linear-gradient(160deg,#E9B98F,#C8734F);text-decoration:none"><div class="t">Психологическая помощь МЧС</div><div style="font-size:22px;font-weight:300;margin-top:6px">8 495 989-50-50</div></a>
+    <a href="tel:88002000122" class="gc" style="display:block;margin-top:10px;background:linear-gradient(160deg,#F2CF9A,#D9965A);text-decoration:none"><div class="t">Телефон доверия для подростков</div><div style="font-size:22px;font-weight:300;margin-top:6px">8 800 2000-122</div></a>
+    <div class="gc" style="margin-top:10px;background:#fff;color:#3a2316;display:flex;align-items:center;justify-content:space-between">
+      <div><div class="t">Заземление</div><div class="s">через органы чувств</div></div>
+      <div style="font-weight:300;font-size:22px;letter-spacing:.12em">54321</div>
+    </div>
+  </div>
+  <div class="bbar"><button class="cb" aria-label="Назад">←</button><button class="yp" style="background:#FFD27A;box-shadow:0 4px 14px rgba(230,160,60,.4)">Начать 5-4-3-2-1</button><button class="cb" aria-label="Дыхание">◯</button></div>
+  <div class="home"></div>
+</div></div>
+<figcaption><span class="vlabel">B · Виджеты</span><p class="note">Тёплые янтарные и персиковые плитки-кнопки: каждый номер — отдельный виджет, звонок в одно касание.</p><button class="like" aria-pressed="false">Нравится</button></figcaption>
+</figure>
+
+<figure class="v" data-v="C">
+<div class="phone dk"><div class="scr C" style="background:#120D0A">
+  <div class="aura" style="width:300px;height:300px;left:-20px;top:30px;background:var(--c-amber);opacity:.5"></div>
+  <div class="aura" style="width:200px;height:200px;right:-60px;top:260px;background:#C8734F;opacity:.45"></div>
+  <div class="island"></div><div class="sb"><i></i><i></i><i></i><b></b></div>
+  <div class="bd">
+    <div style="font-size:24px;font-weight:300;line-height:1.2;margin-top:14px">Я рядом.<br><span class="mute">Давайте замедлимся.</span></div>
+    <div style="margin-top:20px;display:flex;align-items:flex-end;gap:12px">
+      <span class="dotnum" style="font-size:64px;color:#F7D9A8">5</span>
+      <span style="font-size:13px;line-height:1.3;padding-bottom:8px">вещей, которые<br>вы сейчас видите</span>
+    </div>
+    <div class="dotnum" style="font-size:20px;letter-spacing:.3em;color:#8F7A66;margin-top:4px">4 3 2 1</div>
+    <div style="margin-top:auto;margin-bottom:30px;display:flex;flex-direction:column;gap:8px">
+      <a href="tel:112" class="pill" style="text-decoration:none;background:rgba(232,163,61,.28)">112 · экстренно<span class="plus">↗</span></a>
+      <a href="tel:84959895050" class="pill" style="text-decoration:none"><span>МЧС · 8 495 989-50-50</span><span class="plus">↗</span></a>
+      <a href="tel:88002000122" class="pill" style="text-decoration:none"><span>Подросткам · 8 800 2000-122</span><span class="plus">↗</span></a>
+      <button class="pill">Сообщить врачу<span class="plus">+</span></button>
+    </div>
+  </div>
+  <div class="home"></div>
+</div></div>
+<figcaption><span class="vlabel">C · Аура</span><p class="note">Тёплая янтарная аура на тёплом тёмном, заземление ведёт точечная цифра, номера — пилюли внизу под большим пальцем.</p><button class="like" aria-pressed="false">Нравится</button></figcaption>
+</figure>
+
+</div></div></section>
+
+</main>
+
+<footer><div class="wrap">Демо «Клинический компас». Все экраны — макеты; цифры только для дат, дней, дозы, счёта дыхания и телефонов.</div></footer>
+
+<div class="selbar" role="region" aria-label="Выбор вариантов"><div class="wrap">
+  <strong>Выбрано: <span id="cnt">0</span></strong>
+  <span class="msg" id="msg" aria-live="polite"></span>
+  <button class="go" id="copy">Скопировать выбор</button>
+  <textarea id="fallback" readonly hidden aria-label="Текст выбора"></textarea>
+</div></div>
+
+<style>
+/* component styles that depend on markup above */
+.adot{width:46px;height:46px;border-radius:50%;background:var(--a-dot-off);transition:background .15s}
+.adot[aria-pressed="true"]{background:var(--a-hi)}
+.adot:hover{background:#BDBBB5}.adot[aria-pressed="true"]:hover{background:var(--a-hi)}
+.bopt{min-height:44px;border-radius:14px;background:rgba(255,255,255,.18);color:#fff;text-align:left;padding:0 14px;font-size:14px}
+.bopt[aria-pressed="true"]{background:#fff;color:#7a2a8a;font-weight:600}
+.cdot{width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.14);box-shadow:inset 0 0 0 1px rgba(255,255,255,.2)}
+.cdot[aria-pressed="true"]{background:radial-gradient(circle,#fff 0,#fff 40%,rgba(255,255,255,.4) 70%);box-shadow:0 0 24px rgba(255,255,255,.6)}
+.aq{min-height:52px;border-radius:14px;background:#fff;display:flex;justify-content:space-between;align-items:center;padding:0 14px;font-size:15px;text-align:left;box-shadow:0 0 0 1px #E2E1DC}
+.aq i{width:20px;height:20px;border-radius:50%;border:1.5px solid #151515;flex:none}
+.aq[aria-pressed="true"]{box-shadow:0 0 0 1.5px #151515}
+.aq[aria-pressed="true"] i{background:var(--a-hi);border-color:var(--a-hi)}
+.bq{height:118px;text-align:left;display:flex;align-items:flex-end;border:0;opacity:.82}
+.bq .t{font-size:15px}
+.bq[aria-pressed="true"]{opacity:1;box-shadow:inset 0 0 0 3px #fff,0 6px 16px rgba(0,0,0,.15)}
+.cq{width:100%}
+.cq .plus{width:26px;height:26px;background:transparent;border:1.5px solid rgba(255,255,255,.4);margin-right:5px}
+.cq[aria-pressed="true"]{background:#F1EEE8;color:#111}
+.cq[aria-pressed="true"] .plus{background:#111;border-color:#111}
+.pd{flex:1;height:4px;border-radius:2px;background:#3a3a3d}
+.pd.on{background:#8F8C86}.pd.now{background:#fff}
+.wd{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:11px;box-shadow:inset 0 0 0 1px #3a3a3d;color:var(--c-mute)}
+.wd:nth-child(2){background:#F1EEE8;color:#111;box-shadow:none}
+.sd{width:14px;height:14px;border-radius:50%;background:#C9C3E8}
+.bs{height:48px;border-radius:14px;background:rgba(255,255,255,.18);color:#fff;font-size:16px;font-weight:300}
+.bs[aria-pressed="true"]{background:#fff;color:#3C1FA8;font-weight:600}
+.arow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #E4DCD3;text-decoration:none}
+.arow b{display:block;font-size:18px;font-weight:500;color:#2a1a10;margin-top:2px}
+.arow .call{min-height:36px;display:inline-flex;align-items:center;border-radius:999px;padding:0 12px;background:#F4C7A1;color:#5a3218;font-size:12px;font-weight:500;flex:none}
+</style>
+
+<script>
+(function(){
+  "use strict";
+  var KEY="kompas-variations-v1";
+  var store={get:function(){try{return JSON.parse(localStorage.getItem(KEY)||"{}")||{}}catch(e){return {}}},
+             set:function(v){try{localStorage.setItem(KEY,JSON.stringify(v))}catch(e){}}};
+
+  /* --- calendar: October 2026 starts on Thursday; days 7–20 with intake, 20 = today --- */
+  document.querySelectorAll('[data-cal]').forEach(function(el){
+    var h=["пн","вт","ср","чт","пт","сб","вс"], html="";
+    h.forEach(function(x){html+='<span class="h">'+x+'</span>'});
+    for(var i=0;i<3;i++) html+='<span class="d x"></span>';
+    for(var d=1;d<=31;d++){
+      var cls=d===20?"d hi":(d>=7&&d<20?"d on":"d");
+      html+='<span class="'+cls+'" title="'+d+' октября"></span>';
+    }
+    el.innerHTML=html;
+    el.setAttribute("aria-label","Октябрь: приём отмечен с 7 по 20 октября");
+    el.setAttribute("role","img");
+  });
+
+  /* --- dial ticks --- */
+  document.querySelectorAll('[data-ticks]').forEach(function(el){
+    var n=+el.getAttribute('data-ticks'), light=el.getAttribute('data-tone')==="light";
+    var col=light?"rgba(241,238,232,":"rgba(12,42,28,";
+    var svg='<svg viewBox="0 0 200 200" style="position:absolute;inset:0;width:100%;height:100%" aria-hidden="true">';
+    for(var i=0;i<n;i++){
+      var a=i/n*Math.PI*2, long=i%(n/12)===0, r1=long?84:89, r2=96;
+      var x1=100+Math.sin(a)*r1, y1=100-Math.cos(a)*r1, x2=100+Math.sin(a)*r2, y2=100-Math.cos(a)*r2;
+      svg+='<line x1="'+x1.toFixed(1)+'" y1="'+y1.toFixed(1)+'" x2="'+x2.toFixed(1)+'" y2="'+y2.toFixed(1)+'" stroke="'+col+(long?'.9':'.45')+')" stroke-width="'+(long?1.6:1)+'" stroke-linecap="round"/>';
+    }
+    if(!light) svg+='<path d="M100 2 l-5 -0 l5 9 l5 -9z" fill="#F5D500"/>';
+    el.insertAdjacentHTML('afterbegin',svg+'</svg>');
+  });
+
+  /* --- ring of spheres around orb --- */
+  var grads=["#FF7A2F","#B65CFF","#4B82FF","#18B48A","#FFC66B","#FF4F9A"];
+  document.querySelectorAll('[data-ring]').forEach(function(el){
+    var n=+el.getAttribute('data-ring'), html="";
+    for(var i=0;i<n;i++){
+      var a=i/n*Math.PI*2, x=50+Math.sin(a)*44, y=50-Math.cos(a)*44, c=grads[i%grads.length];
+      html+='<span aria-hidden="true" style="position:absolute;left:'+x+'%;top:'+y+'%;width:28px;height:28px;margin:-14px 0 0 -14px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff 0,'+c+' 45%,#1a1a1a 100%);box-shadow:0 3px 8px rgba(0,0,0,.2)"></span>';
+    }
+    el.insertAdjacentHTML('afterbegin',html);
+  });
+
+  /* --- in-mockup interactivity --- */
+  document.addEventListener('click',function(e){
+    var o=e.target.closest('.opt');
+    if(o){
+      var g=o.closest('[data-choice]');
+      if(g){
+        g.querySelectorAll('.opt').forEach(function(b){ if(b.closest('[data-choice]')===g) b.setAttribute('aria-pressed','false'); });
+        o.setAttribute('aria-pressed','true');
+        var cv=g.querySelector('.cv'); if(cv&&o.dataset.w) cv.textContent=o.dataset.w;
+      }
+      return;
+    }
+    var t=e.target.closest('.opt-t');
+    if(t){ t.setAttribute('aria-pressed', t.getAttribute('aria-pressed')==='true'?'false':'true'); return; }
+    if(e.target.closest('.scr a[href^="tel:"]')){ e.preventDefault(); }
+  });
+
+  /* --- picks --- */
+  var picks=store.get();
+  var likes=[].slice.call(document.querySelectorAll('.like'));
+  likes.forEach(function(b){
+    var fig=b.closest('figure.v'), sec=b.closest('section.fn');
+    var key=sec.dataset.fn+'|'+fig.dataset.v;
+    b.dataset.key=key;
+    b.setAttribute('aria-label','Нравится: '+sec.dataset.fn+', вариант '+fig.querySelector('.vlabel').textContent);
+    if(picks[key]) b.setAttribute('aria-pressed','true');
+    b.addEventListener('click',function(){
+      var on=b.getAttribute('aria-pressed')!=='true';
+      b.setAttribute('aria-pressed',on?'true':'false');
+      if(on) picks[key]=1; else delete picks[key];
+      store.set(picks); render();
+    });
+  });
+  function summary(){
+    var out=[];
+    document.querySelectorAll('section.fn').forEach(function(sec){
+      var vs=[];
+      sec.querySelectorAll('figure.v').forEach(function(f){ if(picks[sec.dataset.fn+'|'+f.dataset.v]) vs.push(f.dataset.v); });
+      if(vs.length) out.push(sec.dataset.fn+' — '+vs.join(', '));
+    });
+    return out.join('; ');
+  }
+  var cnt=document.getElementById('cnt'), msg=document.getElementById('msg'), ta=document.getElementById('fallback');
+  function render(){ cnt.textContent=Object.keys(picks).length; }
+  render();
+  document.getElementById('copy').addEventListener('click',function(){
+    var text=summary()||'Ничего не выбрано';
+    function fallback(){ ta.hidden=false; ta.value=text; ta.focus(); ta.select(); msg.textContent='Скопируйте текст вручную'; }
+    try{
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(function(){ ta.hidden=true; msg.textContent='Скопировано'; },fallback);
+      } else fallback();
+    }catch(e){ fallback(); }
+  });
+})();
+</script>
+</body>
+</html>

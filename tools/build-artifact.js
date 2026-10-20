@@ -41,7 +41,7 @@ function kompas(indexHtml) {
 }
 
 function build(outDir) {
-  const files = ['index.html', 'ui-kit.html', ...['assets', 'data', 'patient', 'doctor'].flatMap(walk)]
+  const files = ['index.html', 'ui-kit.html', 'variants.html', ...['assets', 'data', 'patient', 'doctor'].flatMap(walk)]
     .filter((rel) => !path.posix.basename(rel).includes('_template'));
   for (const rel of files) {
     const src = path.join(ROOT, rel);
