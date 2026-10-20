@@ -86,7 +86,8 @@ a.tile{min-height:120px;display:flex;flex-direction:column;justify-content:space
 
 /* Чек-ин: у каждой шкалы своя гамма (токены --mood-*, --anx-*, --sleep-*). Сферы и ползунок показывают одно значение. */
 .q--mood{--q-1:var(--mood-1);--q-2:var(--mood-2);--q-3:var(--mood-3);--q-4:var(--mood-4);--q-5:var(--mood-5);--q-ink:var(--mood-ink)}
-.q--anx{--q-1:var(--anx-1);--q-2:var(--anx-2);--q-3:var(--anx-3);--q-4:var(--anx-4);--q-5:var(--anx-5);--q-ink:var(--anx-ink)}
+/* Беспокойство развёрнуто: «почти нет» — самый ясный оттенок, «очень много» — самый бледный и серый; на всех трёх шкалах лучшее состояние ярче */
+.q--anx{--q-1:var(--anx-5);--q-2:var(--anx-4);--q-3:var(--anx-3);--q-4:var(--anx-2);--q-5:var(--anx-1);--q-ink:var(--anx-ink)}
 .q--sleep{--q-1:var(--sleep-1);--q-2:var(--sleep-2);--q-3:var(--sleep-3);--q-4:var(--sleep-4);--q-5:var(--sleep-5);--q-ink:var(--sleep-ink)}
 .q .dot[data-v="1"]{--dot-c:var(--q-1)}.q .dot[data-v="2"]{--dot-c:var(--q-2)}.q .dot[data-v="3"]{--dot-c:var(--q-3)}.q .dot[data-v="4"]{--dot-c:var(--q-4)}.q .dot[data-v="5"]{--dot-c:var(--q-5)}
 .q .tile-title:focus{outline:none}
