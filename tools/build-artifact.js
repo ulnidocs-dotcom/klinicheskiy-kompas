@@ -1,5 +1,5 @@
 // Собирает копию демо, готовую к публикации как артефакт: node tools/build-artifact.js <папка>
-// - копирует index.html, ui-kit.html, assets/**, data/**, patient/**, doctor/** (без *_template*);
+// - копирует index.html, ui-kit.html, assets/**, data/**, patient/**, doctor/**, psych/** (без *_template*);
 // - вырезает из HTML подключение telegram-web-app.js (внешний скрипт вне разрешённых CDN);
 // - в doctor/profile.js заменяет confirm('Сбросить демо-данные?') на true (диалоги в песочнице заблокированы);
 // - пишет kompas.html — содержимое index.html без обёртки doctype/html/head/body;
@@ -41,7 +41,7 @@ function kompas(indexHtml) {
 }
 
 function build(outDir) {
-  const files = ['index.html', 'ui-kit.html', 'variants.html', ...['assets', 'data', 'patient', 'doctor'].flatMap(walk)]
+  const files = ['index.html', 'ui-kit.html', 'variants.html', ...['assets', 'data', 'patient', 'doctor', 'psych'].flatMap(walk)]
     .filter((rel) => !path.posix.basename(rel).includes('_template'));
   for (const rel of files) {
     const src = path.join(ROOT, rel);

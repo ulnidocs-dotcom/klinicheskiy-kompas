@@ -63,7 +63,7 @@
         const s = r.subscales[k];
         const cuts = d.severity[k];
         const bands = cuts.map((c, j) => ({ from: c, to: (cuts[j + 1] ?? 43) - 1 }));
-        return { wide: i === 0, aura: ['lilac', 'sage', 'amber'][i], label: `DASS-21 · ${s.title}`, value: s.score, unit: 'из 42',
+        return { aura: ['lilac', 'sage', 'amber'][i], label: `DASS-21 · ${s.title}`, value: s.score, unit: 'из 42',
           note: s.score == null ? 'нет данных' : s.label, visual: T.rangeBar({ value: s.score, max: 42, bands }) };
       }), { label: 'DASS-21' });
     },
@@ -87,16 +87,17 @@
       const sim = KK.battery.ctoSimilarity(cto);
       const rows = C.concepts.map((c) => `<tr><th scope="row">${esc(c.label)}</th><td>${app.colorStrip(cto.concepts && cto.concepts[c.id])}</td></tr>`).join('')
         + `<tr class="cto-pref"><th scope="row">${esc(C.preferenceLabel)}</th><td>${app.colorStrip(cto.preference)}</td></tr>`;
-      const close = sim.close.length ? sim.close : sim.pairs.slice(0, 3);
+      const close = (sim.close.length ? sim.close : sim.pairs).slice(0, 5);
       return `<table class="cto"><caption class="sr-only">Раскладки цветов по понятиям, слева — подходит больше всего</caption><tbody>${rows}</tbody></table>
         <p class="hint">Слева — цвет, который подходит больше всего. ${C.colors.map((c) => `<span class="cdot" style="--c:${c.hex}"></span>${esc(c.name)}`).join(' · ')}</p>
-        <div class="stack"><p class="badge badge--info">${esc(sim.note)}</p>
-          ${close.length ? `<ul class="feed">${close.map((p) => `<li><span>${esc(p.text)}</span></li>`).join('')}</ul>` : '<p class="hint">Недостаточно полных раскладок для сравнения.</p>'}</div>`;
+        <div class="stack"><p class="note-label">${esc(sim.note)}</p>
+          ${close.length ? `<ul class="plist">${close.map((p) => `<li>${esc(p.text)}</li>`).join('')}</ul>` : '<p class="hint">Недостаточно полных раскладок для сравнения.</p>'}
+          ${sim.pairs.length > close.length ? `<p class="hint">Показаны ${close.length} наиболее совпадающих пар из ${sim.pairs.length}.</p>` : ''}</div>`;
     },
     formHtml(form) {
       if (!form) return '<p class="hint">Анкета не заполнена.</p>';
       const yn = (v) => (v === true ? 'да' : v === false ? 'нет' : 'нет ответа');
-      return `<dl class="kv">${KK.data.intake.form.map((q) => {
+      return `<dl class="kv kv--stack">${KK.data.intake.form.map((q) => {
         const v = form[q.id];
         if (q.when && !q.when(form)) return '';
         const shown = q.type === 'yesno' ? yn(v) : v ? `«${v}»` : 'нет ответа';
@@ -105,8 +106,8 @@
       }).join('')}</dl>`;
     },
     routeHtml(route) {
-      const reasons = route.reasons.length ? `<ul class="feed">${route.reasons.map((r) => `<li><span>${app.levelBadge(r.level, { short: true })} ${esc(r.text)}<br>`
-        + `<span class="src hint">${esc(r.source)} · ${esc(r.note)}</span></span></li>`).join('')}</ul>` : '<p class="hint">Правила не сработали.</p>';
+      const reasons = route.reasons.length ? `<ul class="plist">${route.reasons.map((r) => `<li>${app.levelBadge(r.level, { short: true })}${esc(r.text)}<br>`
+        + `<span class="hint">${esc(r.source)} · ${esc(r.note)}</span></li>`).join('')}</ul>` : '<p class="hint">Правила не сработали.</p>';
       const missing = route.missing.length ? `<p class="hint">Нет данных: ${esc(route.missing.map((m) => ({ form: 'анкета', cssrs: 'C-SSRS', dass21: 'DASS-21' })[m] || m).join(', '))}</p>` : '';
       return `${app.levelBadge(route.level)}${reasons}${missing}`;
     },

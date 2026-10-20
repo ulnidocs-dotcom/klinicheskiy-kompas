@@ -1,4 +1,4 @@
-// ВРЕМЕННО (демо): плавающий переключатель «Пациент | Врач» на всех страницах.
+// ВРЕМЕННО (демо): плавающий переключатель «Пациент | Врач | Психолог» на всех страницах.
 // Удаление: убрать этот файл и тег <script src="…assets/demo-switch.js"> из HTML.
 (function (g) {
   const KK = g.KK;
@@ -6,10 +6,11 @@
   const path = location.pathname;
   const inPatient = /\/patient\//.test(path);
   const inDoctor = /\/doctor\//.test(path);
-  const base = inPatient || inDoctor ? '../' : '';
+  const inPsych = /\/psych\//.test(path);
+  const base = inPatient || inDoctor || inPsych ? '../' : '';
   const params = new URLSearchParams(location.search);
   const known = (id) => !!(id && KK.store.patient(id));
-  let pid = inDoctor ? params.get('id') : params.get('p');
+  let pid = inDoctor || inPsych ? params.get('id') : params.get('p');
   if (!known(pid)) { try { pid = sessionStorage.getItem('kk:pid'); } catch (e) { pid = null; } }
   if (!known(pid)) pid = KK.store.activePatientId();
 
@@ -28,7 +29,8 @@
   nav.setAttribute('aria-label', 'Демо: переключение кабинета');
   nav.innerHTML = `<span class="tag">Демо</span>
     <a href="${base}patient/index.html?p=${encodeURIComponent(pid)}" data-demo-role="patient" ${inPatient ? 'aria-current="page"' : ''}>Пациент</a>
-    <a href="${base}doctor/patient.html?id=${encodeURIComponent(pid)}" ${inDoctor ? 'aria-current="page"' : ''}>Врач</a>`;
+    <a href="${base}doctor/patient.html?id=${encodeURIComponent(pid)}" ${inDoctor ? 'aria-current="page"' : ''}>Врач</a>
+    <a href="${base}${KK.store.patient(pid)?.intake ? `psych/patient.html?id=${encodeURIComponent(pid)}` : 'psych/index.html'}" ${inPsych ? 'aria-current="page"' : ''}>Психолог</a>`;
   document.body.appendChild(nav);
 
   // Переход в кабинет пациента без онбординга — только для демо.

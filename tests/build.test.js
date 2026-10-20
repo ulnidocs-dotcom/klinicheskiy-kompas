@@ -11,6 +11,7 @@ test('build-artifact: copies pages without templates/telegram, patches confirm, 
     const list = build(out);
     assert.ok(!list.includes('index.html') && !list.includes('kompas.html'));
     assert.ok(list.includes('assets/theme.js') && list.includes('patient/index.html') && list.includes('doctor/profile.js'));
+    assert.ok(['psych/index.html', 'psych/patient.js', 'patient/intake.html', 'assets/battery.js', 'data/cto.js'].every((f) => list.includes(f)));
     assert.ok(!list.some((f) => f.includes('_template')));
     for (const f of list.filter((x) => x.endsWith('.html'))) assert.doesNotMatch(fs.readFileSync(path.join(out, f), 'utf8'), /telegram\.org/, f);
     assert.doesNotMatch(fs.readFileSync(path.join(out, 'doctor/profile.js'), 'utf8'), /confirm\(/);

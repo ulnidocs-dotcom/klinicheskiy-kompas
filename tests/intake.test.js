@@ -234,3 +234,22 @@ test('patientApp.intakeNextStep follows saved parts; cssrsShown asks 3–5 only 
   s2.addEvent('p_anna', 'scale', { scaleId: 'cssrs', answers: [0, 0, null, null, null, 0] });
   assert.equal(s2.intakeOf('p_anna').cssrs, null);
 });
+
+test('pages: every local <script src> exists; psych pages load battery, intake data and psych shell', () => {
+  const fs = require('node:fs'), path = require('node:path');
+  const root = path.join(__dirname, '..');
+  for (const dir of ['patient', 'doctor', 'psych']) {
+    for (const f of fs.readdirSync(path.join(root, dir)).filter((x) => x.endsWith('.html'))) {
+      const html = fs.readFileSync(path.join(root, dir, f), 'utf8');
+      for (const m of html.matchAll(/<script src="([^"]+)"/g)) {
+        if (/^https?:/.test(m[1])) continue;
+        assert.ok(fs.existsSync(path.join(root, dir, m[1])), `${dir}/${f}: ${m[1]}`);
+      }
+      if (dir === 'psych') {
+        for (const need of ['../assets/battery.js', '../data/intake.js', '../data/cto.js', '../assets/psych.js', '../assets/doctor.js', `${f.replace('.html', '.js')}`]) {
+          assert.ok(html.includes(`src="${need}"`), `${dir}/${f} lacks ${need}`);
+        }
+      }
+    }
+  }
+});

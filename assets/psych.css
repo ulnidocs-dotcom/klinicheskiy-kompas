@@ -1,0 +1,26 @@
+/* Кабинет клинического психолога: поверх doctor.css (те же токены роли «врач»). */
+.tipi{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.tipi li{display:grid;grid-template-columns:1fr auto;align-items:center;gap:4px 12px}
+.tipi__l{font-size:13px;color:var(--text-2)}
+.tipi__bar{grid-column:1/-1;grid-row:2;position:relative;height:8px;border-radius:4px;background:var(--surface-2);overflow:hidden}
+.tipi__bar i{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:var(--text-2)}
+.tipi__v{font-size:13px;text-align:right;font-weight:500}
+.cto{border-collapse:collapse;width:100%}
+.cto th{text-align:left;font-weight:400;font-size:13px;color:var(--text-2);padding:5px 12px 5px 0;white-space:nowrap;width:1%}
+.cto td{padding:5px 0}
+.cto .cto-pref th,.cto .cto-pref td{border-top:1px solid var(--line);padding-top:10px}
+.cstrip{list-style:none;margin:0;padding:0;display:flex;gap:4px}
+.cstrip li{flex:1;max-width:44px;height:22px;border-radius:6px;background:var(--c);border:1px solid var(--line)}
+.cdot{display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--c);border:1px solid var(--line);margin-right:4px;vertical-align:-1px}
+.q-list{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:8px}
+.decision{display:flex;flex-direction:column;gap:12px}
+.legal{font-size:12px;color:var(--text-3)}
+.psy-banner{display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap;padding:14px 16px;border-radius:12px;border:2px solid var(--crit-ink);background:var(--crit-tint);margin-bottom:16px}
+.psy-banner p{margin:0;flex:1;min-width:220px}
+.err{color:var(--crit-ink);font-size:13px}
+.plist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.plist li{padding-bottom:10px;border-bottom:1px solid var(--line)}
+.plist li:last-child{border-bottom:0;padding-bottom:0}
+.plist .badge{margin-right:6px}
+.note-label{display:inline-block;padding:4px 10px;border-radius:8px;background:var(--surface-2);color:var(--text-2);font-size:12px;font-weight:600}
+.kv.kv--stack{display:block}.kv--stack dt{color:var(--text-3);font-size:12px;margin-top:10px}.kv--stack dt:first-child{margin-top:0}.kv--stack dd{margin:2px 0 0}
