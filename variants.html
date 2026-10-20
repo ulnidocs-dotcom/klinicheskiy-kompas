@@ -6,13 +6,13 @@
 <title>Вариации · Компас</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Doto:wght@500;700;900&family=JetBrains+Mono:wght@400;500&family=Onest:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Onest:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
   --page:#ECEBE7; --ink:#1B1B1A; --ink-2:#5E5D58; --line:#D6D4CE; --card:#F6F5F2;
   --accent:#FF7A2F; --accent-2:#B98CFF; --focus:#2F5BFF;
   --f-ui:"Onest",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
-  --f-dot:"Doto","Onest",ui-monospace,monospace;
+  --f-dot:"Onest",system-ui,sans-serif;
   --f-mono:"JetBrains Mono","IBM Plex Mono",ui-monospace,Consolas,monospace;
   /* A — Закат */
   --a-bg:#F3F2EF; --a-ink:#151515; --a-mute:#8C8B86; --a-dot:#1A1A1A; --a-dot-off:#D3D2CD; --a-hi:#FF6A1F;
@@ -111,7 +111,7 @@ figcaption{display:flex;flex-direction:column;gap:8px}
 .aura{position:absolute;border-radius:50%;filter:blur(38px);pointer-events:none}
 .C .bd{z-index:2}
 .C .mute{color:var(--c-mute)}
-.dotnum{font-family:var(--f-dot);font-weight:700;letter-spacing:.02em;line-height:.9}
+.dotnum{font-family:var(--f-dot);font-weight:300;letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums}
 .pill{min-height:48px;border-radius:999px;border:0;background:var(--c-pill);color:var(--c-ink);display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 6px 0 18px;font-size:14px;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
 .pill .plus{width:36px;height:36px;border-radius:50%;background:#fff;color:#111;display:grid;place-items:center;font-size:20px;font-weight:400;flex:none}
 .ctile{border-radius:22px;padding:12px;position:relative;overflow:hidden;background:#1A1A1C}

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600&family=Doto:wght@600;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600&display=swap');
 
 /*
   Визуальная система «Компас» по референсу veri (RondesignLab), выбран 2026-10-19.
@@ -10,7 +10,7 @@
 :root {
   --font-head: 'Onest', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-body: 'Onest', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-num: 'Doto', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  --font-num: 'Onest', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --radius-s: 12px; --radius-m: 20px; --radius-l: 24px;
   --tap: 44px;
   --dur: 180ms;

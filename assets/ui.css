@@ -21,7 +21,7 @@ code{font-size:.92em}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 
 /* Цифры точечной матрицей — только для нейтральных крупных чисел */
-.num{font-family:var(--font-num);font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:.02em;line-height:1}
+.num{font-family:var(--font-num);font-weight:300;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1}
 .num--xl{font-size:64px}.num--l{font-size:40px}.num--m{font-size:28px}.num--s{font-size:20px}
 
 /* Ауры: мягкие радиальные градиенты без filter:blur. Пиковая альфа — --aura-alpha (контраст проверяет tests/contrast.test.js),

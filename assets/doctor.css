@@ -15,7 +15,7 @@
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:18px}
 .tile{position:relative;border:1px solid var(--line);border-radius:18px;padding:14px 16px 16px;display:flex;flex-direction:column;gap:12px;min-height:112px;justify-content:space-between}
 .tile:not(.aura){background:var(--surface)}
-.tile .n{font-family:var(--font-num);font-weight:800;font-size:40px;line-height:.9;letter-spacing:.02em;font-variant-numeric:tabular-nums}
+.tile .n{font-family:var(--font-num);font-weight:300;font-size:40px;line-height:1;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
 .tile .n small{font-family:var(--font-body);font-weight:400;font-size:14px;letter-spacing:0;color:var(--text-2);margin-left:4px}
 .tile .hint{order:-1}
 .tile--crit{border:2px solid var(--crit-ink)}.tile--crit .n{color:var(--crit-ink)}
@@ -60,7 +60,7 @@ mark.hl{border-radius:4px;padding:0 2px;color:var(--text)}
 @media (max-width:900px){.thread{grid-template-columns:1fr}}
 
 /* Последние значения шкал точечной матрицей (только у врача) */
-.score{font-family:var(--font-num);font-weight:800;font-size:22px;line-height:1;letter-spacing:.02em;font-variant-numeric:tabular-nums;min-width:2ch}
+.score{font-family:var(--font-num);font-weight:500;font-size:22px;line-height:1;letter-spacing:-.01em;font-variant-numeric:tabular-nums;min-width:2ch}
 .metrics{display:flex;gap:24px;flex-wrap:wrap}
 .metric{display:flex;flex-direction:column;gap:6px}
 .metric .score{font-size:34px}
