@@ -53,6 +53,8 @@
       const d = KK.data.scales[id];
       return d.audience ? null : d;
     },
+    // Черновик первичной беседы на устройстве (переживает закрытие вкладки; сбрасывается при завершении и сбросе демо).
+    intakeDraftKey: (pid) => `kk:intake-draft:${pid}`,
     // Плитка «Первичная беседа с психологом» — пока приём назначен и пациент его не завершил.
     intakeDue: (p) => !!(p && p.intake && (p.intakeStatus === 'assigned' || p.intakeStatus === 'in_progress')),
     // Следующий шаг батареи по уже сохранённым частям (store.intakeOf): intro → form → cssrs → tipi10 → dass21 → cto → done.

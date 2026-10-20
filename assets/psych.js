@@ -20,7 +20,9 @@
   const app = {
     NAV, STATUS,
     statusLabel: (s) => STATUS[s] || '—',
-    critical: (p) => !!(p && p.openAlerts && p.openAlerts.some((a) => a.level === 'critical')),
+    // Открытые для психолога критические сигналы: не подтверждены врачом (openAlerts) и не подтверждены психологом.
+    openCritical: (p) => ((p && p.openAlerts) || []).filter((a) => a.level === 'critical' && !(a.ackBy && a.ackBy.psy)),
+    critical: (p) => app.openCritical(p).length > 0,
     queue(patients) {
       return (patients || []).filter((p) => p.intake && p.intakeStatus)
         .sort((a, b) => (app.critical(b) - app.critical(a)) || (STATUS_ORDER[a.intakeStatus] - STATUS_ORDER[b.intakeStatus])
@@ -30,6 +32,12 @@
       if (!level) return '<span class="badge badge--warn">Нет данных для предложения</span>';
       const L = KK.data.intake.levels[level];
       return `<span class="badge ${LEVEL_BADGE[level]}">${esc(short ? L.short : L.label)}</span>`;
+    },
+    // Предупреждение при понижении обязательного маршрута к психиатру (основание — C-SSRS или анкета).
+    downgradeWarning(route, level) {
+      if (!route || route.level !== 'psychiatrist_required' || level === 'psychiatrist_required' || !KK.battery.mandatoryHard(route)) return '';
+      return `<div class="psy-banner" role="alert"><p><b>Понижение обязательного маршрута к психиатру.</b> Основание — ${esc(route.reasons.filter((r) => r.level === 'psychiatrist_required' && r.kind !== 'dass').map((r) => r.text).join('; '))}.
+        Опишите причину не короче 20 символов; решение будет отмечено в журнале, лечащий врач получит уведомление.</p></div>`;
     },
     statusBadge(p) {
       const cls = p.intakeStatus === 'completed' ? 'badge--warn' : p.intakeStatus === 'decided' ? 'badge--ok' : 'badge--info';
@@ -122,12 +130,13 @@
         <div class="d-me"><div class="d-me__who"><b>${esc(psy.name)}</b><span class="hint">${esc(psy.specialty)}</span></div>
           ${KK.theme ? KK.theme.toggleHtml() : ''}</div>`);
     },
-    // Критическое окно психолога: только пациенты с первичным приёмом; показ отмечается отдельно (seenBy.psy),
-    // чтобы не «съесть» доставку врачу.
+    // Критическое окно психолога: только C-SSRS из самоотчёта первичного приёма (origin 'intake'), не si_phq9
+    // и не оценка врача. Показ и подтверждение отмечаются для психолога отдельно (seenBy.psy, ackBy.psy) —
+    // доставка и подтверждение врача не затрагиваются.
     pickCritical(alerts, openId) {
       if (openId) return null;
-      return alerts.find((a) => a.level === 'critical' && !a.ackAt && !(a.seenBy && a.seenBy.psy)
-        && !!(KK.store.patient(a.patientId) || {}).intake) || null;
+      return alerts.find((a) => a.level === 'critical' && a.ruleId === 'cssrs_risk' && a.origin === 'intake' && !a.ackAt
+        && !(a.ackBy && a.ackBy.psy) && !(a.seenBy && a.seenBy.psy)) || null;
     },
     start({ nav } = {}) {
       return KK.doctorApp.start({ nav, renderSide: app.renderSide, pick: app.pickCritical, mark: (id) => KK.store.markSeen(id, 'psy'),

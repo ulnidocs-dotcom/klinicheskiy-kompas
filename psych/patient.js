@@ -11,13 +11,13 @@
   function safety(it, p) {
     const band = it.cssrs && it.cssrs.band;
     const crit = band && (band.code === 'moderate' || band.code === 'high');
-    const open = p.openAlerts.filter((a) => a.level === 'critical');
-    const banner = open.length ? `<div class="psy-banner" role="alert">${ui.icon('alert', 20)}<p><b>${ui.esc(open[0].title)}.</b> ${ui.esc(open[0].text)}</p>
-        <button class="btn" data-ack="${ui.esc(open[0].id)}" data-action="Связался с пациентом">Связался с пациентом</button></div>` : '';
+    // Все открытые для психолога критические сигналы по пациенту (подтверждение психолога не закрывает их у врача).
+    const banner = P.openCritical(p).map((a) => `<div class="psy-banner" role="alert">${ui.icon('alert', 20)}<p><b>${ui.esc(a.title)}.</b> ${ui.esc(a.text)}</p>
+        <button class="btn" data-ack="${ui.esc(a.id)}" data-action="Связалась с пациентом">Связалась с пациентом</button></div>`).join('');
     return { banner, html: `<section class="card stack"><div class="row-between"><h2>Безопасность · C-SSRS</h2>${it.at.cssrs ? `<span class="hint">${ui.fmtDateTime(it.at.cssrs)}</span>` : ''}</div>
       ${band ? `<p>${crit ? '<span class="badge badge--critical">Критично</span> ' : band.code === 'none' ? '<span class="badge badge--ok">Риск не выявлен</span> ' : '<span class="badge badge--warn">Есть положительные ответы</span> '}${ui.esc(band.doctorLabel)}</p>`
         : '<p class="hint">Скрининг ещё не пройден.</p>'}
-      <p class="hint">${ui.esc(data.scales.cssrs.source)} · формулировки самоотчёта: ${ui.esc(data.intake.cssrsPatient.verify)}</p></section>` };
+      <p class="hint">${ui.esc(data.scales.cssrs.source)} · формулировки самоотчёта ${ui.esc(data.intake.cssrsPatient.verify)}</p></section>` };
   }
 
   function decisionBlock(p, it, route) {
@@ -28,14 +28,16 @@
     const form = st.editing ? `<div class="decision" role="group" aria-labelledby="dlabel">
         <p id="dlabel"><b>Изменить маршрут</b></p>
         <label class="field"><span class="hint">Маршрут</span><select id="lvl">${LV.map((l) => `<option value="${l}" ${l === (st.level || dec?.level || route.level) ? 'selected' : ''}>${ui.esc(B.levelLabel(l))}</option>`).join('')}</select></label>
-        <label class="field"><span class="hint">Причина (обязательно, если маршрут отличается от предложенного)</span><textarea id="note" rows="3">${ui.esc(st.note)}</textarea></label>
+        ${P.downgradeWarning(route, st.level || dec?.level || route.level)}
+        <label class="field"><span class="hint">${route.level ? 'Причина (обязательно, если маршрут отличается от предложенного)' : 'Причина (обязательно: система не предложила маршрут)'}</span><textarea id="note" rows="3">${ui.esc(st.note)}</textarea></label>
         ${st.error ? `<p class="err" role="alert">${ui.esc(st.error)}</p>` : ''}
         <div class="row wrap"><button class="btn btn--primary" data-save>Сохранить решение</button><button class="btn btn--ghost" data-cancel>Отмена</button></div></div>` : '';
     const decided = dec ? `<p>Решение ${ui.fmtDateTime(dec.at)}: ${P.levelBadge(dec.level)}${dec.overridden ? ' <span class="hint">· изменено относительно предложения</span>' : ''}</p>
         ${dec.note ? `<p class="hint">Причина / комментарий: «${ui.esc(dec.note)}»</p>` : ''}` : '';
-    const handoff = dec ? (it.intake.handoff
-      ? `<p class="hint">${ui.icon('check', 14)} Передано лечащему врачу ${ui.fmtDateTime(it.intake.handoff.at)}</p>`
-      : '<button class="btn" data-handoff>Передать лечащему врачу</button>') : '';
+    const ho = it.intake.handoff;
+    const handoff = dec ? (ho && !ho.outdated
+      ? `<p class="hint">${ui.icon('check', 14)} Передано лечащему врачу ${ui.fmtDateTime(ho.at)}</p>`
+      : `${ho ? '<p class="hint">Маршрут изменён после передачи — прежняя сводка устарела.</p>' : ''}<button class="btn" data-handoff>${ho ? 'Передать обновлённую сводку' : 'Передать лечащему врачу'}</button>`) : '';
     const buttons = st.editing ? '' : `<div class="row wrap">
         ${!dec && route.level ? '<button class="btn btn--primary" data-confirm>Подтвердить маршрут</button>' : ''}
         <button class="btn" data-edit>${dec ? 'Изменить решение' : 'Изменить'}</button>${handoff}</div>`;
@@ -81,7 +83,7 @@
   }
 
   document.addEventListener('input', (e) => { if (e.target.id === 'note') st.note = e.target.value; });
-  document.addEventListener('change', (e) => { if (e.target.id === 'lvl') st.level = e.target.value; });
+  document.addEventListener('change', (e) => { if (e.target.id === 'lvl') { st.level = e.target.value; render(); } });
   document.addEventListener('click', (e) => {
     const it = store.intakeOf(id);
     const route = B.routeIntake(it);

@@ -1,19 +1,19 @@
 // Первичная беседа с психологом: анкета → безопасность (C-SSRS) → TIPI-RU → DASS-21 → ЦТО (по желанию).
-// Один вопрос на экран, «Назад», «Сделать перерыв» (черновик в sessionStorage). Пациенту — только слова, без баллов.
+// Один вопрос на экран, «Назад», «Сделать перерыв» (черновик в localStorage, ключ kk:intake-draft:<id>). Пациенту — только слова, без баллов.
 (function () {
   const { ui, store, patientApp: app, data } = KK;
   const ctx = app.start({ tab: null, back: 'index.html' });
   if (!ctx) return;
   const D = data.intake, C = data.cto, S = data.scales;
   const COPY = app.INTAKE_COPY;
-  const DRAFT = `kk:intake:${ctx.pid}`;
+  const DRAFT = app.intakeDraftKey(ctx.pid);
   const STEP_N = { form: 1, cssrs: 2, tipi10: 3, dass21: 4, cto_intro: 5, cto: 5 };
   if (!store.intakeOf(ctx.pid)) { location.replace('index.html'); return; }
 
   let st = { step: null, i: 0, form: {}, cssrs: [], tipi10: [], dass21: [], cto: { k: 0, concepts: {}, preference: [], cur: [] } };
-  try { const d = JSON.parse(sessionStorage.getItem(DRAFT)); if (d && typeof d === 'object') st = Object.assign(st, d); } catch (e) { /* */ }
-  const save = () => { try { sessionStorage.setItem(DRAFT, JSON.stringify(st)); } catch (e) { /* приватный режим */ } };
-  const drop = () => { try { sessionStorage.removeItem(DRAFT); } catch (e) { /* */ } };
+  try { const d = JSON.parse(localStorage.getItem(DRAFT)); if (d && typeof d === 'object') st = Object.assign(st, d); } catch (e) { /* */ }
+  const save = () => { try { localStorage.setItem(DRAFT, JSON.stringify(st)); } catch (e) { /* приватный режим */ } };
+  const drop = () => { try { localStorage.removeItem(DRAFT); } catch (e) { /* */ } };
   let busy = false, focusQ = true;
 
   // Шаг из сохранённых частей важнее черновика: часть, уже отправленная психологу, не проходится заново.
@@ -134,8 +134,7 @@
 
   function finish(cto) {
     try {
-      store.addEvent(ctx.pid, 'cto', cto);
-      store.completeIntake(ctx.pid);
+      store.completeIntake(ctx.pid, { cto }); // проверка частей — до записи ЦТО: повтор не создаст дубль
     } catch (err) { app.toast('Не получилось сохранить. Попробуйте ещё раз'); return; }
     drop();
     st.step = 'done';
@@ -183,7 +182,8 @@
       const v = raw === 'true' ? true : raw === 'false' ? false : Number(raw);
       document.querySelectorAll('.choice').forEach((b) => b.setAttribute('aria-pressed', String(b === c)));
       KK.tg.haptic();
-      setTimeout(() => { busy = false; answered(v); }, 220);
+      // busy снимается только после перерисовки, иначе быстрый второй тап ответит на следующий вопрос дважды.
+      setTimeout(() => { try { answered(v); } finally { busy = false; } }, 220);
       return;
     }
     if (e.target.closest('[data-next]') && st.step === 'form') {

@@ -72,7 +72,7 @@
       <td><div class="row wrap"><a class="btn" href="patient/index.html?p=${p.id}">Как пациент</a>${p.intake ? `<a class="btn" href="psych/patient.html?id=${p.id}">Как психолог</a>` : ''}</div></td></tr>`).join('');
   }
   document.getElementById('reset').onclick = () => {
-    try { Object.keys(localStorage).filter((k) => k.startsWith('kk:linked:') || k.startsWith('kk:prefs:')).forEach((k) => localStorage.removeItem(k)); } catch (e) { /* приватный режим */ }
+    try { Object.keys(localStorage).filter((k) => k.startsWith('kk:linked:') || k.startsWith('kk:prefs:') || k.startsWith('kk:intake-draft:')).forEach((k) => localStorage.removeItem(k)); } catch (e) { /* приватный режим */ }
     s.reset(); render();
   };
   s.subscribe(render);
