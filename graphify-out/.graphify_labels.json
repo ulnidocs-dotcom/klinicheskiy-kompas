@@ -67,5 +67,7 @@
   "65": "profile.js",
   "66": "cto.js",
   "67": "intake.js",
-  "68": "materials.js"
+  "68": "materials.js",
+  "69": "responsive-audit.js",
+  "70": "store.js"
 }

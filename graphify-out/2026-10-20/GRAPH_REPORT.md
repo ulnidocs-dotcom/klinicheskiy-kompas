@@ -1,16 +1,16 @@
 # Graph Report - klinicheskiy-kompas  (2026-10-20)
 
 ## Corpus Check
-- 76 files · ~91,544 words
+- 77 files · ~94,699 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 442 nodes · 473 edges · 69 communities (56 shown, 13 thin omitted)
-- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 15 edges (avg confidence: 0.7)
+- 457 nodes · 490 edges · 69 communities (56 shown, 13 thin omitted)
+- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 16 edges (avg confidence: 0.71)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `6df15c17`
+- Built from commit: `faddafdb`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -159,7 +159,7 @@ Cohesion: 0.22
 Nodes (17): checkinOn(), checkinCard(), closeFlow(), doneCard(), glide(), header(), helpCard(), intakeCard() (+9 more)
 
 ### Community 42 - "doctor.js"
-Cohesion: 0.14
+Cohesion: 0.12
 Nodes (10): audio(), beep(), closeCriticalModal(), patientHeader(), renderSide(), showCriticalModal(), signalBadge(), signalHtml() (+2 more)
 
 ### Community 43 - "Клинический компас — демо-прототип"
@@ -179,7 +179,7 @@ Cohesion: 0.27
 Nodes (6): dotLayout(), dotRow(), frac(), rangeBar(), ringArc(), ringGauge()
 
 ### Community 58 - "psych.js"
-Cohesion: 0.18
+Cohesion: 0.16
 Nodes (6): colorStrip(), ctoHtml(), levelBadge(), queue(), renderSide(), routeHtml()
 
 ### Community 59 - "intake.js"
@@ -187,8 +187,8 @@ Cohesion: 0.32
 Nodes (12): answered(), cssrsStep(), ctoIntro(), ctoStep(), done(), finish(), formStep(), go() (+4 more)
 
 ### Community 60 - "battery.test.js"
-Cohesion: 0.20
-Nodes (10): A_ITEMS, assert, cs(), CS_NONE, D_ITEMS, dass(), intake(), NO (+2 more)
+Cohesion: 0.10
+Nodes (18): A_ITEMS, assert, cs(), CS_NONE, D_ITEMS, dass(), intake(), NO (+10 more)
 
 ### Community 61 - "battery.js"
 Cohesion: 0.43
@@ -199,7 +199,7 @@ Cohesion: 0.25
 Nodes (4): assert, FORM, NOW, test
 
 ## Knowledge Gaps
-- **133 isolated node(s):** `name`, `version`, `private`, `description`, `test` (+128 more)
+- **138 isolated node(s):** `name`, `version`, `private`, `description`, `test` (+133 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **13 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -207,13 +207,13 @@ Nodes (4): assert, FORM, NOW, test
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `checkinOn()` connect `today.js` to `patient.js`?**
-  _High betweenness centrality (0.009) - this node is a cross-community bridge._
-- **Why does `save()` connect `today.js` to `intake.js`?**
   _High betweenness centrality (0.008) - this node is a cross-community bridge._
+- **Why does `save()` connect `today.js` to `intake.js`?**
+  _High betweenness centrality (0.007) - this node is a cross-community bridge._
 - **Why does `go()` connect `intake.js` to `today.js`?**
   _High betweenness centrality (0.003) - this node is a cross-community bridge._
 - **What connects `name`, `version`, `private` to the rest of the system?**
-  _133 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _138 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Структура файлов` be split into smaller, more focused modules?**
   _Cohesion score 0.125 - nodes in this community are weakly interconnected._
 - **Should `Структура файлов` be split into smaller, more focused modules?**

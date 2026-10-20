@@ -1,16 +1,16 @@
 # Graph Report - klinicheskiy-kompas  (2026-10-20)
 
 ## Corpus Check
-- 77 files · ~94,699 words
+- 78 files · ~97,342 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 457 nodes · 490 edges · 69 communities (56 shown, 13 thin omitted)
+- 472 nodes · 508 edges · 71 communities (58 shown, 13 thin omitted)
 - Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 16 edges (avg confidence: 0.71)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `faddafdb`
+- Built from commit: `456db6ae`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -65,9 +65,9 @@
 5. `render()` - 11 edges
 6. `render()` - 10 edges
 7. `Клинический компас — демо-прототип` - 8 edges
-8. `head()` - 6 edges
-9. `save()` - 6 edges
-10. `13. Роль: клинический психолог (2026-10-20, `feat/psychologist`)` - 6 edges
+8. `current()` - 6 edges
+9. `head()` - 6 edges
+10. `save()` - 6 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `render()` --indirect_call--> `pid()`  [INFERRED]
@@ -84,7 +84,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (69 total, 13 thin omitted)
+## Communities (71 total, 13 thin omitted)
 
 ### Community 0 - "Структура файлов"
 Cohesion: 0.12
@@ -147,11 +147,11 @@ Cohesion: 0.60
 Nodes (5): extract(), extractAge(), extractEgfr(), mentions(), negated()
 
 ### Community 23 - "store.js"
-Cohesion: 0.27
-Nodes (8): createStore(), current(), read(), set(), sync(), systemDark(), toggle(), toggleHtml()
+Cohesion: 0.26
+Nodes (11): get(), apply(), current(), migrate(), pref(), resolve(), set(), sync() (+3 more)
 
 ### Community 29 - "patient.js"
-Cohesion: 0.08
+Cohesion: 0.09
 Nodes (8): dayTitle(), noonOf(), pathTiles(), pid(), start(), trendWord(), render(), render()
 
 ### Community 30 - "today.js"
@@ -171,8 +171,8 @@ Cohesion: 0.17
 Nodes (13): assert, { build }, fs, os, path, test, build(), fs (+5 more)
 
 ### Community 54 - "contrast.test.js"
-Cohesion: 0.15
-Nodes (10): assert, AURA_HUES, css, fs, lum(), PAIRS, path, ratio() (+2 more)
+Cohesion: 0.10
+Nodes (15): assert, AURA_HUES, colorOf(), css, fs, lum(), PAIRS, path (+7 more)
 
 ### Community 55 - "tiles.js"
 Cohesion: 0.27
@@ -199,7 +199,7 @@ Cohesion: 0.25
 Nodes (4): assert, FORM, NOW, test
 
 ## Knowledge Gaps
-- **138 isolated node(s):** `name`, `version`, `private`, `description`, `test` (+133 more)
+- **141 isolated node(s):** `name`, `version`, `private`, `description`, `test` (+136 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **13 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
@@ -207,13 +207,13 @@ Nodes (4): assert, FORM, NOW, test
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `checkinOn()` connect `today.js` to `patient.js`?**
-  _High betweenness centrality (0.008) - this node is a cross-community bridge._
+  _High betweenness centrality (0.011) - this node is a cross-community bridge._
 - **Why does `save()` connect `today.js` to `intake.js`?**
-  _High betweenness centrality (0.007) - this node is a cross-community bridge._
-- **Why does `go()` connect `intake.js` to `today.js`?**
-  _High betweenness centrality (0.003) - this node is a cross-community bridge._
+  _High betweenness centrality (0.009) - this node is a cross-community bridge._
+- **Why does `get()` connect `store.js` to `patient.js`?**
+  _High betweenness centrality (0.006) - this node is a cross-community bridge._
 - **What connects `name`, `version`, `private` to the rest of the system?**
-  _138 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _141 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Структура файлов` be split into smaller, more focused modules?**
   _Cohesion score 0.125 - nodes in this community are weakly interconnected._
 - **Should `Структура файлов` be split into smaller, more focused modules?**
