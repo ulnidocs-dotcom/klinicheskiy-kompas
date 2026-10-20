@@ -11,6 +11,7 @@
     const msgs = store.messages(pid);
     ui.preserveFocus(() => ui.mount('#app', `
       <div class="page-head"><h1>Сообщения</h1></div>
+      ${D.inboxHtml(store.inbox({ to: store.doctor().id }), { names: Object.fromEntries(ps.map((x) => [x.id, x.name])) })}
       <div class="thread">
         <nav class="list card" aria-label="Пациенты">${ps.map((x) => { const last = store.messages(x.id).filter((m) => m.from !== 'system').at(-1);
           return `<a href="?id=${ui.esc(x.id)}" ${x.id === pid ? 'aria-current="page"' : ''}><b>${ui.esc(x.name)}</b><br><span class="hint">${last ? ui.esc(last.text.slice(0, 40)) : 'нет сообщений'}</span></a>`; }).join('')}</nav>
@@ -28,6 +29,7 @@
     if (!v) return;
     draft = ''; store.sendMessage(pid, 'doctor', v); render();
   });
+  document.addEventListener('click', (e) => { const b = e.target.closest('[data-inbox-read]'); if (b) store.markInboxRead(b.dataset.inboxRead); });
   store.subscribe(render);
   render();
 })();

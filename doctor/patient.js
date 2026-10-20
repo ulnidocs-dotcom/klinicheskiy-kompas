@@ -63,6 +63,7 @@
             <ul class="feed">${feed.map((e) => `<li><time>${ui.fmtDateTime(e.at)}</time><span><b>${ui.esc(TYPE[e.type] || e.type)}:</b> ${ui.esc(describe(e))}</span></li>`).join('') || '<li><span class="hint">Нет событий</span></li>'}</ul></section>
         </div>
         <div class="stack">
+          ${D.inboxHtml(store.inbox({ to: store.doctor().id, patientId: id, unread: true }), { title: "Новое от психолога" })}
           ${D.intakeCard(p, store.intakeOf(id))}
           <section class="card stack"><h2>Терапия</h2>
             <dl class="kv">
@@ -74,10 +75,11 @@
           <section class="card stack"><h2>Нежелательные явления</h2>
             ${aes.length ? `<ul class="feed">${aes.map((e) => `<li><time>${ui.fmtDate(e.at)}</time><span>${ui.esc(describe(e))}</span></li>`).join('')}</ul>` : '<p class="hint">Пациент не сообщал</p>'}</section>
           <section class="card stack"><h2>Журнал действий</h2>
-            ${store.audit(id).slice(-5).reverse().map((a) => `<p class="hint">${ui.fmtDateTime(a.at)} · ${ui.esc(a.action)}</p>`).join('') || '<p class="hint">Пока пусто</p>'}</section>
+            ${store.audit(id).slice(-5).reverse().map((a) => `<p class="hint">${ui.fmtDateTime(a.at)} · ${ui.esc(D.auditLabel(a))}</p>`).join('') || '<p class="hint">Пока пусто</p>'}</section>
         </div>
       </div>`);
   }
+  document.addEventListener('click', (e) => { const b = e.target.closest('[data-inbox-read]'); if (b) store.markInboxRead(b.dataset.inboxRead); });
   store.subscribe(render);
   render();
 })();

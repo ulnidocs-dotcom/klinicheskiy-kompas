@@ -92,10 +92,11 @@
         `Срочность: ${level}`,
         `Основания: ${req.map((s) => `${s.title} — ${s.text}`).join('; ') || 'по клинической оценке'}`,
         `Шкалы:\n${sc || 'нет данных'}`,
+        p.intakeRoute ? `Первичный приём психолога: ${KK.data.intake ? KK.data.intake.levels[p.intakeRoute].label : p.intakeRoute} (предварительная оценка)` : '',
         `Текущая терапия: ${meds}; план: ${plan}`,
         `Приверженность (14 дн.): ${p.pdc14 == null ? 'нет данных' : Math.round(p.pdc14 * 100) + '%'}`,
         `Врач: ${doctor.name}, ${doctor.specialty}`,
-      ].join('\n');
+      ].filter(Boolean).join('\n');
     },
     ASSESS_SCALES: ['phq9', 'gad7', 'cssrs'],
     // ?scale= из URL — только из белого списка; иначе C-SSRS при сигнале PHQ-9 п.9, иначе PHQ-9.
@@ -164,16 +165,50 @@
       const dec = it.intake.decision;
       const dass = it.dass ? B.scoreDass(it.dass) : null;
       const chips = dass ? Object.values(dass.subscales).map((s) => `<span class="badge badge--info">${e(s.title)}: ${e(s.label)}</span>`).join('') : '<span class="hint">DASS-21: нет данных</span>';
-      return `<section class="card stack intake-card"><div class="row-between"><h2>Первичный приём психолога</h2><span class="hint">${ui().fmtDate(dec.at)}</span></div>
-        <p><b>${e(B.levelLabel(dec.level))}</b>${dec.overridden ? ' <span class="hint">· изменено психологом</span>' : ''}</p>
+      const ho = it.intake.handoff;
+      // Только текущее решение; прежние решения и устаревшие передачи — в журнале и у психолога.
+      const hoHtml = !ho ? '' : ho.outdated
+        ? '<p class="hint">Маршрут изменён после передачи — психолог передаст обновлённую сводку.</p>'
+        : `<details><summary class="hint">Сообщение психолога · ${ui().fmtDateTime(ho.at)}</summary><p style="white-space:pre-line">${e(ho.text)}</p></details>`;
+      return `<section class="card stack intake-card"><div class="row-between"><h2>Первичный приём психолога</h2><span class="hint">${(dec.revision || 1) > 1 ? 'обновлено ' : ''}${ui().fmtDate(dec.at)}</span></div>
+        <p><b>${e(B.levelLabel(dec.level))}</b>${dec.overridden ? ' <span class="hint">· изменено психологом</span>' : ''}${dec.downgradeMandatory ? ' <span class="badge badge--warn">понижен обязательный маршрут</span>' : ''}</p>
         <div class="row wrap">${chips}</div>
-        ${it.intake.handoff ? `<details><summary class="hint">Сообщение психолога · ${ui().fmtDateTime(it.intake.handoff.at)}</summary><p style="white-space:pre-line">${e(it.intake.handoff.text)}</p></details>` : ''}
+        ${hoHtml}
         <p class="hint">Предварительная оценка психолога, не диагноз.</p>
         <a href="../psych/patient.html?id=${e(p.id)}">Подробнее</a></section>`;
     },
+    // Бейдж решения психолога для строки очереди врача («Психиатр · обязательно» и др.).
+    intakeBadge(p) {
+      const l = p && p.intakeRoute;
+      if (!l || !KK.data.intake) return '';
+      const cls = l === 'psychiatrist_required' ? 'badge--required' : l === 'psychotherapy_desirable' ? 'badge--desirable' : 'badge--info';
+      return `<span class="badge ${cls}" title="Решение психолога по первичному приёму">${ui().esc(KK.data.intake.levels[l].short)} · психолог</span>`;
+    },
+    // Входящие от психолога (передача сводки, понижение обязательного маршрута); непрочитанные — с кнопкой «Прочитано».
+    inboxHtml(items, { names = {}, title = 'Сообщения от психолога' } = {}) {
+      const e = ui().esc;
+      if (!items.length) return '';
+      return `<section class="card stack" aria-label="${e(title)}"><h2>${e(title)}</h2>${items.slice().reverse().map((m) => `
+        <article class="stack" style="border-top:1px solid var(--line);padding-top:10px">
+          <div class="row-between"><span><b>${e(m.fromName || 'Психолог')}</b>${names[m.patientId] ? ` · <a href="patient.html?id=${e(m.patientId)}">${e(names[m.patientId])}</a>` : ''}
+            ${m.kind === 'downgrade' ? ' <span class="badge badge--warn">понижен обязательный маршрут</span>' : ''}</span>
+            <span class="hint">${ui().fmtDateTime(m.at)}</span></div>
+          <p style="white-space:pre-line;margin:0">${e(m.text)}</p>
+          ${m.readAt ? `<span class="hint">Прочитано ${ui().fmtDateTime(m.readAt)}</span>` : `<button class="btn" data-inbox-read="${e(m.id)}">Прочитано</button>`}
+        </article>`).join('')}</section>`;
+    },
+    // Подписи журнала действий для врача.
+    auditLabel(a) {
+      const lv = (l) => (KK.battery ? KK.battery.levelLabel(l) : l);
+      if (a.action === 'intake_decision') return `Психолог: решение по маршруту — ${lv(a.details && a.details.level)}${a.details && a.details.downgrade_mandatory ? ' (понижен обязательный маршрут)' : ''}`;
+      if (a.action === 'intake_handoff') return 'Психолог передал сводку первичного приёма';
+      if (a.action === 'intake_completed') return 'Пациент завершил батарею первичного приёма';
+      if (a.action === 'ack_alert' && a.actor === 'psy1') return `Психолог подтвердил сигнал: ${(a.details && a.details.action) || ''}`;
+      return a.action;
+    },
     ROUTING_PATIENT_MSG: 'Я оформил(а) направление на консультацию к врачу-психиатру. Подробности обсудим по телефону.',
     // Ключи пациентского приложения на этом устройстве, которые сбрасываются вместе с демо-данными (как на index.html).
-    demoDeviceKeys: (keys) => keys.filter((k) => k.startsWith('kk:linked:') || k.startsWith('kk:prefs:')),
+    demoDeviceKeys: (keys) => keys.filter((k) => k.startsWith('kk:linked:') || k.startsWith('kk:prefs:') || k.startsWith('kk:intake-draft:')),
     alertStats(alerts) {
       const delivered = alerts.filter((a) => a.deliveredAt).map((a) => (new Date(a.deliveredAt) - new Date(a.dataAt)) / 1000);
       const acked = alerts.filter((a) => a.ackAt).map((a) => (new Date(a.ackAt) - new Date(a.dataAt)) / 60000);
@@ -208,9 +243,10 @@
       const crit = open.filter((a) => a.level === 'critical').length;
       const doc = KK.store.doctor();
       const nav = document.body.dataset.nav;
+      const inbox = KK.store.inbox ? KK.store.inbox({ to: doc.id, unread: true }).length : 0;
       ui().mount('#side', `
         <div class="d-brand">${ui().icon('route', 20)}<b>Компас</b><span class="dotrow" aria-hidden="true">· · ·· ····</span></div>
-        ${NAV.map((n) => `<a href="${n.href}" ${n.id === nav ? 'aria-current="page"' : ''}>${ui().icon(n.icon, 18)}<span>${n.label}</span>${n.id === 'alerts' && open.length ? `<span class="count ${crit ? 'count--crit' : ''}">${open.length}</span>` : ''}</a>`).join('')}
+        ${NAV.map((n) => `<a href="${n.href}" ${n.id === nav ? 'aria-current="page"' : ''}>${ui().icon(n.icon, 18)}<span>${n.label}</span>${n.id === 'alerts' && open.length ? `<span class="count ${crit ? 'count--crit' : ''}">${open.length}</span>` : ''}${n.id === 'messages' && inbox ? `<span class="count" title="Непрочитанные сообщения от психолога">${inbox}</span>` : ''}</a>`).join('')}
         <div class="d-me"><div class="d-me__who"><b>${ui().esc(doc.name)}</b><span class="hint">${ui().esc(doc.specialty)} · ${doc.mode === 'psychiatrist' ? 'режим специалиста' : 'режим с подсказками'}</span></div>
           ${KK.theme ? KK.theme.toggleHtml() : ''}</div>`);
     },
