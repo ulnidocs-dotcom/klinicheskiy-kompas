@@ -23,7 +23,7 @@
       <a class="p-back" href="index.html">${ui.icon('back', 18)}Назад</a>
       <section class="stack-l">
         <header class="stack"><h1>${ui.esc(drug.name)}</h1><p class="muted">${ui.esc(drug.dosing.dose)} · ${drug.dosing.timesPerDay} раза в день</p></header>
-        <section class="tile aura aura--rose stack"><span class="label">Сегодня</span>
+        <section class="tile aura aura--teal stack"><span class="label">Сегодня</span>
           <div class="slots">${slots.map(app.slotHtml).join('')}</div></section>
         <section class="card stack"><p class="q-title">Важно помнить</p>
           <ul class="stack" style="margin:0;padding-left:18px">${drug.patientNotes.map((n) => `<li>${ui.esc(n)}</li>`).join('')}</ul></section>

@@ -23,7 +23,7 @@
           <a class="help-call" href="tel:+74959895050"><span class="ic">${ui.icon('phone', 20)}</span><span><b>8 495 989-50-50</b><span class="hint">Психологическая помощь МЧС, круглосуточно</span></span></a>
           <a class="help-call" href="tel:88002000122"><span class="ic">${ui.icon('phone', 20)}</span><span><b>8 800 2000-122</b><span class="hint">Телефон доверия для подростков</span></span></a>
         </div>
-        <section class="tile aura aura--amber stack">
+        <section class="tile aura aura--sand stack">
           ${sent ? `<p class="row">${ui.icon('check', 20)}<span>Врач уведомлён</span></p><a class="btn btn--block" href="chat.html">Написать врачу</a>`
             : `<p>Можно сообщить врачу, что вам сейчас плохо. Он увидит это сразу.</p><button class="btn btn--pill btn--block" data-sos>Сообщить врачу</button>`}
         </section>

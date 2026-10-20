@@ -128,14 +128,14 @@
       const n = checkins.length;
       return [
         confirmed
-          ? { wide: true, aura: 'rose', label: 'Дни с приёмом', value: takenDays, unit: 'из 14', note: 'последние 2 недели',
+          ? { wide: true, aura: 'teal', label: 'Дни с приёмом', value: takenDays, unit: 'из 14', note: 'последние 2 недели',
             visual: T.ringGauge({ value: takenDays, max: 14, label: 'Дни с приёмом' }) }
-          : { wide: true, aura: 'rose', label: 'Лечение', value: 'Врач обсуждает план' },
+          : { wide: true, aura: 'teal', label: 'Лечение', value: 'Врач обсуждает план' },
         { aura: 'mood', label: 'Настроение', value: mood, note: mood ? periodLabel : few,
           visual: T.dotRow(checkins.map((c) => c.payload.mood), { max: 5 }) },
         { aura: 'sleep', label: 'Сон', value: sleep, note: sleep ? periodLabel : few,
           visual: T.dotRow(checkins.map((c) => c.payload.sleep), { max: 5 }) },
-        practice && { aura: 'blue', label: 'Практика дня', value: practice.title, note: `${practice.minutes} мин`, href: `material.html?id=${practice.id}` },
+        practice && { aura: 'lavender', label: 'Практика дня', value: practice.title, note: `${practice.minutes} мин`, href: `material.html?id=${practice.id}` },
         { aura: 'sage', label: 'Отметок самочувствия', value: n, unit: 'дн.', note: periodLabel },
       ];
     },

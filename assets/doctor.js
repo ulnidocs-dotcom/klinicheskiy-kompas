@@ -143,18 +143,18 @@
       const days = confirmed && p.plan.confirmedAt ? Math.max(0, KK.util.daysBetween(p.plan.confirmedAt, nowIso)) : null;
       const pct = p.pdc14 == null ? null : Math.round(p.pdc14 * 100);
       return [
-        { wide: true, aura: 'lilac', label: 'PHQ-9 · последнее', value: phq ? phq.total : null, unit: 'из 27', note: scaleNote(phq),
+        { wide: true, aura: 'blue', label: 'PHQ-9 · последнее', value: phq ? phq.total : null, unit: 'из 27', note: scaleNote(phq),
           visual: T.ringGauge({ value: phq ? phq.total : null, max: 27, label: 'PHQ-9' }) },
-        { aura: 'sage', label: 'GAD-7 · последнее', value: gad ? gad.total : null, unit: 'из 21', note: scaleNote(gad),
+        { aura: 'sand', label: 'GAD-7 · последнее', value: gad ? gad.total : null, unit: 'из 21', note: scaleNote(gad),
           visual: T.rangeBar({ value: gad ? gad.total : null, max: 21, bands: [{ from: 0, to: 4 }, { from: 5, to: 9 }, { from: 10, to: 14 }, { from: 15, to: 21 }] }) },
-        { aura: 'blue', label: 'Приверженность', value: pct, unit: '%', note: pct == null ? 'не назначено' : 'за 14 дн.',
+        { aura: 'teal', label: 'Приверженность', value: pct, unit: '%', note: pct == null ? 'не назначено' : 'за 14 дн.',
           visual: pct == null ? '' : T.rangeBar({ value: pct, max: 100 }) },
-        { aura: 'rose', label: 'Колебания настроения', value: sd == null ? null : (Math.round(sd * 10) / 10).toFixed(1).replace('.', ','), unit: 'σ',
+        { aura: 'mood', label: 'Колебания настроения', value: sd == null ? null : (Math.round(sd * 10) / 10).toFixed(1).replace('.', ','), unit: 'σ',
           note: sd == null ? 'мало отметок' : `ст. отклонение, ${moods.length} ${ui.plural(moods.length, ['отметка', 'отметки', 'отметок'])}, шкала 1–5`,
           visual: T.dotRow(moods, { max: 5 }) },
-        { aura: 'lilac', label: 'Нежелательные явления', value: items.length, unit: 'за 14 дн.',
+        { aura: 'lavender', label: 'Нежелательные явления', value: items.length, unit: 'за 14 дн.',
           note: top ? `чаще: ${top[0]}` : 'не сообщались' },
-        { aura: 'amber', label: 'Дней на терапии', value: days, unit: days == null ? '' : ui.plural(days, ['день', 'дня', 'дней']),
+        { aura: 'sage', label: 'Дней на терапии', value: days, unit: days == null ? '' : ui.plural(days, ['день', 'дня', 'дней']),
           note: days == null ? 'не назначено' : `с ${ui.fmtDate(p.plan.confirmedAt)}` },
       ];
     },

@@ -8,7 +8,7 @@
   const num = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
   const isEmpty = (v) => v == null || v === '' || (typeof v === 'number' && !Number.isFinite(v));
   const r1 = (x) => Math.round(x * 10) / 10;
-  const AURAS = ['rose', 'sage', 'blue', 'amber', 'lilac', 'mood', 'anx', 'sleep'];
+  const AURAS = ['sage', 'blue', 'lavender', 'sand', 'teal', 'mood', 'anx', 'sleep'];
 
   const tiles = {
     DASH,

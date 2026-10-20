@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ru" data-role="patient">
+<html lang="ru" data-role="doctor">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Компас — витрина компонентов</title>
@@ -15,23 +15,23 @@
 <main class="kit stack-l">
   <div class="row-between"><h1>Витрина</h1>
     <div class="row">
-      <button class="btn" id="role">Роль: пациент</button>
+      <button class="btn" id="role">Роль: врач</button>
       <span data-theme-slot></span>
     </div></div>
 
-  <section class="stack"><span class="label">Цифры точечной матрицей — только нейтральные крупные числа</span>
+  <section class="stack"><span class="label">Крупные нейтральные числа — лёгкий гротеск, моноширинные цифры</span>
     <div class="row" style="flex-wrap:wrap;gap:24px"><span class="num num--xl">20</span><span class="num num--l">09:00</span><span class="num num--m">11</span></div></section>
 
-  <section class="stack"><span class="label">Ауры: шалфей — самочувствие, роза — лекарство, сирень — опросник, синий — практика, янтарь — помощь</span>
+  <section class="stack"><span class="label">Ауры (по типу, не по тяжести): шалфей — самочувствие, бирюза — лекарство, лаванда — опросник, голубой — практика, песок — помощь. У врача — плоско, линия-акцент сверху</span>
     <div class="swatches">
       <div class="tile aura aura--sage"><span class="label">Самочувствие</span><p class="tile-title">Шалфей</p></div>
-      <div class="tile aura aura--rose"><span class="label">Лекарство</span><p class="tile-title">Роза</p></div>
-      <div class="tile aura aura--lilac"><span class="label">Опросник</span><p class="tile-title">Сирень</p></div>
-      <div class="tile aura aura--blue"><span class="label">Практика</span><p class="tile-title">Кобальт</p></div>
-      <div class="tile aura aura--amber"><span class="label">Помощь</span><p class="tile-title">Янтарь</p></div>
+      <div class="tile aura aura--teal"><span class="label">Лекарство</span><p class="tile-title">Бирюза</p></div>
+      <div class="tile aura aura--lavender"><span class="label">Опросник</span><p class="tile-title">Лаванда</p></div>
+      <div class="tile aura aura--blue"><span class="label">Практика</span><p class="tile-title">Голубой</p></div>
+      <div class="tile aura aura--sand"><span class="label">Помощь</span><p class="tile-title">Песок</p></div>
     </div></section>
 
-  <section class="tile aura aura--sage stack"><div class="row-between"><span class="label">Самочувствие</span><span class="label">1 из 3</span></div>
+  <section class="tile aura aura--mood stack q q--mood"><div class="row-between"><span class="label">Самочувствие</span><span class="label">1 из 3</span></div>
     <p class="tile-title" id="kq">Какое сегодня настроение?</p>
     <div class="dots" role="group" aria-labelledby="kq">
       <button class="dot" data-v="1" aria-label="Очень тяжело" aria-pressed="false"></button>
@@ -43,7 +43,7 @@
     <div class="dot-labels"><span>тяжело</span><span>хорошо</span></div>
     <div class="ticks" aria-hidden="true" style="--pos:17%"><i></i></div></section>
 
-  <section class="tile aura aura--rose stack"><span class="label">Приём лекарства</span><p class="tile-title">Авиандр · 20 мг</p>
+  <section class="tile aura aura--teal stack"><span class="label">Приём лекарства</span><p class="tile-title">Авиандр · 20 мг</p>
     <div class="slots">
       <button class="slot" aria-pressed="true"><span class="num num--m">09:00</span><span class="slot__l">Утро · принято</span></button>
       <button class="slot" aria-pressed="false"><span class="num num--m">21:00</span><span class="slot__l">Вечер</span></button>

@@ -14,10 +14,10 @@
     ui.mount('#app', `
       <div class="page-head"><div><h1>Первичные приёмы</h1><p class="muted">${ui.fmtWeekday(now)}, ${ui.fmtDate(now)} · сначала критические и ожидающие решения</p></div></div>
       <div class="tiles">
-        <div class="tile ${crit ? 'tile--crit' : 'aura aura--subtle aura--rose'}"><div class="n">${crit}</div><div class="hint">${crit ? ui.icon('alert', 14) + ' ' : ''}Критические сигналы</div></div>
-        <div class="tile aura aura--subtle aura--lilac"><div class="n">${n('completed')}</div><div class="hint">Ждут решения</div></div>
-        <div class="tile aura aura--subtle aura--amber"><div class="n">${n('in_progress') + n('assigned')}</div><div class="hint">Назначены и в процессе</div></div>
-        <div class="tile aura aura--subtle aura--sage"><div class="n">${n('decided')}</div><div class="hint">Решение принято</div></div>
+        <div class="tile ${crit ? 'tile--crit' : 'aura aura--subtle aura--sage'}"><div class="n">${crit}</div><div class="hint">${crit ? ui.icon('alert', 14) + ' ' : ''}Критические сигналы</div></div>
+        <div class="tile aura aura--subtle aura--lavender"><div class="n">${n('completed')}</div><div class="hint">Ждут решения</div></div>
+        <div class="tile aura aura--subtle aura--sand"><div class="n">${n('in_progress') + n('assigned')}</div><div class="hint">Назначены и в процессе</div></div>
+        <div class="tile aura aura--subtle aura--teal"><div class="n">${n('decided')}</div><div class="hint">Решение принято</div></div>
       </div>
       <table class="table"><thead><tr><th>Пациент</th><th>Статус</th><th>Маршрут</th><th>Назначен</th></tr></thead>
       <tbody>${q.map((p) => `<tr data-href="patient.html?id=${ui.esc(p.id)}" tabindex="0" style="cursor:pointer">

@@ -61,7 +61,7 @@ test('sd: population standard deviation; null for fewer than two numbers', () =>
 });
 
 test('tile escapes every text field and shows «—» (without unit) for empty values', () => {
-  const html = T.tile({ aura: 'rose', label: '<b>x</b>', value: '<i>', unit: '"u"', note: "a'b", side: '&' });
+  const html = T.tile({ aura: 'teal', label: '<b>x</b>', value: '<i>', unit: '"u"', note: "a'b", side: '&' });
   assert.doesNotMatch(html, /<b>x|<i>|"u"|a'b/);
   assert.match(html, /&lt;b&gt;x&lt;\/b&gt;/);
   assert.match(html, /&amp;/);
@@ -75,6 +75,9 @@ test('tile escapes every text field and shows «—» (without unit) for empty v
 
 test('tile: unknown aura falls back to sage; href renders a link; wide modifier', () => {
   assert.match(T.tile({ aura: 'red" onclick="x', value: 1 }), /class="dtile aura aura--sage"/);
+  // Спокойная палитра (2026-10-20): розовой, янтарной и сиреневой аур больше нет.
+  for (const old of ['rose', 'amber', 'lilac']) assert.match(T.tile({ aura: old, value: 1 }), /class="dtile aura aura--sage"/, old);
+  for (const hue of ['sage', 'blue', 'lavender', 'sand', 'teal', 'mood', 'anx', 'sleep']) assert.match(T.tile({ aura: hue, value: 1 }), new RegExp(`aura--${hue}[ "]`), hue);
   assert.match(T.tile({ value: 'Дыхание', href: 'material.html?id=breathing' }), /^<a class="dtile[^"]*" href="material\.html\?id=breathing">/);
   assert.match(T.tile({ wide: true, value: 1, visual: '<div class="ring"></div>' }), /dtile--wide.*dtile__vis"><div class="ring">/);
   assert.match(T.tile({ value: 'ровнее' }), /dtile__v--word/);

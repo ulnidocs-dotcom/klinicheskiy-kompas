@@ -1,22 +1,25 @@
 (function (g) {
   const KK = g.KK;
   const tg = g.Telegram && g.Telegram.WebApp;
+  const themeKey = () => (KK.theme && typeof KK.theme.key === 'function' ? KK.theme.key() : 'kk:theme:patient');
   KK.tg = {
     inside: !!(tg && tg.initData !== undefined && tg.platform && tg.platform !== 'unknown'),
     init() {
       const root = document.documentElement;
+      // Ключ темы — свой у пациента и у персонала (kk:theme:patient | kk:theme:staff, см. assets/theme.js).
       let saved = null;
-      try { saved = localStorage.getItem('kk:theme'); } catch (e) { saved = null; }
-      if (saved) root.dataset.theme = saved;
+      try { saved = localStorage.getItem(themeKey()); } catch (e) { saved = null; }
+      const explicit = saved === 'light' || saved === 'dark';
+      if (explicit) root.dataset.theme = saved;
       else if (this.inside) root.dataset.theme = tg.colorScheme === 'dark' ? 'dark' : 'light';
       if (this.inside) {
         tg.ready(); tg.expand();
-        tg.onEvent('themeChanged', () => { if (!saved) root.dataset.theme = tg.colorScheme; });
+        tg.onEvent('themeChanged', () => { if (!explicit) root.dataset.theme = tg.colorScheme; });
       }
     },
     setTheme(theme) {
       document.documentElement.dataset.theme = theme;
-      try { localStorage.setItem('kk:theme', theme); } catch (e) { /* приватный режим */ }
+      try { localStorage.setItem(themeKey(), theme); } catch (e) { /* приватный режим */ }
     },
     backButton(onBack) {
       if (!this.inside) return;

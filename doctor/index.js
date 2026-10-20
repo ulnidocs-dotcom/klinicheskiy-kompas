@@ -13,9 +13,9 @@
       <div class="page-head"><div><h1>Пациенты</h1><p class="muted">${ui.fmtWeekday(now)}, ${ui.fmtDate(now)} · сначала срочные</p></div>
         <label class="field" style="min-width:260px"><span class="sr-only">Поиск</span><input id="q" placeholder="Поиск по фамилии" value="${ui.esc(q)}"></label></div>
       <div class="tiles">
-        <div class="tile ${crit ? 'tile--crit' : 'aura aura--subtle aura--rose'}"><div class="n">${crit}</div><div class="hint">${crit ? ui.icon('alert', 14) + ' ' : ''}Критические сигналы</div></div>
-        <div class="tile tile--route aura aura--subtle aura--lilac"><div class="n">${req}</div><div class="hint">Обязательно к психиатру</div></div>
-        <div class="tile aura aura--subtle aura--amber"><div class="n">${missed}</div><div class="hint">Пропускают приём</div></div>
+        <div class="tile ${crit ? 'tile--crit' : 'aura aura--subtle aura--sage'}"><div class="n">${crit}</div><div class="hint">${crit ? ui.icon('alert', 14) + ' ' : ''}Критические сигналы</div></div>
+        <div class="tile tile--route aura aura--subtle aura--lavender"><div class="n">${req}</div><div class="hint">Обязательно к психиатру</div></div>
+        <div class="tile aura aura--subtle aura--sand"><div class="n">${missed}</div><div class="hint">Пропускают приём</div></div>
         <div class="tile aura aura--subtle aura--blue"><div class="n">${all.length}</div><div class="hint">Всего под наблюдением</div></div>
       </div>
       <table class="table"><thead><tr><th>Пациент</th><th>Статус</th><th>PHQ-9</th><th>GAD-7</th><th>Приверженность</th><th>Активность</th></tr></thead>

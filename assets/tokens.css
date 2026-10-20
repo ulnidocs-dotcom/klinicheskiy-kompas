@@ -1,11 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Onest:wght@300;400;500;600&display=swap');
 
 /*
-  Визуальная система «Компас» по референсу veri (RondesignLab), выбран 2026-10-19.
-  Наборы токенов: роль (patient | doctor) × тема (light «Дневная» | dark «Ночная»).
-  Тема: data-theme на <html>; без сохранённого выбора — prefers-color-scheme.
+  Визуальная система «Компас». Спокойная палитра — 2026-10-20 (спек §3): пациенту — низкое возбуждение
+  (светлые малонасыщенные холодные тона, без красного и мадженты; ночь — глубокий сине-серый сланец, не чёрный),
+  врачу и психологу — щадящая глаза на весь рабочий день (нейтральный светлый фон, текст ≈ 14:1, приглушённые акценты).
+  Наборы: роль (patient | doctor; психолог, лаунчер и витрина — doctor) × тема (light «Дневная» | dark «Ночная»).
+  Тема — data-theme на <html>. Пациент без выбора — системная тема; врач/психолог без выбора — «Дневная» (assets/theme.js).
   Блоки с маркером «@tokens <имя>» разбирает tests/contrast.test.js — держите формат «--имя: значение;».
   Ауры заданы RGB-тройками (для rgb(var(--aura-x) / альфа)); пиковая альфа — --aura-alpha.
+  У врача ауры не светятся: плоская поверхность, оттенок типа ≤ 8% и тонкая линия-акцент сверху (ui.css).
 */
 :root {
   --font-head: 'Onest', system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -16,201 +19,203 @@
   --dur: 180ms;
 }
 
-/* @tokens patient-light — «Дневная» */
+/* @tokens patient-light — «Утро» (Дневная) */
 :root[data-role="patient"] {
   color-scheme: light;
-  --bg: #ECEBE7; --surface: #F8F7F4; --surface-2: #E2E0DA;
-  --text: #161616; --text-2: #46443F; --text-3: #5C5A54;
-  --accent: #3D6A56; --accent-strong: #2C5040; --accent-tint: #D9E5DD; --on-accent: #FFFFFF;
-  --line: #D6D3CC;
-  --help: #8E4A1F; --help-tint: #F4E0D0;
-  --scale-1: #D3DED7; --scale-2: #B8CFC1; --scale-3: #98BAA6; --scale-4: #76A28A; --scale-5: #4F806A;
-  --chart: #3D6A56; --chart-2: #A0612C;
-  --crit: #B42318; --crit-tint: #FCE5E2; --on-crit: #FFFFFF; --crit-ink: #B42318;
-  --route: #6B3FA0; --route-tint: #EFE7F8; --on-route: #FFFFFF; --route-ink: #6B3FA0;
-  --warn: #9A4A07; --warn-tint: #FBEBCB;
-  --ok: #2B7049; --ok-tint: #DDEFE3;
-  --marker: #B58800;
-  --pill-bg: #1A1A1A; --pill-text: #F5F4F0; --pill-dot: #F5F4F0; --pill-ink: #1A1A1A;
-  --scrim: rgba(20, 20, 20, .45);
-  --aura-rose: 238 150 190; --aura-rose-2: 214 190 222;
-  --aura-sage: 168 202 180; --aura-sage-2: 205 222 190;
-  --aura-blue: 150 168 240; --aura-blue-2: 190 205 245;
-  --aura-amber: 240 170 130; --aura-amber-2: 245 205 170;
-  --aura-lilac: 205 180 225; --aura-lilac-2: 230 205 230;
-  --mood-1: #F8DDD8; --mood-2: #F2C2B9; --mood-3: #EAA396; --mood-4: #DF8574; --mood-5: #C9674F; --mood-ink: #B4573F;
-  --anx-1: #E7DEF1; --anx-2: #D4C4E9; --anx-3: #BCA4DD; --anx-4: #9F81CC; --anx-5: #805EB4; --anx-ink: #6F4FA3;
-  --sleep-1: #DCE2F6; --sleep-2: #C0CBF0; --sleep-3: #9AAAE6; --sleep-4: #7286D8; --sleep-5: #4A62C4; --sleep-ink: #3D55B8;
-  --aura-mood: 244 166 160; --aura-mood-2: 248 204 178;
-  --aura-anx: 192 168 234; --aura-anx-2: 222 205 240;
-  --aura-sleep: 162 160 242; --aura-sleep-2: 196 198 246;
-  --aura-core: 248 247 244; --aura-core-alpha: .55; --on-aura-2: #46443F;
-  --aura-alpha: .85; --aura-alpha-subtle: .35;
+  --bg: #EEF1F0; --surface: #F8FAF9; --surface-2: #E4E9E7;
+  --text: #23302D; --text-2: #4E5B58; --text-3: #5C6865;
+  --accent: #3E7C75; --accent-strong: #2F625C; --accent-tint: #DCEBE8; --on-accent: #FFFFFF;
+  --line: #D5DDDA;
+  --help: #85582B; --help-tint: #F3E8D8;
+  --scale-1: #E6EEEA; --scale-2: #D2E3DB; --scale-3: #B9D4C7; --scale-4: #9CC2AF; --scale-5: #7FAF97;
+  --chart: #3E7C75; --chart-2: #85582B;
+  --crit: #A8322A; --crit-tint: #F8E6E4; --on-crit: #FFFFFF; --crit-ink: #A8322A;
+  --route: #67499A; --route-tint: #EEEAF6; --on-route: #FFFFFF; --route-ink: #67499A;
+  --warn: #85520F; --warn-tint: #F6EBD6;
+  --ok: #2E6A4B; --ok-tint: #E0EEE6;
+  --marker: #9C7A3E;
+  --pill-bg: #2B3A37; --pill-text: #F8FAF9; --pill-dot: #F8FAF9; --pill-ink: #23302D;
+  --scrim: rgba(35, 48, 45, .4);
+  --aura-sage: 188 213 203; --aura-sage-2: 190 220 216;
+  --aura-blue: 195 211 232; --aura-blue-2: 213 208 232;
+  --aura-lavender: 213 208 232; --aura-lavender-2: 195 211 232;
+  --aura-sand: 234 223 203; --aura-sand-2: 236 229 214;
+  --aura-teal: 190 220 216; --aura-teal-2: 188 213 203;
+  --aura-mood: 185 212 199; --aura-mood-2: 210 227 219;
+  --aura-anx: 208 189 223; --aura-anx-2: 224 211 234;
+  --aura-sleep: 179 202 226; --aura-sleep-2: 205 220 236;
+  --mood-1: #E6EEEA; --mood-2: #D2E3DB; --mood-3: #B9D4C7; --mood-4: #9CC2AF; --mood-5: #7FAF97; --mood-ink: #3F7F5F;
+  --anx-1: #EDE6F2; --anx-2: #E0D3EA; --anx-3: #D0BDDF; --anx-4: #BCA3D0; --anx-5: #A78ABF; --anx-ink: #785396;
+  --sleep-1: #E3EBF4; --sleep-2: #CDDCEC; --sleep-3: #B3CAE2; --sleep-4: #97B5D6; --sleep-5: #7DA2CA; --sleep-ink: #3E6996;
+  --aura-core: 248 250 249; --aura-core-alpha: .5; --on-aura-2: #44514E;
+  --aura-alpha: .75; --aura-alpha-subtle: .35; --orb-alpha: .85;
   --fs: 17px;
 }
 
-/* @tokens patient-dark — «Ночная» */
+/* @tokens patient-dark — «Сумерки» (Ночная) */
 :root[data-role="patient"][data-theme="dark"] {
   color-scheme: dark;
-  --bg: #141414; --surface: #1E1E1D; --surface-2: #292927;
-  --text: #ECEAE4; --text-2: #BEBBB3; --text-3: #A3A098;
-  --accent: #A9CDB9; --accent-strong: #CBE3D5; --accent-tint: #24332B; --on-accent: #121212;
-  --line: #34332F;
-  --help: #EFAE84; --help-tint: #3A281C;
-  --scale-1: #2C3A32; --scale-2: #3D5446; --scale-3: #557A64; --scale-4: #7BA58C; --scale-5: #A9CDB9;
-  --chart: #A9CDB9; --chart-2: #E7B27E;
-  --crit: #C42B22; --crit-tint: #3A1714; --on-crit: #FFFFFF; --crit-ink: #FF8F86;
-  --route: #7C52C4; --route-tint: #2A2140; --on-route: #FFFFFF; --route-ink: #CDB0F7;
-  --warn: #F2B65E; --warn-tint: #372910;
-  --ok: #86D3A5; --ok-tint: #183022;
-  --marker: #F2D04B;
-  --pill-bg: rgba(8, 8, 8, .45); --pill-text: #ECEAE4; --pill-dot: #ECEAE4; --pill-ink: #141414;
-  --scrim: rgba(0, 0, 0, .6);
-  --aura-rose: 224 54 140; --aura-rose-2: 150 100 160;
-  --aura-sage: 90 135 110; --aura-sage-2: 60 100 80;
-  --aura-blue: 45 76 224; --aura-blue-2: 80 100 220;
-  --aura-amber: 210 104 58; --aura-amber-2: 170 100 70;
-  --aura-lilac: 150 110 190; --aura-lilac-2: 130 100 150;
-  --mood-1: #3A2723; --mood-2: #5C372E; --mood-3: #855041; --mood-4: #BA725C; --mood-5: #F0A08A; --mood-ink: #F2A891;
-  --anx-1: #2A2335; --anx-2: #3F3356; --anx-3: #5E4B82; --anx-4: #8B71B9; --anx-5: #C2A8EC; --anx-ink: #C8B0F0;
-  --sleep-1: #1E2440; --sleep-2: #2A3563; --sleep-3: #3F5196; --sleep-4: #6479D4; --sleep-5: #9CADFA; --sleep-ink: #A6B6FC;
-  --aura-mood: 214 86 110; --aura-mood-2: 190 110 80;
-  --aura-anx: 132 92 200; --aura-anx-2: 120 96 160;
-  --aura-sleep: 74 70 214; --aura-sleep-2: 92 96 200;
-  --aura-core: 12 12 12; --aura-core-alpha: .7;
-  --aura-alpha: .6; --aura-alpha-subtle: .22; --on-aura-2: #DEDBD3;
+  --bg: #1A2029; --surface: #222A35; --surface-2: #2B3441;
+  --text: #E4E8EE; --text-2: #B8C1CC; --text-3: #9AA4B1;
+  --accent: #84B9B0; --accent-strong: #A9D2CB; --accent-tint: #23353A; --on-accent: #13201E;
+  --line: #333D4B;
+  --help: #E2BE93; --help-tint: #3A3226;
+  --scale-1: #34423B; --scale-2: #3F5A4D; --scale-3: #4E7361; --scale-4: #67907C; --scale-5: #86AF9B;
+  --chart: #84B9B0; --chart-2: #E2BE93;
+  --crit: #B23A31; --crit-tint: #3A2326; --on-crit: #FFFFFF; --crit-ink: #F0A39B;
+  --route: #6E54A8; --route-tint: #2C2840; --on-route: #FFFFFF; --route-ink: #C7B8EC;
+  --warn: #E3B46E; --warn-tint: #3A2F1E;
+  --ok: #8FCBA8; --ok-tint: #1E3328;
+  --marker: #E2C48A;
+  --pill-bg: #2B3441; --pill-text: #E4E8EE; --pill-dot: #E4E8EE; --pill-ink: #1A2029;
+  --scrim: rgba(12, 16, 22, .55);
+  --aura-sage: 188 213 203; --aura-sage-2: 190 220 216;
+  --aura-blue: 195 211 232; --aura-blue-2: 213 208 232;
+  --aura-lavender: 213 208 232; --aura-lavender-2: 195 211 232;
+  --aura-sand: 234 223 203; --aura-sand-2: 236 229 214;
+  --aura-teal: 190 220 216; --aura-teal-2: 188 213 203;
+  --aura-mood: 185 212 199; --aura-mood-2: 210 227 219;
+  --aura-anx: 208 189 223; --aura-anx-2: 224 211 234;
+  --aura-sleep: 179 202 226; --aura-sleep-2: 205 220 236;
+  --mood-1: #34423B; --mood-2: #3F5A4D; --mood-3: #4E7361; --mood-4: #67907C; --mood-5: #86AF9B; --mood-ink: #9CCBB3;
+  --anx-1: #453552; --anx-2: #5C4470; --anx-3: #74578C; --anx-4: #9072A8; --anx-5: #AE92C4; --anx-ink: #CAAEE0;
+  --sleep-1: #2F4052; --sleep-2: #3B546E; --sleep-3: #4D6D90; --sleep-4: #688BB0; --sleep-5: #8AAACC; --sleep-ink: #A9C6E6;
+  --aura-core: 34 42 53; --aura-core-alpha: .45; --on-aura-2: #D3D9E1;
+  --aura-alpha: .28; --aura-alpha-subtle: .14; --orb-alpha: .6;
 }
 
-/* @tokens doctor-light — «Дневная» */
+/* @tokens doctor-light — «Дневная» (врач, психолог) */
 :root[data-role="doctor"] {
   color-scheme: light;
-  --bg: #EDECE8; --surface: #FBFAF8; --surface-2: #F1F0EC;
-  --text: #161616; --text-2: #45433F; --text-3: #5B5954;
-  --accent: #2E4CC9; --accent-strong: #233B9E; --accent-tint: #E2E6F8; --on-accent: #FFFFFF;
-  --line: #DDDBD5;
-  --help: #8E4A1F; --help-tint: #F4E0D0;
-  --scale-1: #E2E6F8; --scale-2: #C3CCF2; --scale-3: #97A6EA; --scale-4: #6A80DE; --scale-5: #2E4CC9;
-  --chart: #2E4CC9; --chart-2: #B54708;
-  --crit: #B42318; --crit-tint: #FCE5E2; --on-crit: #FFFFFF; --crit-ink: #B42318;
-  --route: #6B3FA0; --route-tint: #EFE7F8; --on-route: #FFFFFF; --route-ink: #6B3FA0;
-  --warn: #9A4A07; --warn-tint: #FBEBCB;
-  --ok: #2B7049; --ok-tint: #DDEFE3;
-  --band-warn: rgba(181, 71, 8, .07); --band-crit: rgba(180, 35, 24, .07);
-  --marker: #B58800;
-  --pill-bg: #1A1A1A; --pill-text: #F5F4F0; --pill-dot: #F5F4F0; --pill-ink: #1A1A1A;
-  --scrim: rgba(20, 20, 20, .45);
-  --aura-rose: 238 150 190; --aura-rose-2: 214 190 222;
-  --aura-sage: 168 202 180; --aura-sage-2: 205 222 190;
-  --aura-blue: 150 168 240; --aura-blue-2: 190 205 245;
-  --aura-amber: 240 170 130; --aura-amber-2: 245 205 170;
-  --aura-lilac: 205 180 225; --aura-lilac-2: 230 205 230;
-  --mood-1: #F8DDD8; --mood-2: #F2C2B9; --mood-3: #EAA396; --mood-4: #DF8574; --mood-5: #C9674F; --mood-ink: #B4573F;
-  --anx-1: #E7DEF1; --anx-2: #D4C4E9; --anx-3: #BCA4DD; --anx-4: #9F81CC; --anx-5: #805EB4; --anx-ink: #6F4FA3;
-  --sleep-1: #DCE2F6; --sleep-2: #C0CBF0; --sleep-3: #9AAAE6; --sleep-4: #7286D8; --sleep-5: #4A62C4; --sleep-ink: #3D55B8;
-  --aura-mood: 244 166 160; --aura-mood-2: 248 204 178;
-  --aura-anx: 192 168 234; --aura-anx-2: 222 205 240;
-  --aura-sleep: 162 160 242; --aura-sleep-2: 196 198 246;
-  --aura-core: 251 250 248; --aura-core-alpha: .55; --on-aura-2: #45433F;
-  --aura-alpha: .85; --aura-alpha-subtle: .35;
+  --bg: #F3F4F6; --surface: #FCFCFD; --surface-2: #EEF0F3;
+  --text: #1F2329; --text-2: #474F5A; --text-3: #5D6673;
+  --accent: #2F6690; --accent-strong: #234E6F; --accent-tint: #E3ECF3; --on-accent: #FFFFFF;
+  --line: #DDE1E6;
+  --help: #85582B; --help-tint: #F3E8D8;
+  --scale-1: #E3ECF3; --scale-2: #C5D7E6; --scale-3: #9CBAD3; --scale-4: #6E97BC; --scale-5: #2F6690;
+  --chart: #3F6FA8; --chart-2: #B0762E;
+  --crit: #A8322A; --crit-tint: #F8E6E4; --on-crit: #FFFFFF; --crit-ink: #A8322A;
+  --route: #67499A; --route-tint: #EEEAF6; --on-route: #FFFFFF; --route-ink: #67499A;
+  --warn: #85520F; --warn-tint: #F6EBD6;
+  --ok: #2E6A4B; --ok-tint: #E0EEE6;
+  --band-warn: rgba(176, 118, 46, .07); --band-crit: rgba(168, 50, 42, .06);
+  --marker: #9A7838;
+  --pill-bg: #1F2329; --pill-text: #FCFCFD; --pill-dot: #FCFCFD; --pill-ink: #1F2329;
+  --scrim: rgba(31, 35, 41, .45);
+  --aura-sage: 104 150 128; --aura-sage-2: 104 150 128;
+  --aura-blue: 79 120 166; --aura-blue-2: 79 120 166;
+  --aura-lavender: 126 114 170; --aura-lavender-2: 126 114 170;
+  --aura-sand: 170 133 80; --aura-sand-2: 170 133 80;
+  --aura-teal: 72 138 132; --aura-teal-2: 72 138 132;
+  --aura-mood: 63 127 95; --aura-mood-2: 63 127 95;
+  --aura-anx: 120 83 150; --aura-anx-2: 120 83 150;
+  --aura-sleep: 62 105 150; --aura-sleep-2: 62 105 150;
+  --mood-1: #E6EEEA; --mood-2: #D2E3DB; --mood-3: #B9D4C7; --mood-4: #9CC2AF; --mood-5: #7FAF97; --mood-ink: #3F7F5F;
+  --anx-1: #EDE6F2; --anx-2: #E0D3EA; --anx-3: #D0BDDF; --anx-4: #BCA3D0; --anx-5: #A78ABF; --anx-ink: #785396;
+  --sleep-1: #E3EBF4; --sleep-2: #CDDCEC; --sleep-3: #B3CAE2; --sleep-4: #97B5D6; --sleep-5: #7DA2CA; --sleep-ink: #3E6996;
+  --aura-core: 252 252 253; --aura-core-alpha: 0; --on-aura-2: #474F5A;
+  --aura-alpha: .07; --aura-alpha-subtle: .05; --orb-alpha: .6;
   --fs: 14px;
 }
 
-/* @tokens doctor-dark — «Ночная» */
+/* @tokens doctor-dark — «Ночная» (врач, психолог) */
 :root[data-role="doctor"][data-theme="dark"] {
   color-scheme: dark;
-  --bg: #141414; --surface: #1C1C1B; --surface-2: #252523;
-  --text: #ECEAE4; --text-2: #BEBBB3; --text-3: #A09D95;
-  --accent: #93A6FF; --accent-strong: #B9C5FF; --accent-tint: #1F2542; --on-accent: #0F1220;
-  --line: #33322E;
-  --help: #EFAE84; --help-tint: #3A281C;
-  --scale-1: #1F2542; --scale-2: #2E3A6E; --scale-3: #4A5DA8; --scale-4: #6F84DD; --scale-5: #93A6FF;
-  --chart: #93A6FF; --chart-2: #F2B65E;
-  --crit: #C42B22; --crit-tint: #3A1714; --on-crit: #FFFFFF; --crit-ink: #FF8F86;
-  --route: #7C52C4; --route-tint: #2A2140; --on-route: #FFFFFF; --route-ink: #CDB0F7;
-  --warn: #F2B65E; --warn-tint: #372910;
-  --ok: #86D3A5; --ok-tint: #183022;
-  --band-warn: rgba(242, 182, 94, .08); --band-crit: rgba(255, 143, 134, .08);
-  --marker: #F2D04B;
-  --pill-bg: rgba(8, 8, 8, .45); --pill-text: #ECEAE4; --pill-dot: #ECEAE4; --pill-ink: #141414;
-  --scrim: rgba(0, 0, 0, .6);
-  --aura-rose: 224 54 140; --aura-rose-2: 150 100 160;
-  --aura-sage: 90 135 110; --aura-sage-2: 60 100 80;
-  --aura-blue: 45 76 224; --aura-blue-2: 80 100 220;
-  --aura-amber: 210 104 58; --aura-amber-2: 170 100 70;
-  --aura-lilac: 150 110 190; --aura-lilac-2: 130 100 150;
-  --mood-1: #3A2723; --mood-2: #5C372E; --mood-3: #855041; --mood-4: #BA725C; --mood-5: #F0A08A; --mood-ink: #F2A891;
-  --anx-1: #2A2335; --anx-2: #3F3356; --anx-3: #5E4B82; --anx-4: #8B71B9; --anx-5: #C2A8EC; --anx-ink: #C8B0F0;
-  --sleep-1: #1E2440; --sleep-2: #2A3563; --sleep-3: #3F5196; --sleep-4: #6479D4; --sleep-5: #9CADFA; --sleep-ink: #A6B6FC;
-  --aura-mood: 214 86 110; --aura-mood-2: 190 110 80;
-  --aura-anx: 132 92 200; --aura-anx-2: 120 96 160;
-  --aura-sleep: 74 70 214; --aura-sleep-2: 92 96 200;
-  --aura-core: 12 12 12; --aura-core-alpha: .7;
-  --aura-alpha: .6; --aura-alpha-subtle: .22; --on-aura-2: #DEDBD3;
+  --bg: #1B1E23; --surface: #23272D; --surface-2: #2B3038;
+  --text: #E3E6EA; --text-2: #B4BAC2; --text-3: #959CA6;
+  --accent: #86AED3; --accent-strong: #ADC8E3; --accent-tint: #243442; --on-accent: #14202B;
+  --line: #343A42;
+  --help: #E2BE93; --help-tint: #3A3226;
+  --scale-1: #243442; --scale-2: #2F4A63; --scale-3: #46698C; --scale-4: #6C8FB8; --scale-5: #86AED3;
+  --chart: #8FB0DD; --chart-2: #D9A86A;
+  --crit: #B23A31; --crit-tint: #3A2326; --on-crit: #FFFFFF; --crit-ink: #F0A39B;
+  --route: #6E54A8; --route-tint: #2C2840; --on-route: #FFFFFF; --route-ink: #C7B8EC;
+  --warn: #E3B46E; --warn-tint: #3A2F1E;
+  --ok: #8FCBA8; --ok-tint: #1E3328;
+  --band-warn: rgba(217, 168, 106, .07); --band-crit: rgba(240, 163, 155, .06);
+  --marker: #D9B872;
+  --pill-bg: #2B3038; --pill-text: #E3E6EA; --pill-dot: #E3E6EA; --pill-ink: #1B1E23;
+  --scrim: rgba(0, 0, 0, .55);
+  --aura-sage: 140 186 165; --aura-sage-2: 140 186 165;
+  --aura-blue: 135 168 210; --aura-blue-2: 135 168 210;
+  --aura-lavender: 168 158 212; --aura-lavender-2: 168 158 212;
+  --aura-sand: 214 180 128; --aura-sand-2: 214 180 128;
+  --aura-teal: 120 180 174; --aura-teal-2: 120 180 174;
+  --aura-mood: 156 203 179; --aura-mood-2: 156 203 179;
+  --aura-anx: 202 174 224; --aura-anx-2: 202 174 224;
+  --aura-sleep: 169 198 230; --aura-sleep-2: 169 198 230;
+  --mood-1: #34423B; --mood-2: #3F5A4D; --mood-3: #4E7361; --mood-4: #67907C; --mood-5: #86AF9B; --mood-ink: #9CCBB3;
+  --anx-1: #453552; --anx-2: #5C4470; --anx-3: #74578C; --anx-4: #9072A8; --anx-5: #AE92C4; --anx-ink: #CAAEE0;
+  --sleep-1: #2F4052; --sleep-2: #3B546E; --sleep-3: #4D6D90; --sleep-4: #688BB0; --sleep-5: #8AAACC; --sleep-ink: #A9C6E6;
+  --aura-core: 35 39 45; --aura-core-alpha: 0; --on-aura-2: #B4BAC2;
+  --aura-alpha: .08; --aura-alpha-subtle: .06; --orb-alpha: .4;
 }
 
-/* Без явного выбора — системная тема. Копии наборов выше (тест сверяет, что они совпадают). */
+/* Без явного выбора — системная тема. Копии наборов выше (тест сверяет, что они совпадают).
+   Врачу и психологу theme.js без сохранённого выбора ставит data-theme="light", так что второй блок
+   срабатывает у них только при выборе «Как в системе». */
 @media (prefers-color-scheme: dark) {
   /* @tokens patient-dark-auto */
   :root[data-role="patient"]:not([data-theme="light"]) {
     color-scheme: dark;
-    --bg: #141414; --surface: #1E1E1D; --surface-2: #292927;
-    --text: #ECEAE4; --text-2: #BEBBB3; --text-3: #A3A098;
-    --accent: #A9CDB9; --accent-strong: #CBE3D5; --accent-tint: #24332B; --on-accent: #121212;
-    --line: #34332F;
-    --help: #EFAE84; --help-tint: #3A281C;
-    --scale-1: #2C3A32; --scale-2: #3D5446; --scale-3: #557A64; --scale-4: #7BA58C; --scale-5: #A9CDB9;
-    --chart: #A9CDB9; --chart-2: #E7B27E;
-    --crit: #C42B22; --crit-tint: #3A1714; --on-crit: #FFFFFF; --crit-ink: #FF8F86;
-    --route: #7C52C4; --route-tint: #2A2140; --on-route: #FFFFFF; --route-ink: #CDB0F7;
-    --warn: #F2B65E; --warn-tint: #372910;
-    --ok: #86D3A5; --ok-tint: #183022;
-    --marker: #F2D04B;
-    --pill-bg: rgba(8, 8, 8, .45); --pill-text: #ECEAE4; --pill-dot: #ECEAE4; --pill-ink: #141414;
-    --scrim: rgba(0, 0, 0, .6);
-    --aura-rose: 224 54 140; --aura-rose-2: 150 100 160;
-    --aura-sage: 90 135 110; --aura-sage-2: 60 100 80;
-    --aura-blue: 45 76 224; --aura-blue-2: 80 100 220;
-    --aura-amber: 210 104 58; --aura-amber-2: 170 100 70;
-    --aura-lilac: 150 110 190; --aura-lilac-2: 130 100 150;
-    --mood-1: #3A2723; --mood-2: #5C372E; --mood-3: #855041; --mood-4: #BA725C; --mood-5: #F0A08A; --mood-ink: #F2A891;
-    --anx-1: #2A2335; --anx-2: #3F3356; --anx-3: #5E4B82; --anx-4: #8B71B9; --anx-5: #C2A8EC; --anx-ink: #C8B0F0;
-    --sleep-1: #1E2440; --sleep-2: #2A3563; --sleep-3: #3F5196; --sleep-4: #6479D4; --sleep-5: #9CADFA; --sleep-ink: #A6B6FC;
-    --aura-mood: 214 86 110; --aura-mood-2: 190 110 80;
-    --aura-anx: 132 92 200; --aura-anx-2: 120 96 160;
-    --aura-sleep: 74 70 214; --aura-sleep-2: 92 96 200;
-    --aura-core: 12 12 12; --aura-core-alpha: .7;
-    --aura-alpha: .6; --aura-alpha-subtle: .22; --on-aura-2: #DEDBD3;
+    --bg: #1A2029; --surface: #222A35; --surface-2: #2B3441;
+    --text: #E4E8EE; --text-2: #B8C1CC; --text-3: #9AA4B1;
+    --accent: #84B9B0; --accent-strong: #A9D2CB; --accent-tint: #23353A; --on-accent: #13201E;
+    --line: #333D4B;
+    --help: #E2BE93; --help-tint: #3A3226;
+    --scale-1: #34423B; --scale-2: #3F5A4D; --scale-3: #4E7361; --scale-4: #67907C; --scale-5: #86AF9B;
+    --chart: #84B9B0; --chart-2: #E2BE93;
+    --crit: #B23A31; --crit-tint: #3A2326; --on-crit: #FFFFFF; --crit-ink: #F0A39B;
+    --route: #6E54A8; --route-tint: #2C2840; --on-route: #FFFFFF; --route-ink: #C7B8EC;
+    --warn: #E3B46E; --warn-tint: #3A2F1E;
+    --ok: #8FCBA8; --ok-tint: #1E3328;
+    --marker: #E2C48A;
+    --pill-bg: #2B3441; --pill-text: #E4E8EE; --pill-dot: #E4E8EE; --pill-ink: #1A2029;
+    --scrim: rgba(12, 16, 22, .55);
+    --aura-sage: 188 213 203; --aura-sage-2: 190 220 216;
+    --aura-blue: 195 211 232; --aura-blue-2: 213 208 232;
+    --aura-lavender: 213 208 232; --aura-lavender-2: 195 211 232;
+    --aura-sand: 234 223 203; --aura-sand-2: 236 229 214;
+    --aura-teal: 190 220 216; --aura-teal-2: 188 213 203;
+    --aura-mood: 185 212 199; --aura-mood-2: 210 227 219;
+    --aura-anx: 208 189 223; --aura-anx-2: 224 211 234;
+    --aura-sleep: 179 202 226; --aura-sleep-2: 205 220 236;
+    --mood-1: #34423B; --mood-2: #3F5A4D; --mood-3: #4E7361; --mood-4: #67907C; --mood-5: #86AF9B; --mood-ink: #9CCBB3;
+    --anx-1: #453552; --anx-2: #5C4470; --anx-3: #74578C; --anx-4: #9072A8; --anx-5: #AE92C4; --anx-ink: #CAAEE0;
+    --sleep-1: #2F4052; --sleep-2: #3B546E; --sleep-3: #4D6D90; --sleep-4: #688BB0; --sleep-5: #8AAACC; --sleep-ink: #A9C6E6;
+    --aura-core: 34 42 53; --aura-core-alpha: .45; --on-aura-2: #D3D9E1;
+    --aura-alpha: .28; --aura-alpha-subtle: .14; --orb-alpha: .6;
   }
   /* @tokens doctor-dark-auto */
   :root[data-role="doctor"]:not([data-theme="light"]) {
     color-scheme: dark;
-    --bg: #141414; --surface: #1C1C1B; --surface-2: #252523;
-    --text: #ECEAE4; --text-2: #BEBBB3; --text-3: #A09D95;
-    --accent: #93A6FF; --accent-strong: #B9C5FF; --accent-tint: #1F2542; --on-accent: #0F1220;
-    --line: #33322E;
-    --help: #EFAE84; --help-tint: #3A281C;
-    --scale-1: #1F2542; --scale-2: #2E3A6E; --scale-3: #4A5DA8; --scale-4: #6F84DD; --scale-5: #93A6FF;
-    --chart: #93A6FF; --chart-2: #F2B65E;
-    --crit: #C42B22; --crit-tint: #3A1714; --on-crit: #FFFFFF; --crit-ink: #FF8F86;
-    --route: #7C52C4; --route-tint: #2A2140; --on-route: #FFFFFF; --route-ink: #CDB0F7;
-    --warn: #F2B65E; --warn-tint: #372910;
-    --ok: #86D3A5; --ok-tint: #183022;
-    --band-warn: rgba(242, 182, 94, .08); --band-crit: rgba(255, 143, 134, .08);
-    --marker: #F2D04B;
-    --pill-bg: rgba(8, 8, 8, .45); --pill-text: #ECEAE4; --pill-dot: #ECEAE4; --pill-ink: #141414;
-    --scrim: rgba(0, 0, 0, .6);
-    --aura-rose: 224 54 140; --aura-rose-2: 150 100 160;
-    --aura-sage: 90 135 110; --aura-sage-2: 60 100 80;
-    --aura-blue: 45 76 224; --aura-blue-2: 80 100 220;
-    --aura-amber: 210 104 58; --aura-amber-2: 170 100 70;
-    --aura-lilac: 150 110 190; --aura-lilac-2: 130 100 150;
-    --mood-1: #3A2723; --mood-2: #5C372E; --mood-3: #855041; --mood-4: #BA725C; --mood-5: #F0A08A; --mood-ink: #F2A891;
-    --anx-1: #2A2335; --anx-2: #3F3356; --anx-3: #5E4B82; --anx-4: #8B71B9; --anx-5: #C2A8EC; --anx-ink: #C8B0F0;
-    --sleep-1: #1E2440; --sleep-2: #2A3563; --sleep-3: #3F5196; --sleep-4: #6479D4; --sleep-5: #9CADFA; --sleep-ink: #A6B6FC;
-    --aura-mood: 214 86 110; --aura-mood-2: 190 110 80;
-    --aura-anx: 132 92 200; --aura-anx-2: 120 96 160;
-    --aura-sleep: 74 70 214; --aura-sleep-2: 92 96 200;
-    --aura-core: 12 12 12; --aura-core-alpha: .7;
-    --aura-alpha: .6; --aura-alpha-subtle: .22; --on-aura-2: #DEDBD3;
+    --bg: #1B1E23; --surface: #23272D; --surface-2: #2B3038;
+    --text: #E3E6EA; --text-2: #B4BAC2; --text-3: #959CA6;
+    --accent: #86AED3; --accent-strong: #ADC8E3; --accent-tint: #243442; --on-accent: #14202B;
+    --line: #343A42;
+    --help: #E2BE93; --help-tint: #3A3226;
+    --scale-1: #243442; --scale-2: #2F4A63; --scale-3: #46698C; --scale-4: #6C8FB8; --scale-5: #86AED3;
+    --chart: #8FB0DD; --chart-2: #D9A86A;
+    --crit: #B23A31; --crit-tint: #3A2326; --on-crit: #FFFFFF; --crit-ink: #F0A39B;
+    --route: #6E54A8; --route-tint: #2C2840; --on-route: #FFFFFF; --route-ink: #C7B8EC;
+    --warn: #E3B46E; --warn-tint: #3A2F1E;
+    --ok: #8FCBA8; --ok-tint: #1E3328;
+    --band-warn: rgba(217, 168, 106, .07); --band-crit: rgba(240, 163, 155, .06);
+    --marker: #D9B872;
+    --pill-bg: #2B3038; --pill-text: #E3E6EA; --pill-dot: #E3E6EA; --pill-ink: #1B1E23;
+    --scrim: rgba(0, 0, 0, .55);
+    --aura-sage: 140 186 165; --aura-sage-2: 140 186 165;
+    --aura-blue: 135 168 210; --aura-blue-2: 135 168 210;
+    --aura-lavender: 168 158 212; --aura-lavender-2: 168 158 212;
+    --aura-sand: 214 180 128; --aura-sand-2: 214 180 128;
+    --aura-teal: 120 180 174; --aura-teal-2: 120 180 174;
+    --aura-mood: 156 203 179; --aura-mood-2: 156 203 179;
+    --aura-anx: 202 174 224; --aura-anx-2: 202 174 224;
+    --aura-sleep: 169 198 230; --aura-sleep-2: 169 198 230;
+    --mood-1: #34423B; --mood-2: #3F5A4D; --mood-3: #4E7361; --mood-4: #67907C; --mood-5: #86AF9B; --mood-ink: #9CCBB3;
+    --anx-1: #453552; --anx-2: #5C4470; --anx-3: #74578C; --anx-4: #9072A8; --anx-5: #AE92C4; --anx-ink: #CAAEE0;
+    --sleep-1: #2F4052; --sleep-2: #3B546E; --sleep-3: #4D6D90; --sleep-4: #688BB0; --sleep-5: #8AAACC; --sleep-ink: #A9C6E6;
+    --aura-core: 35 39 45; --aura-core-alpha: 0; --on-aura-2: #B4BAC2;
+    --aura-alpha: .08; --aura-alpha-subtle: .06; --orb-alpha: .4;
   }
 }

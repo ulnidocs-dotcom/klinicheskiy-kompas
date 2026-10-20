@@ -34,16 +34,21 @@ code{font-size:.92em}
     radial-gradient(85% 120% at 100% 100%,rgb(var(--aura-b) / var(--aura-k)) 0%,rgb(var(--aura-b) / calc(var(--aura-k) * .4)) 40%,rgb(var(--aura-b) / 0) 74%),
     var(--surface);
 }
-.aura--rose{--aura-a:var(--aura-rose);--aura-b:var(--aura-rose-2)}
+/* Тоны аур (по типу, не по тяжести): шалфей, голубой, лаванда, песок, бирюза. Красного, розового и мадженты нет. */
 .aura--sage{--aura-a:var(--aura-sage);--aura-b:var(--aura-sage-2)}
 .aura--blue{--aura-a:var(--aura-blue);--aura-b:var(--aura-blue-2)}
-.aura--amber{--aura-a:var(--aura-amber);--aura-b:var(--aura-amber-2)}
-.aura--lilac{--aura-a:var(--aura-lilac);--aura-b:var(--aura-lilac-2)}
+.aura--lavender{--aura-a:var(--aura-lavender);--aura-b:var(--aura-lavender-2)}
+.aura--sand{--aura-a:var(--aura-sand);--aura-b:var(--aura-sand-2)}
+.aura--teal{--aura-a:var(--aura-teal);--aura-b:var(--aura-teal-2)}
 /* Гаммы шкал чек-ина (настроение · беспокойство · сон): аура плитки, сферы, линейка, точки и линии «Моего пути» */
 .aura--mood{--aura-a:var(--aura-mood);--aura-b:var(--aura-mood-2)}
 .aura--anx{--aura-a:var(--aura-anx);--aura-b:var(--aura-anx-2)}
 .aura--sleep{--aura-a:var(--aura-sleep);--aura-b:var(--aura-sleep-2)}
 .aura--subtle{--aura-k:var(--aura-alpha-subtle)}
+/* Врач и психолог: без свечения. Плоская поверхность + едва заметный оттенок типа (--aura-alpha ≤ .08) + линия 3px сверху. */
+[data-role="doctor"] .aura,[data-role="doctor"] .dtile.aura{
+  background:linear-gradient(rgb(var(--aura-a) / var(--aura-k)),rgb(var(--aura-a) / var(--aura-k))),var(--surface);
+  box-shadow:inset 0 3px 0 rgb(var(--aura-a))}
 
 .card{background:var(--surface);border-radius:var(--radius-l);padding:18px}
 [data-role="doctor"] .card{border:1px solid var(--line);border-radius:16px;padding:16px}
@@ -191,13 +196,13 @@ code{font-size:.92em}
 .dtile__note{font-size:12px;line-height:1.3;color:var(--text-2)}
 a.dtile:hover{filter:brightness(1.04)}
 a.dtile:focus-visible{border-radius:28px}
-/* Кольцо: тонкий трек + жёлтая дуга value/max, число точечной матрицей */
+/* Кольцо: тонкий трек + дуга-маркер (приглушённый песочный) value/max, число точечной матрицей */
 .ring{position:relative;flex:none;width:96px;height:96px}
 .ring svg{display:block;width:100%;height:100%}
 .ring__track{fill:none;stroke:var(--text);stroke-opacity:.4;stroke-width:1.2}
 .ring__arc{fill:none;stroke:var(--marker);stroke-width:2.6;stroke-linecap:round}
 .ring__n{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:26px;color:var(--text)}
-/* Полоса диапазона: монохромные деления + жёлтый треугольник */
+/* Полоса диапазона: монохромные деления + треугольник-маркер */
 .rbar{position:relative;width:100%;height:16px;display:flex;align-items:center}
 .rbar__track{display:flex;gap:3px;width:100%;height:4px}
 .rbar__track i{min-width:2px;border-radius:2px;background:currentColor;opacity:calc(.22 + .5 * var(--k))}

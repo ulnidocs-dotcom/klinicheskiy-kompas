@@ -1,4 +1,4 @@
-/* Пациент: плитки с аурами, пилюли, точечные цифры. Красного на стороне пациента нет: помощь — янтарная. */
+/* Пациент: плитки с мягкими аурами, пилюли. Красного, розового и мадженты на стороне пациента нет: помощь — тёплый песок. */
 .p-head{display:flex;flex-direction:column;gap:6px;margin:8px 0 22px}
 .p-head h1{font-size:2.05em}
 .p-head .date{color:var(--text-3);font-size:.85em}
@@ -60,7 +60,7 @@ a.tile{min-height:120px;display:flex;flex-direction:column;justify-content:space
 /* Дыхательный пейсер: сфера-аура растёт на вдохе и сжимается на выдохе */
 .breath-wrap{display:flex;flex-direction:column;align-items:center;gap:14px;padding:18px 0 6px}
 .breath{position:relative;width:180px;height:180px;margin:18px auto;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--text);transition:transform 4s ease-in-out;transform:scale(.82);
-  background:radial-gradient(circle at 50% 50%,rgb(var(--aura-core) / var(--aura-core-alpha)) 0 28%,rgb(var(--aura-blue) / var(--aura-alpha)) 52%,rgb(var(--aura-lilac) / calc(var(--aura-alpha) * .5)) 68%,rgb(var(--aura-lilac) / 0) 71%)}
+  background:radial-gradient(circle at 50% 50%,rgb(var(--aura-core) / var(--aura-core-alpha)) 0 28%,rgb(var(--aura-teal) / var(--orb-alpha)) 52%,rgb(var(--aura-blue) / calc(var(--orb-alpha) * .5)) 68%,rgb(var(--aura-blue) / 0) 71%)}
 .breath.in{transform:scale(1.18)}
 .breath .num{font-size:48px}
 .breath .label{color:var(--text);font-size:.95em}
@@ -77,7 +77,7 @@ a.tile{min-height:120px;display:flex;flex-direction:column;justify-content:space
 .tabbar a.tab-help{color:var(--help)}
 .help-call svg{flex:none}
 .hello-orb{width:120px;height:120px;border-radius:50%;
-  background:radial-gradient(circle at 50% 50%,rgb(var(--aura-core) / var(--aura-core-alpha)) 0 22%,rgb(var(--aura-rose) / var(--aura-alpha)) 48%,rgb(var(--aura-lilac) / calc(var(--aura-alpha) * .5)) 66%,rgb(var(--aura-lilac) / 0) 71%)}
+  background:radial-gradient(circle at 50% 50%,rgb(var(--aura-core) / var(--aura-core-alpha)) 0 22%,rgb(var(--aura-teal) / var(--orb-alpha)) 48%,rgb(var(--aura-blue) / calc(var(--orb-alpha) * .5)) 66%,rgb(var(--aura-blue) / 0) 71%)}
 @media (prefers-reduced-motion:reduce){.breath{transition:none!important;transform:none!important}}
 @media (max-width:360px){.day .num{font-size:52px}.tile-grid{grid-template-columns:1fr}}
 .tile-link{display:inline-flex;align-items:center;min-height:var(--tap);margin:-12px -6px -12px 0;padding:0 6px;font-size:.75em;color:var(--text)}
@@ -96,7 +96,7 @@ a.tile{min-height:120px;display:flex;flex-direction:column;justify-content:space
 .q-sum{font-size:.85em;color:var(--text-2)}
 
 /* Ползунок-линейка: настоящий <input type="range"> 1–5 поверх рисок. Трек прозрачный, риски и заливка — псевдоэлементы
-   обёртки; «бегунок» — жёлтый треугольник со штрихом в зоне 44×44 (удобно пальцу). Отступы 22px = полширины бегунка,
+   обёртки; «бегунок» — песочный треугольник (--marker) со штрихом в зоне 44×44 (удобно пальцу). Отступы 22px = полширины бегунка,
    поэтому крайние риски совпадают с крайними положениями. */
 .ruler{position:relative;height:44px;margin-top:2px;--f:.5}
 .ruler::before{content:'';position:absolute;left:22px;right:22px;top:50%;height:16px;transform:translateY(-50%);pointer-events:none;

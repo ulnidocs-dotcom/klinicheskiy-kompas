@@ -13,7 +13,7 @@
       <section class="card stack" style="max-width:560px;margin-top:16px"><h2>Оформление</h2>
         <div class="seg" role="group" aria-label="Тема">${[['light', 'Дневная'], ['dark', 'Ночная'], ['auto', 'Как в системе']].map(([v, l]) =>
           `<button id="th-${v}" data-theme-set="${v}" aria-pressed="${KK.theme.pref() === v}">${l}</button>`).join('')}</div>
-        <p class="hint">Выбор общий для всех кабинетов на этом устройстве.</p></section>`));
+        <p class="hint">Выбор общий для кабинетов врача и психолога на этом устройстве. По умолчанию — «Дневная»: тёмный текст на светлом легче читать весь день.</p></section>`));
   }
   document.addEventListener('kk:themechange', () => document.querySelectorAll('[data-theme-set]').forEach((b) => b.setAttribute('aria-pressed', String(KK.theme.pref() === b.dataset.themeSet))));
   document.addEventListener('click', (e) => {

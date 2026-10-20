@@ -71,7 +71,7 @@
         const s = r.subscales[k];
         const cuts = d.severity[k];
         const bands = cuts.map((c, j) => ({ from: c, to: (cuts[j + 1] ?? 43) - 1 }));
-        return { aura: ['lilac', 'sage', 'amber'][i], label: `DASS-21 · ${s.title}`, value: s.score, unit: 'из 42',
+        return { aura: ['blue', 'lavender', 'sand'][i], label: `DASS-21 · ${s.title}`, value: s.score, unit: 'из 42',
           note: s.score == null ? 'нет данных' : s.label, visual: T.rangeBar({ value: s.score, max: 42, bands }) };
       }), { label: 'DASS-21' });
     },

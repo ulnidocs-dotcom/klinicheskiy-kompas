@@ -98,7 +98,7 @@
 
   function medsCard(p) {
     if (!p.plan || p.plan.status !== 'confirmed') return `
-      <a class="tile aura aura--rose" href="therapy.html"><span class="label">Лечение</span>
+      <a class="tile aura aura--teal" href="therapy.html"><span class="label">Лечение</span>
         <div class="tile-row"><p class="tile-title">Врач обсуждает с вами план лечения</p><span class="chev">${ui.icon('pill', 22)}</span></div></a>`;
     const drug = data.drugs[p.plan.drugId];
     const slots = app.doseSlots(store.events(p.id, 'dose'), new Date().toISOString());
@@ -108,7 +108,7 @@
           <div class="row"><button class="btn" data-undo-yes>Отменить отметку</button><button class="btn btn--ghost" data-undo-no>Оставить</button></div></div>`
       : `<div class="slots">${slots.map(app.slotHtml).join('')}</div>`;
     return `
-      <section class="tile aura aura--rose stack">
+      <section class="tile aura aura--teal stack">
         <div class="row-between"><span class="label">Приём лекарства</span><a class="tile-link" href="therapy.html">Подробнее</a></div>
         <p class="tile-title">${ui.esc(drug.name)} · ${ui.esc(drug.dosing.dose)}</p>
         ${body}
@@ -120,7 +120,7 @@
     if (!due.length) return '';
     const [first, ...rest] = due;
     return `
-      <a class="tile aura aura--lilac" href="scale.html?id=${first}${rest.length ? `&next=${rest.join(',')}` : ''}">
+      <a class="tile aura aura--lavender" href="scale.html?id=${first}${rest.length ? `&next=${rest.join(',')}` : ''}">
         <span class="label">${due.length === 2 ? 'Около 4 минут' : 'Около 2 минут'}</span>
         <p class="tile-title">Короткий опросник</p>
         <span class="btn btn--pill" aria-hidden="true">Начать</span></a>`;
@@ -138,7 +138,7 @@
   function intakeCard(p) {
     if (!app.intakeDue(p)) return '';
     return `
-      <a class="tile aura aura--lilac" href="intake.html">
+      <a class="tile aura aura--lavender" href="intake.html">
         <span class="label">${p.intakeStatus === 'in_progress' ? 'Можно продолжить' : 'Около 20 минут'}</span>
         <p class="tile-title">Первичная беседа с психологом</p>
         <span class="btn btn--pill" aria-hidden="true">${p.intakeStatus === 'in_progress' ? 'Продолжить' : 'Начать'}</span></a>`;
@@ -146,7 +146,7 @@
 
   function helpCard() {
     return `
-      <a class="tile aura aura--amber" href="help.html">
+      <a class="tile aura aura--sand" href="help.html">
         <span class="label">Помощь рядом</span>
         <div class="tile-row"><p class="tile-title">Если сейчас тяжело</p><span class="chev">${ui.icon('heart', 22)}</span></div></a>`;
   }

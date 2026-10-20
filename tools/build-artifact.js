@@ -35,7 +35,7 @@ function kompas(indexHtml) {
   const keep = head.match(/<title>[\s\S]*?<\/title>|<meta\b[^>]*>|<link\b[^>]*>|<style>[\s\S]*?<\/style>/gi) || [];
   const title = keep.some((t) => /^<title>/i.test(t)) ? [] : ['<title>Клинический компас</title>'];
   const boot = '<script>document.documentElement.dataset.role="doctor";document.documentElement.lang="ru";</script>';
-  // Тема применяется до отрисовки тела: theme.js читает kk:theme и ставит data-theme.
+  // Тема применяется до отрисовки тела: theme.js читает kk:theme:staff (лаунчер — роль врача) и ставит data-theme.
   const theme = '<script src="assets/theme.js"></script>';
   return [...title, ...keep.map((t) => t.replace(/<title>[\s\S]*?<\/title>/i, '<title>Клинический компас</title>')), boot, theme, bodyM[1].trim(), ''].join('\n');
 }

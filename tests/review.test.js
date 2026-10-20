@@ -196,10 +196,12 @@ test('intake drafts: localStorage key per patient, cleared by demo reset helpers
   assert.deepEqual(KK.doctorApp.demoDeviceKeys(['kk:v1', 'kk:intake-draft:p_anna', 'kk:draft:x']), ['kk:intake-draft:p_anna']);
   const storage = memStorage();
   storage.setItem('kk:intake-draft:p_anna', '{}');
-  storage.setItem('kk:theme', 'dark');
+  storage.setItem('kk:theme:patient', 'dark');
+  storage.setItem('kk:theme:staff', 'light');
   mk(storage);
   assert.equal(storage.getItem('kk:intake-draft:p_anna'), null);
-  assert.equal(storage.getItem('kk:theme'), 'dark');
+  assert.equal(storage.getItem('kk:theme:patient'), 'dark');
+  assert.equal(storage.getItem('kk:theme:staff'), 'light');
   const html = require('node:fs').readFileSync(require('node:path').join(__dirname, '..', 'index.html'), 'utf8');
   assert.match(html, /kk:intake-draft:/);
 });
