@@ -2,7 +2,7 @@
   const { ui, store, patientApp: app } = KK;
   const ctx = app.start({ tab: null, help: false, requireLink: false, back: 'index.html' });
   if (!ctx) return;
-  // Экран кризиса доступен всегда (и до подключения). «Врач уведомлён» — только при реально открытом алерте по PHQ-9 п. 9.
+  // Экран кризиса доступен всегда (и до подключения). «Сообщение отправлено врачу» — только при реально открытом алерте по PHQ-9 п. 9.
   const fromPhq = ui.param('from') === 'phq9' && app.phqAlertOpen(store.alerts({ patientId: ctx.pid, open: true }));
   // После скрининга безопасности в первичной беседе: «уведомлены» — только при открытом алерте C-SSRS.
   const fromIntake = ui.param('from') === 'intake' && store.alerts({ patientId: ctx.pid, open: true }).some((a) => a.ruleId === 'cssrs_risk');
@@ -15,8 +15,8 @@
       <a class="p-back" href="index.html">${ui.icon('back', 18)}Назад</a>
       <section class="stack-l help-hero">
         <h1>Вы не одни</h1>
-        <p class="muted">${fromPhq ? 'Спасибо, что ответили честно. Ваш врач уже получил ответы и свяжется с вами.'
-          : fromIntake ? 'Спасибо, что ответили честно. Специалисты уже получили ответы и свяжутся с вами. Беседу с психологом можно продолжить позже.'
+        <p class="muted">${fromPhq ? 'Спасибо, что ответили честно. Ответы переданы врачу: он увидит их в рабочее время и свяжется с вами. Если вам опасно сейчас — не ждите ответа, звоните 112 или на линию ниже.'
+          : fromIntake ? 'Спасибо, что ответили честно. Ответы переданы специалистам: они увидят их в рабочее время и свяжутся с вами. Если вам опасно сейчас — не ждите ответа, звоните 112 или на линию ниже. Беседу с психологом можно продолжить позже.'
             : 'Сейчас главное — ваша безопасность. Выберите, что подходит.'}</p>
         <div class="stack">
           <a class="help-call" href="tel:112"><span class="ic">${ui.icon('phone', 20)}</span><span><b>112</b><span class="hint">Если есть опасность для жизни</span></span></a>
@@ -24,8 +24,8 @@
           <a class="help-call" href="tel:88002000122"><span class="ic">${ui.icon('phone', 20)}</span><span><b>8 800 2000-122</b><span class="hint">Телефон доверия для подростков</span></span></a>
         </div>
         <section class="tile aura aura--sand stack">
-          ${sent ? `<p class="row">${ui.icon('check', 20)}<span>Врач уведомлён</span></p><a class="btn btn--block" href="chat.html">Написать врачу</a>`
-            : `<p>Можно сообщить врачу, что вам сейчас плохо. Он увидит это сразу.</p><button class="btn btn--pill btn--block" data-sos>Сообщить врачу</button>`}
+          ${sent ? `<p class="row">${ui.icon('check', 20)}<span>Сообщение отправлено врачу</span></p><p class="hint">Врач ответит в рабочее время. Это не экстренная служба: если станет хуже — звоните 112.</p><a class="btn btn--block" href="chat.html">Написать врачу</a>`
+            : `<p>Можно сообщить врачу, что вам сейчас плохо. Врач увидит сообщение в рабочее время — это не экстренная служба. Если опасно сейчас, звоните 112.</p><button class="btn btn--pill btn--block" data-sos>Сообщить врачу</button>`}
         </section>
         <section class="card stack">
           <h3>Вернуться в «здесь и сейчас»</h3>

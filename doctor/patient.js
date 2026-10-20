@@ -40,7 +40,7 @@
     const drug = data.drugs[plan?.drugId];
     // Срочные сигналы — первыми, до сводки; спокойные — после графика, чтобы динамика оставалась на первом экране.
     const urgent = p.signals.some((s) => s.level === 'critical' || s.level === 'important' || s.routing === 'required');
-    const signalsHtml = `<section class="card stack"><h2>Сигналы</h2>
+    const signalsHtml = `<section class="card stack"><h2>Сигналы</h2>${D.prelimHtml()}
             ${p.signals.length ? p.signals.map((s) => D.signalHtml(s, mode)).join('') : '<p class="muted">Сигналов нет. Состояние стабильно.</p>'}</section>`;
     ui.mount('#app', `
       ${D.patientHeader(p)}

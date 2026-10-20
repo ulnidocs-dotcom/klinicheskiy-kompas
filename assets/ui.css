@@ -148,6 +148,16 @@ code{font-size:.92em}
 .badge--contra{background:var(--crit-tint);color:var(--crit-ink);border:1.5px solid var(--crit-ink)}
 .badge--ok{background:var(--ok-tint);color:var(--ok)}
 .badge--info{background:var(--surface-2);color:var(--text-2)}
+.badge--task{background:var(--accent-tint);color:var(--accent-strong)}
+/* «Почему»: данные, недостающее, версия правила — свёрнуто, чтобы не перегружать карточку */
+.why{grid-column:1/-1;font-size:13px;color:var(--text-2)}
+.why summary{cursor:pointer;color:var(--accent-strong);width:max-content;min-height:32px;display:flex;align-items:center}
+.why dl{display:grid;grid-template-columns:max-content 1fr;gap:4px 12px;margin:6px 0 0}
+.why dt{color:var(--text-3)}
+.why dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.why ul{margin:0;padding-left:18px}
+.prelim{font-size:13px;color:var(--text-2);background:var(--surface-2);border-radius:10px;padding:8px 12px;margin:0}
+@media (max-width:560px){.why dl{grid-template-columns:1fr}.why dt{margin-top:4px}}
 .signal{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface)}
 .signal--critical{border:2px solid var(--crit-ink);background:var(--crit-tint)}
 .signal--required{border:2px solid var(--route-ink);background:var(--route-tint)}

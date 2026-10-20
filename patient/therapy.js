@@ -35,7 +35,7 @@
               <div class="seg" role="group" aria-label="${ui.esc(a.label)}">${SEV.map((s) => `<button data-ae="${a.id}" data-sev="${s.v}" aria-pressed="${(marks[a.id] || 'none') === s.v}">${s.l}</button>`).join('')}</div></div>`).join('')}
           <label class="field"><span class="hint">Что-то ещё?</span><textarea id="note" placeholder="Например: тяжело засыпать после вечернего приёма">${ui.esc(note)}</textarea></label>
           <button class="btn btn--pill btn--block" data-send>Отправить врачу</button>
-          ${sentSevere === true ? '<div class="card card--help"><p>Врач получил сигнал и свяжется с вами. Если состояние резко ухудшилось — звоните 112.</p></div>' : ''}
+          ${sentSevere === true ? '<div class="card card--help"><p>Сигнал отправлен врачу, он свяжется с вами в рабочее время. Если состояние резко ухудшилось — звоните 112, не ждите ответа.</p></div>' : ''}
           ${sentSevere === false ? '<p class="hint" role="status">Отправлено. Врач увидит ваши отметки.</p>' : ''}
         </section>
       </section>`);

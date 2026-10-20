@@ -1,7 +1,7 @@
 (function (g) {
   const KK = g.KK;
   const KEY = 'kk:v1';
-  const LEVEL_RANK = { critical: 0, important: 1, info: 2 };
+  const LEVEL_RANK = { critical: 0, important: 1, task: 2, info: 3 };
   const PROFILE_KEYS = ['age', 'sex', 'pregnant', 'lactating', 'postCovid', 'labs', 'meds', 'allergies', 'conditions', 'diagnoses', 'history', 'plan', 'maoiStoppedDaysAgo'];
   function hash(str) {
     let h = 5381;
@@ -97,13 +97,14 @@
     function syncAlerts(id, dataAt) {
       const p = db.patients[id];
       for (const s of signalsFor(id)) {
-        if (s.level === 'info') continue;
+        // Плановые задачи и информационные сигналы не поднимают алерт: они видны в карте и очереди, без уведомления.
+        if (s.level === 'info' || s.level === 'task') continue;
         const fingerprint = `${s.ruleId}|${s.error ? 'error|' : ''}${s.basis || 'profile:' + profileHash(p)}`;
         const exists = db.alerts.some((a) => a.patientId === id && a.ruleId === s.ruleId &&
           (a.fingerprint ? a.fingerprint === fingerprint : !a.ackAt));
         if (exists) continue;
         db.alerts.push({ id: KK.util.uid('al'), patientId: id, ruleId: s.ruleId, level: s.level, routing: s.routing,
-          title: s.title, text: s.text, source: s.source, origin: s.origin || null, fingerprint, error: !!s.error, dataAt,
+          title: s.title, text: s.text, source: s.source, origin: s.origin || null, ruleVersion: s.version || null, fingerprint, error: !!s.error, dataAt,
           createdAt: nowIso(), deliveredAt: null, ackAt: null, ackAction: null });
       }
     }
@@ -131,10 +132,11 @@
       return e ? Object.assign({ at: e.at }, e.payload) : null;
     }
 
-    // Очередь по спеку: критический алерт → «обязательно к психиатру» → важные алерты → «желательно» → пропуски приёма.
+    // Очередь по спеку: критический алерт → «обязательно к психиатру» → важные алерты → «желательно» и плановые задачи → остальные.
     function urgency(v) {
       const lvl = Math.min(3, ...v.openAlerts.map((a) => LEVEL_RANK[a.level]));
-      const tier = lvl === 0 ? 0 : v.routing === 'required' ? 1 : lvl === 1 ? 2 : v.routing === 'desirable' ? 3 : 4;
+      const task = v.signals.some((s) => s.level === 'task');
+      const tier = lvl === 0 ? 0 : v.routing === 'required' ? 1 : lvl === 1 ? 2 : v.routing === 'desirable' || task ? 3 : 4;
       return [tier, -(v.missedStreak || 0)];
     }
 

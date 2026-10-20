@@ -44,7 +44,8 @@
         <div class="stack">
           <section class="card stack"><h2>Решение врача</h2>
             ${decisionHtml(p, t, drug)}
-            <p class="hint">Система не назначает препараты самостоятельно. Решение фиксируется в журнале действий.</p></section>
+            <p class="hint">Система не назначает препараты самостоятельно. Решение фиксируется в журнале действий.</p>
+            <p class="prelim">${ui.esc(drug.name)} — один из допустимых вариантов, а не рекомендация системы. Проверка показаний и противопоказаний идёт одинаково для любого препарата; выбор терапии — по КР и решению врача. Препарат включён в демо по условию кейса.</p></section>
           <section class="card stack"><h2>Нежелательные реакции из инструкции</h2>
             <p class="hint">Часто: ${drug.adverseEvents.filter((a) => a.freq === 'часто').map((a) => ui.esc(a.label.toLowerCase())).join(', ')}.</p>
             <p class="hint">Нечасто: ${drug.adverseEvents.filter((a) => a.freq === 'нечасто').map((a) => ui.esc(a.label.toLowerCase())).join(', ')}.</p></section>

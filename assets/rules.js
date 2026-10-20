@@ -1,6 +1,7 @@
 (function (g) {
   const KK = g.KK;
-  const ORDER = { critical: 0, important: 1, info: 2 };
+  // Уровни: критический → важный → плановый (задача врачу без срочного уведомления) → информационный (только в карту).
+  const ORDER = { critical: 0, important: 1, task: 2, info: 3 };
   const CSSRS_RANK = { none: 0, low: 1, moderate: 2, high: 3 };
   const INTAKE_CSSRS_DAYS = 30;
   function buildContext(patient, events, nowIso) {
@@ -34,6 +35,16 @@
       daysOnTherapy: startIso ? KK.util.daysBetween(startIso, nowIso) : 0,
     };
   }
+  // «Почему сработало»: версия правила, данные, на которых сделан вывод, и чего не хватает.
+  // Сбой объяснения не должен скрывать сам сигнал.
+  function explain(r, ctx) {
+    const v = KK.data.rulesVersion;
+    const safe = (fn) => { try { return typeof fn === 'function' ? (fn(ctx) || []).filter(Boolean) : []; } catch (e) { return []; } };
+    let inputs = safe(r.inputs);
+    const basis = safe((c) => [typeof r.basis === 'function' ? r.basis(c) : null])[0];
+    if (!inputs.length && basis) inputs = [`событие от ${String(basis).slice(0, 10).split('-').reverse().join('.')}`];
+    return { inputs, missing: safe(r.missing), version: `${r.id}@${r.version || 1} · набор ${v ? v.id : '—'}` };
+  }
   function evaluate(ctx, rules = KK.data.rules) {
     const out = [];
     for (const r of rules) {
@@ -41,7 +52,8 @@
         if (r.when(ctx)) {
           out.push({ ruleId: r.id, level: r.level, routing: r.routing, title: r.title, text: r.text(ctx), source: r.source, teamRule: r.teamRule,
             basis: typeof r.basis === 'function' ? r.basis(ctx) || null : null,
-            origin: typeof r.origin === 'function' ? r.origin(ctx) || null : null });
+            origin: typeof r.origin === 'function' ? r.origin(ctx) || null : null,
+            ...explain(r, ctx) });
         }
       } catch (e) {
         // Сбой правила не должен превращаться в «всё спокойно»: показываем врачу, что проверка не выполнена.

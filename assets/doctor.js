@@ -57,6 +57,7 @@
       if (s.routing === 'desirable') return '<span class="badge badge--desirable">Желательно к психиатру</span>';
       if (s.ruleId === 'contraindication') return '<span class="badge badge--contra">Противопоказание</span>';
       if (s.level === 'important') return '<span class="badge badge--warn">Важно</span>';
+      if (s.level === 'task') return '<span class="badge badge--task">Задача</span>';
       return '<span class="badge badge--info">Инфо</span>';
     },
     signalHtml(s, mode) {
@@ -64,13 +65,26 @@
       const cls = s.level === 'critical' ? 'signal--critical' : s.routing === 'required' ? 'signal--required'
         : s.routing === 'desirable' ? 'signal--desirable' : s.level === 'important' ? 'signal--warn' : '';
       const hint = mode === 'nonPsychiatrist' && HINTS[s.ruleId] ? `<p class="hint-box">${e(HINTS[s.ruleId])}</p>` : '';
-      return `<div class="signal ${cls}">${app.signalBadge(s)}<b>${e(s.title)}</b><span></span><span>${e(s.text)}</span><span></span>${hint ? `<div>${hint}</div>` : '<span></span>'}<span class="src">${e(s.source)}${s.teamRule ? ' · правило команды' : ''}</span></div>`;
+      const task = s.level === 'task' ? 'Плановая задача, без срочного уведомления · ' : '';
+      return `<div class="signal ${cls}">${app.signalBadge(s)}<b>${e(s.title)}</b><span></span><span>${e(s.text)}</span><span></span>${hint ? `<div>${hint}</div>` : '<span></span>'}<span class="src">${task}${e(s.source)}${s.teamRule ? ' · правило команды' : ''}</span>${app.whyHtml(s)}</div>`;
+    },
+    // «Почему этот сигнал»: на каких данных сделан вывод, чего не хватает, какое правило и какой версии сработало.
+    whyHtml(s) {
+      const e = ui().esc;
+      if (!s.version) return '';
+      const list = (xs) => `<ul>${xs.map((x) => `<li>${e(x)}</li>`).join('')}</ul>`;
+      return `<details class="why"><summary>Почему</summary><dl>
+        ${(s.inputs || []).length ? `<dt>Данные</dt><dd>${list(s.inputs)}</dd>` : ''}
+        <dt>Не хватает</dt><dd>${(s.missing || []).length ? list(s.missing) : 'для этого правила данных достаточно'}</dd>
+        <dt>Правило</dt><dd>${e(s.version)}</dd>
+        <dt>Источник</dt><dd>${e(s.source)}</dd></dl></details>`;
     },
     statusBadge(p) {
       if (p.openAlerts.some((a) => a.level === 'critical')) return app.signalBadge({ level: 'critical' });
       if (p.routing) return app.signalBadge({ routing: p.routing });
       if (p.therapy?.eligible === false) return app.signalBadge({ ruleId: 'contraindication' });
       if (p.openAlerts.length) return app.signalBadge({ level: 'important' });
+      if ((p.signals || []).some((s) => s.level === 'task')) return app.signalBadge({ level: 'task' });
       return '<span class="badge badge--ok">Стабильно</span>';
     },
     referralText(p, doctor) {
@@ -96,8 +110,12 @@
         `Текущая терапия: ${meds}; план: ${plan}`,
         `Приверженность (14 дн.): ${p.pdc14 == null ? 'нет данных' : Math.round(p.pdc14 * 100) + '%'}`,
         `Врач: ${doctor.name}, ${doctor.specialty}`,
+        app.modeFor(doctor.specialty) === 'nonPsychiatrist' ? app.PRELIM : '',
       ].filter(Boolean).join('\n');
     },
+    // Закон РФ № 3185-1, ст. 20: диагноз психического расстройства устанавливает психиатр; заключение другого врача предварительное.
+    PRELIM: 'Оценка врача, не являющегося психиатром, носит предварительный характер (ст. 20 Закона РФ № 3185-1). Диагноз психического расстройства устанавливает врач-психиатр.',
+    prelimHtml: () => (app.mode() === 'nonPsychiatrist' ? `<p class="prelim">${ui().esc(app.PRELIM)}</p>` : ''),
     ASSESS_SCALES: ['phq9', 'gad7', 'cssrs'],
     // ?scale= из URL — только из белого списка; иначе C-SSRS при сигнале PHQ-9 п.9, иначе PHQ-9.
     assessScale: (param, siSignal) => (app.ASSESS_SCALES.includes(param) ? param : siSignal ? 'cssrs' : 'phq9'),

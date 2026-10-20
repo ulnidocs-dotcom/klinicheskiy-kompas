@@ -259,3 +259,20 @@ test('removeEvent: only today\'s own dose events; others throw and nothing chang
   assert.equal(s.events('p_anna', 'dose').some((e) => e.id === d.id), false);
   assert.throws(() => s.removeEvent('p_anna', d.id), /Нет события/);
 });
+
+test('planned task (missed doses) does not raise an alert but marks the patient in the queue', () => {
+  let now = NOW;
+  const s = KK.createStore({ storage: memStorage(), clock: () => now });
+  s.reset();
+  now = new Date(NOW.getTime() + 4 * 86400000); // у Ольги отметки о приёме обрываются: через 4 дня — серия пропусков
+  s.addEvent('p_olga', 'checkin', { mood: 4, anxiety: 2, sleep: 3 });
+  const p = s.patient('p_olga');
+  assert.equal(p.signals.find((x) => x.ruleId === 'missed_doses').level, 'task');
+  assert.ok(!s.alerts({ patientId: 'p_olga' }).some((x) => x.ruleId === 'missed_doses'));
+});
+
+test('alerts store the rule version for the audit trail', () => {
+  const s = mk();
+  const a = s.alerts({ patientId: 'p_dmitry', open: true }).find((x) => x.ruleId === 'si_phq9');
+  assert.match(a.ruleVersion, /^si_phq9@1/);
+});

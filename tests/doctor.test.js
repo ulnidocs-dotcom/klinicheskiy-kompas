@@ -213,3 +213,24 @@ test('summaryTiles: values from data — PHQ total/band, pdc %, σ of moods, AE 
   assert.equal(t[4].value, 3); assert.equal(t[4].note, 'чаще: Сонливость');
   assert.equal(t[5].value, 14); assert.equal(t[5].unit, 'дней');
 });
+
+test('signal shows a collapsed «Почему» with data, missing items and rule version', () => {
+  const s = { ruleId: 'si_phq9', level: 'critical', routing: 'required', title: 't', text: 'x', source: 'КР', inputs: ['PHQ-9 от 19.10.2026: 21'], missing: ['C-SSRS не проведена'], version: 'si_phq9@1 · набор 2026.10.1' };
+  const html = D().signalHtml(s, 'psychiatrist');
+  assert.match(html, /<details class="why"><summary>Почему<\/summary>/);
+  assert.match(html, /PHQ-9 от 19\.10\.2026: 21/);
+  assert.match(html, /C-SSRS не проведена/);
+  assert.match(html, /si_phq9@1/);
+});
+
+test('planned task gets its own badge', () => {
+  assert.match(D().signalBadge({ level: 'task', routing: null }), /badge--task">Задача/);
+});
+
+test('referral by a non-psychiatrist is marked preliminary (Law 3185-1)', () => {
+  const store = KK.createStore({ storage: memStorage(), clock: () => new Date('2026-10-19T12:00:00Z') });
+  store.reset();
+  const p = store.patient('p_dmitry');
+  assert.match(D().referralText(p, { name: 'Врач', specialty: 'терапевт' }), /предварительный характер.*3185-1/);
+  assert.doesNotMatch(D().referralText(p, { name: 'Врач', specialty: 'психиатр' }), /предварительный характер/);
+});

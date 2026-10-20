@@ -1,7 +1,7 @@
 (function () {
   const { ui, doctorApp: D, data } = KK;
   D.start({ nav: 'materials' });
-  const LV = { critical: 'Критический', important: 'Важный', info: 'Инфо' };
+  const LV = { critical: 'Критический', important: 'Важный', task: 'Плановый', info: 'Инфо' };
   const RT = { required: 'Обязательно', desirable: 'Желательно' };
   const a = data.drugs.aviandr;
   ui.mount('#app', `

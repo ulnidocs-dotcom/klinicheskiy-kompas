@@ -57,10 +57,10 @@ test('worsening ≥5 between two last GAD-7', () => {
   assert.ok(run(patient(), ev).some((s) => s.ruleId === 'worsening'));
 });
 
-test('3 full days without doses → important', () => {
+test('3 full days without doses → task (planned, no alert)', () => {
   const ev = [{ type: 'dose', at: at(5), payload: { slot: 'утро', taken: true } }];
   const s = run(patient(), ev).find((x) => x.ruleId === 'missed_doses');
-  assert.equal(s.level, 'important');
+  assert.equal(s.level, 'task');
 });
 
 test('SOS within 24h → critical', () => {
@@ -137,7 +137,7 @@ test('I7: gad7_persistent — GAD-7 ≥ 15 not improving after ≥ 28 days', () 
   const p = patient({ plan: { drugId: 'aviandr', status: 'confirmed', confirmedAt: at(30), timesPerDay: 2 } });
   const ev = [...dosesFor(14), scale('gad7', [2, 2, 2, 2, 2, 2, 3], 29), scale('gad7', [3, 2, 2, 2, 2, 2, 3], 0)];
   const s = run(p, ev).find((x) => x.ruleId === 'gad7_persistent');
-  assert.equal(s.level, 'info');
+  assert.equal(s.level, 'task');
   assert.equal(s.routing, 'desirable');
   assert.equal(s.teamRule, true);
   assert.match(s.source, /Генерализованное тревожное/);
@@ -157,4 +157,33 @@ test('I7: ae_mild — mild/moderate AE within 7 days → info listing items', ()
   assert.match(s.text, /Тошнота/);
   assert.ok(!run(patient(), [...dosesFor(14), ae(10, [{ id: 'headache', severity: 'mild' }])]).some((x) => x.ruleId === 'ae_mild'));
   assert.ok(!run(patient(), [...dosesFor(14), ae(1, [{ id: 'headache', severity: 'severe' }])]).some((x) => x.ruleId === 'ae_mild'));
+});
+
+test('every signal explains itself: rule version, inputs and missing data', () => {
+  const ev = [...dosesFor(14), scale('phq9', [3, 3, 2, 2, 2, 3, 2, 2, 2], 0)];
+  const si = run(patient(), ev).find((s) => s.ruleId === 'si_phq9');
+  assert.match(si.version, /^si_phq9@1 · набор 2026\.10\.1$/);
+  assert.ok(si.inputs.some((x) => /PHQ-9 от 19\.10\.2026: \d+, вопрос 9 = 2 из 3/.test(x)), si.inputs.join('|'));
+  assert.deepEqual(si.missing, ['C-SSRS после этого PHQ-9 не проведена']);
+  const withCssrs = [...ev, { type: 'scale', at: NOW, payload: Object.assign(KK.scales.score('cssrs', [0, 0, null, null, null, 0]), { context: 'clinic' }) }];
+  assert.deepEqual(run(patient(), withCssrs).find((s) => s.ruleId === 'si_phq9').missing, []);
+});
+
+test('stale PHQ-9 (> 30 days) is reported as missing data, not hidden', () => {
+  const ev = [...dosesFor(14), scale('phq9', [2, 2, 2, 2, 2, 2, 2, 2, 0], 40)];
+  const s = run(patient(), ev).find((x) => x.ruleId === 'phq9_modsevere');
+  assert.ok(s.missing.some((m) => /старше 30 дней/.test(m)));
+});
+
+test('a failing explanation never hides the signal', () => {
+  const rule = { id: 'x', level: 'important', routing: null, source: 's', title: 't', when: () => true, text: () => 'ok', inputs: () => { throw new Error('boom'); } };
+  const [s] = KK.rules.evaluate(KK.rules.buildContext(patient(), [], NOW), [rule]);
+  assert.equal(s.text, 'ok');
+  assert.deepEqual(s.inputs, []);
+});
+
+test('planned tasks sort after important and before info', () => {
+  const lv = (l) => ({ id: l, level: l, routing: null, source: 's', title: l, when: () => true, text: () => '' });
+  const out = KK.rules.evaluate(KK.rules.buildContext(patient(), [], NOW), [lv('info'), lv('task'), lv('important')]);
+  assert.deepEqual(out.map((s) => s.level), ['important', 'task', 'info']);
 });
