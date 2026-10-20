@@ -53,5 +53,8 @@
   "51": "routing.js",
   "52": "materials.js",
   "53": "build.test.js",
-  "54": "contrast.test.js"
+  "54": "contrast.test.js",
+  "55": "tiles.js",
+  "56": "tiles.test.js",
+  "57": "demo-switch.js"
 }
