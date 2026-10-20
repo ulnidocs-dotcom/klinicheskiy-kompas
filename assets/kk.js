@@ -21,5 +21,16 @@
       return `${prefix}_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`;
     },
     byDateAsc(a, b) { return new Date(a.at) - new Date(b.at); },
+    // Одна отметка на день: побеждает записанная последней (recordedAt, иначе at; при равенстве — позже в массиве).
+    // Результат — по возрастанию времени. Нужен, потому что пациент может изменить отметку за сегодня или прошлый день.
+    latestPerDay(events) {
+      const best = new Map();
+      (events || []).forEach((e) => {
+        const k = KK.util.dayKey(e.at), t = +new Date(e.recordedAt || e.at);
+        const cur = best.get(k);
+        if (!cur || t >= cur.t) best.set(k, { e, t });
+      });
+      return [...best.values()].map((x) => x.e).sort(KK.util.byDateAsc);
+    },
   };
 })(typeof window !== 'undefined' ? window : globalThis);

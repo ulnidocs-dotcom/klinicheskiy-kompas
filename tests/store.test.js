@@ -197,3 +197,65 @@ test('patient lookups ignore prototype keys (__proto__, constructor, toString)',
   }
   assert.ok(s.patient('p_anna'));
 });
+
+test('addEvent opts.at: past-day check-in accepted, dated that day, sorted into the feed, alert dataAt = event time', () => {
+  const s = mk();
+  const at = new Date(NOW); at.setDate(at.getDate() - 3); at.setHours(12, 0, 0, 0);
+  const e = s.addEvent('p_anna', 'checkin', { mood: 2, anxiety: 3, sleep: 2 }, { at: at.toISOString() });
+  assert.equal(e.at, at.toISOString());
+  assert.equal(e.recordedAt, NOW.toISOString());
+  const ev = s.events('p_anna');
+  const sorted = [...ev].sort(KK.util.byDateAsc);
+  assert.deepEqual(ev.map((x) => x.id), sorted.map((x) => x.id));
+  const sos = s.addEvent('p_anna', 'sos', {});
+  assert.equal(s.alerts({ patientId: 'p_anna' }).find((a) => a.ruleId === 'sos').dataAt, sos.at);
+  const seven = new Date(NOW); seven.setDate(seven.getDate() - 7); seven.setHours(0, 0, 1, 0);
+  assert.ok(s.addEvent('p_anna', 'checkin', { mood: 3, anxiety: 3, sleep: 3 }, { at: seven.toISOString() }));
+});
+
+test('addEvent opts.at: future, older than 7 days, invalid date and non-checkin types are rejected', () => {
+  const s = mk();
+  const n = s.events('p_anna').length;
+  const c = { mood: 3, anxiety: 3, sleep: 3 };
+  assert.throws(() => s.addEvent('p_anna', 'checkin', c, { at: new Date(+NOW + 60000).toISOString() }), /будущее/);
+  const old = new Date(NOW); old.setDate(old.getDate() - 8); old.setHours(23, 0, 0, 0);
+  assert.throws(() => s.addEvent('p_anna', 'checkin', c, { at: old.toISOString() }), /старше 7/);
+  assert.throws(() => s.addEvent('p_anna', 'checkin', c, { at: 'вчера' }), /Некорректная/);
+  const past = KK.util.shiftDays(NOW.toISOString(), -1);
+  for (const type of ['dose', 'sos', 'scale', 'ae']) assert.throws(() => s.addEvent('p_anna', type, { slot: 'утро', taken: true }, { at: past }), /только самочувствие/, type);
+  assert.equal(s.events('p_anna').length, n);
+  assert.ok(s.addEvent('p_anna', 'checkin', c, {}));
+});
+
+test('latestPerDay: edited check-in replaces the earlier one of that day; one per day, chronological', () => {
+  const clock = mkClock();
+  const s = KK.createStore({ storage: memStorage(), clock }); s.reset();
+  const base = KK.util.latestPerDay(s.events('p_anna', 'checkin'));
+  const days = new Set(s.events('p_anna', 'checkin').map((e) => KK.util.dayKey(e.at)));
+  assert.equal(base.length, days.size);
+  const y = new Date(NOW); y.setDate(y.getDate() - 1); y.setHours(12, 0, 0, 0);
+  clock.advance(1); s.addEvent('p_anna', 'checkin', { mood: 5, anxiety: 1, sleep: 5 });
+  clock.advance(1); s.addEvent('p_anna', 'checkin', { mood: 4, anxiety: 2, sleep: 4 });
+  clock.advance(1); s.addEvent('p_anna', 'checkin', { mood: 1, anxiety: 5, sleep: 1 }, { at: y.toISOString() });
+  const L = KK.util.latestPerDay(s.events('p_anna', 'checkin'));
+  assert.equal(L.length, new Set(L.map((e) => KK.util.dayKey(e.at))).size);
+  assert.deepEqual(L.at(-1).payload, { mood: 4, anxiety: 2, sleep: 4 });
+  assert.deepEqual(L.find((e) => KK.util.dayKey(e.at) === KK.util.dayKey(y.toISOString())).payload, { mood: 1, anxiety: 5, sleep: 1 });
+  assert.deepEqual(L.map((e) => e.at), [...L].sort(KK.util.byDateAsc).map((e) => e.at));
+  assert.deepEqual(KK.util.latestPerDay([]), []);
+});
+
+test('removeEvent: only today\'s own dose events; others throw and nothing changes', () => {
+  const s = mk();
+  const d = s.addEvent('p_anna', 'dose', { slot: 'утро', taken: true });
+  assert.throws(() => s.removeEvent('p_olga', d.id), /Нет события/);
+  assert.throws(() => s.removeEvent('__proto__', d.id), /Unknown patient/);
+  const c = s.addEvent('p_anna', 'checkin', { mood: 3, anxiety: 3, sleep: 3 });
+  assert.throws(() => s.removeEvent('p_anna', c.id), /только отметку приёма/);
+  const oldDose = s.events('p_olga', 'dose').find((e) => KK.util.dayKey(e.at) !== KK.util.dayKey(NOW.toISOString()));
+  assert.ok(oldDose);
+  assert.throws(() => s.removeEvent('p_olga', oldDose.id), /сегодняшнюю/);
+  assert.equal(s.removeEvent('p_anna', d.id).id, d.id);
+  assert.equal(s.events('p_anna', 'dose').some((e) => e.id === d.id), false);
+  assert.throws(() => s.removeEvent('p_anna', d.id), /Нет события/);
+});

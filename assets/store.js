@@ -11,6 +11,8 @@
   }
   // Сигнал без события-основания (противопоказание, анамнез, взаимодействие) идентифицируется профилем пациента.
   const profileHash = (p) => hash(JSON.stringify(PROFILE_KEYS.map((k) => p[k] ?? null)));
+  const BACKDATE_TYPES = ['checkin'];
+  const BACKDATE_DAYS = 7;
   const PLAN_LOCKED = ['status', 'confirmedAt', 'cancelledAt', 'offLabel'];
 
   function createStore({ storage, clock }) {
@@ -111,13 +113,44 @@
       patient: (id) => (need(), view(id)),
       signals: (id) => (need(), has(id) ? signalsFor(id) : []),
       events(id, type) { need(); const ev = has(id) ? db.events[id] || [] : []; return type ? ev.filter((e) => e.type === type) : ev.slice(); },
-      addEvent(patientId, type, payload) {
+      // opts.at — отметка задним числом: только самочувствие (checkin), не в будущем и не раньше 7 календарных дней назад.
+      // Событие встаёт в ленту по времени; recordedAt — момент записи (по нему «последняя отметка дня» побеждает).
+      addEvent(patientId, type, payload, opts = {}) {
         need();
         if (!has(patientId)) throw new Error(`Unknown patient ${patientId}`);
+        const now = nowIso();
+        let at = now;
+        if (opts && opts.at != null) {
+          if (!BACKDATE_TYPES.includes(type)) throw new Error(`Задним числом можно отметить только самочувствие, не ${type}`);
+          const t = new Date(opts.at);
+          if (Number.isNaN(+t)) throw new Error(`Некорректная дата ${opts.at}`);
+          if (+t > +new Date(now)) throw new Error(`Нельзя отметить будущее время ${opts.at}`);
+          const floor = new Date(now); floor.setHours(0, 0, 0, 0);
+          if (+t < +floor - BACKDATE_DAYS * KK.util.DAY) throw new Error(`Отметка старше ${BACKDATE_DAYS} дней: ${opts.at}`);
+          at = t.toISOString();
+        }
         const p = type === 'scale' ? KK.scales.score(payload.scaleId, payload.answers) : payload;
-        const e = { id: KK.util.uid('ev'), type, at: nowIso(), payload: p };
-        db.events[patientId].push(e);
+        const e = { id: KK.util.uid('ev'), type, at, recordedAt: now, payload: p };
+        const list = db.events[patientId];
+        let k = list.length;
+        while (k > 0 && new Date(list[k - 1].at) > new Date(at)) k--;
+        list.splice(k, 0, e);
         syncAlerts(patientId, e.at);
+        write();
+        return e;
+      },
+      // Снять ошибочную отметку приёма: только своё событие dose за сегодня, иначе — исключение.
+      removeEvent(patientId, eventId) {
+        need();
+        if (!has(patientId)) throw new Error(`Unknown patient ${patientId}`);
+        const list = db.events[patientId] || [];
+        const k = list.findIndex((e) => e.id === eventId);
+        if (k < 0) throw new Error(`Нет события ${eventId} у пациента ${patientId}`);
+        const e = list[k];
+        if (e.type !== 'dose') throw new Error(`Снять можно только отметку приёма, не ${e.type}`);
+        if (KK.util.dayKey(e.at) !== KK.util.dayKey(nowIso())) throw new Error('Снять можно только сегодняшнюю отметку приёма');
+        list.splice(k, 1);
+        syncAlerts(patientId, nowIso());
         write();
         return e;
       },
