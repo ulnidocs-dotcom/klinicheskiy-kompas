@@ -3,7 +3,8 @@
   D.start({ nav: 'patients' });
   const id = ui.param('id');
   if (!store.patient(id)) { location.replace('index.html'); return; }
-  const TYPE = { checkin: 'Самочувствие', dose: 'Приём', scale: 'Шкала', ae: 'Нежелательные явления', sos: 'Кнопка «Мне тяжело»' };
+  const TYPE = { checkin: 'Самочувствие', dose: 'Приём', scale: 'Шкала', ae: 'Нежелательные явления', sos: 'Кнопка «Мне тяжело»',
+    intake_form: 'Первичный приём психолога', cto: 'Первичный приём психолога', intake_decision: 'Первичный приём психолога' };
   const describe = (e) => {
     if (e.type === 'checkin') {
       const sameDay = store.events(id, 'checkin').filter((x) => KK.util.dayKey(x.at) === KK.util.dayKey(e.at)).length;
@@ -14,11 +15,15 @@
     if (e.type === 'dose') return `${data.drugs.aviandr.name}, ${e.payload.slot}`;
     if (e.type === 'scale') {
       const head = data.scales[e.payload.scaleId].title.split(' —')[0];
+      if (data.scales[e.payload.scaleId].audience === 'intake') return `${head}: заполнена (батарея первичного приёма психолога)`;
       const lbl = e.payload.band?.doctorLabel || 'форма заполнена не полностью';
       return e.payload.scaleId === 'cssrs' ? `${head}: ${lbl}` : `${head}: ${e.payload.total} — ${lbl}`;
     }
     if (e.type === 'ae') return e.payload.items.map((i) => `${i.label} (${i.severity === 'severe' ? 'сильно' : i.severity === 'mild' ? 'немного' : i.severity})`).join(', ') + (e.payload.note ? ` · «${e.payload.note}»` : '');
     if (e.type === 'sos') return 'пациент сообщил, что ему очень плохо';
+    if (e.type === 'intake_form') return 'пациент заполнил анкету';
+    if (e.type === 'cto') return e.payload.skipped ? 'цветовой тест пропущен (по желанию)' : 'цветовой тест отношений выполнен';
+    if (e.type === 'intake_decision') return `решение психолога: ${KK.battery ? KK.battery.levelLabel(e.payload.level) : e.payload.level}`;
     return '';
   };
   function render() {
@@ -58,6 +63,7 @@
             <ul class="feed">${feed.map((e) => `<li><time>${ui.fmtDateTime(e.at)}</time><span><b>${ui.esc(TYPE[e.type] || e.type)}:</b> ${ui.esc(describe(e))}</span></li>`).join('') || '<li><span class="hint">Нет событий</span></li>'}</ul></section>
         </div>
         <div class="stack">
+          ${D.intakeCard(p, store.intakeOf(id))}
           <section class="card stack"><h2>Терапия</h2>
             <dl class="kv">
               <dt>План</dt><dd>${drug ? `${ui.esc(drug.name)} ${ui.esc(drug.dosing.dose)} × ${drug.dosing.timesPerDay}/сут` : '—'}</dd>

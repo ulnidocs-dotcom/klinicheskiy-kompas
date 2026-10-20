@@ -167,7 +167,7 @@
       return `<section class="card stack intake-card"><div class="row-between"><h2>Первичный приём психолога</h2><span class="hint">${ui().fmtDate(dec.at)}</span></div>
         <p><b>${e(B.levelLabel(dec.level))}</b>${dec.overridden ? ' <span class="hint">· изменено психологом</span>' : ''}</p>
         <div class="row wrap">${chips}</div>
-        ${it.intake.handoff ? `<p class="hint">Передано врачу ${ui().fmtDateTime(it.intake.handoff.at)}</p>` : ''}
+        ${it.intake.handoff ? `<details><summary class="hint">Сообщение психолога · ${ui().fmtDateTime(it.intake.handoff.at)}</summary><p style="white-space:pre-line">${e(it.intake.handoff.text)}</p></details>` : ''}
         <p class="hint">Предварительная оценка психолога, не диагноз.</p>
         <a href="../psych/patient.html?id=${e(p.id)}">Подробнее</a></section>`;
     },
@@ -225,7 +225,7 @@
       return `<header class="p-header">
         <div class="avatar">${e(p.initials)}</div>
         <div class="grow"><h1>${e(p.name)}</h1>
-          <p class="muted">${ui().age(p.age)} · ${p.sex === 'f' ? 'жен.' : 'муж.'} · ${p.diagnoses.map((d) => `<span title="${e(d.text)}">${e(d.code)}</span>`).join(', ')}${p.meds.length ? ` · принимает: ${e(p.meds.map((m) => m.name).join(', '))}` : ''}</p>
+          <p class="muted">${ui().age(p.age)} · ${p.sex === 'f' ? 'жен.' : 'муж.'}${p.diagnoses.length ? ' · ' + p.diagnoses.map((d) => `<span title="${e(d.text)}">${e(d.code)}</span>`).join(', ') : ''}${p.meds.length ? ` · принимает: ${e(p.meds.map((m) => m.name).join(', '))}` : ''}</p>
           <div class="row wrap">${app.statusBadge(p)}${contra.map((c) => `<span class="badge badge--contra">${e(c.label)}</span>`).join('')}${unknown.length ? `<span class="badge badge--warn">Нет данных: ${unknown.length}</span>` : ''}${p.routingConfirmed ? `<span class="badge badge--ok">Направлен ${ui().fmtDate(p.routingConfirmed.at)}</span>` : ''}</div></div>
       </header>`;
     },

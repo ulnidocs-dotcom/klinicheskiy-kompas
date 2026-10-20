@@ -68,7 +68,8 @@
         if (s.patient.intake && !p.intake) p.intake = KK.data.materializePatient(s.patient, now).intake;
       }
       db.version = VERSION;
-      write();
+      // Без уведомления подписчиков: миграция идёт внутри need(), часто посреди отрисовки.
+      storage.setItem(KEY, JSON.stringify(db));
     }
 
     // Только собственные ключи: id из URL вида "__proto__" не должен находить Object.prototype.
