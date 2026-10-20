@@ -79,3 +79,37 @@ test('scaleHistory skips C-SSRS and incomplete forms, uses saved band text', () 
   assert.equal(h[1].label, ev[0].payload.band.patientText || 'Ответы получены врачом.');
   assert.ok(h.every((x) => !/\d/.test(x.label)));
 });
+
+test('trendWord: same split as checkinSummary; words only; null with < 4 check-ins', () => {
+  const app = KK.patientApp;
+  const c = (mood, sleep) => ({ payload: { mood, sleep } });
+  assert.equal(app.trendWord([c(2, 4), c(2, 4), c(4, 2), c(4, 2)], 'mood'), 'ровнее');
+  assert.equal(app.trendWord([c(2, 4), c(2, 4), c(4, 2), c(4, 2)], 'sleep'), 'хуже');
+  assert.equal(app.trendWord([c(4, 3), c(4, 3), c(2, 3), c(2, 3)], 'mood'), 'труднее');
+  assert.equal(app.trendWord([c(3, 3), c(3, 3), c(3, 3), c(3, 3)], 'sleep'), 'как обычно');
+  assert.equal(app.trendWord([c(3, 3), c(3, 3), c(3, 3)], 'mood'), null);
+  const a = [c(2, 1), c(2, 1), c(4, 1), c(4, 1)];
+  assert.equal(app.trendWord(a, 'mood') === 'ровнее', /ровнее/.test(app.checkinSummary(a)));
+});
+
+test('patient path tiles: no clinical scores, no severity words, no red, words for trends', () => {
+  const app = KK.patientApp;
+  const c = (mood, sleep) => ({ at: '2026-10-10T09:00:00Z', payload: { mood, sleep, anxiety: 3 } });
+  const practice = KK.data.materials.find((m) => m.cat === 'practice');
+  const bad = /тяж[её]л|критич|выраженн|!|балл|PHQ|GAD|из 27|из 21|σ|crit/i;
+  for (const confirmed of [true, false]) {
+    for (const checkins of [[], [c(1, 1), c(1, 2), c(5, 5), c(5, 4)], [c(5, 5), c(5, 5), c(1, 1), c(1, 1)]]) {
+      const list = app.pathTiles({ confirmed, takenDays: 9, checkins, practice, periodLabel: 'за 2 недели' });
+      const html = KK.tiles.tileGrid(list);
+      assert.doesNotMatch(html, bad);
+      assert.doesNotMatch(html, /NaN|undefined|null/);
+      const [, mood, sleep] = list;
+      for (const t of [mood, sleep]) assert.ok(t.value == null || !/\d/.test(t.value), String(t.value));
+    }
+  }
+  const off = app.pathTiles({ confirmed: false, takenDays: 0, checkins: [], practice, periodLabel: 'за месяц' });
+  assert.equal(off[0].label, 'Лечение'); assert.equal(off[0].value, 'Врач обсуждает план');
+  const on = app.pathTiles({ confirmed: true, takenDays: 9, checkins: [], practice, periodLabel: 'за месяц' });
+  assert.match(KK.tiles.tile(on[0]), /aria-label="Дни с приёмом: 9 из 14"/);
+  assert.ok(KK.tiles.tile(on.find((t) => t && t.href)).includes(`href="material.html?id=${practice.id}"`));
+});

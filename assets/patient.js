@@ -79,6 +79,36 @@
       if (d <= -0.5) return 'Последние дни даются труднее. Врач видит ваши отметки — можно написать ему.';
       return 'Настроение в последние дни примерно одинаковое.';
     },
+    // Тренд одним словом — тем же способом, что checkinSummary: среднее второй половины минус первой (порог 0,5).
+    // key: 'mood' | 'sleep'. Меньше 4 отметок — null (картины ещё нет).
+    trendWord(checkins, key = 'mood') {
+      const xs = checkins.map((c) => c.payload[key]).filter((v) => typeof v === 'number');
+      if (xs.length < 4) return null;
+      const half = Math.floor(xs.length / 2);
+      const avg = (a) => a.reduce((s, v) => s + v, 0) / a.length;
+      const d = avg(xs.slice(half)) - avg(xs.slice(0, half));
+      const words = key === 'sleep' ? ['ровнее', 'как обычно', 'хуже'] : ['ровнее', 'как обычно', 'труднее'];
+      return d >= 0.5 ? words[0] : d <= -0.5 ? words[2] : words[1];
+    },
+    // Плитки «Мой путь» (ауры как на «Сегодня»: самочувствие — шалфей, лекарство — роза, практика — кобальт): без клинических баллов и слов тяжести, без красного; только то, что есть в данных.
+    pathTiles({ confirmed, takenDays, checkins, practice, periodLabel }) {
+      const T = KK.tiles;
+      const mood = app.trendWord(checkins, 'mood'), sleep = app.trendWord(checkins, 'sleep');
+      const few = 'нужно ещё несколько отметок';
+      const n = checkins.length;
+      return [
+        confirmed
+          ? { wide: true, aura: 'rose', label: 'Дни с приёмом', value: takenDays, unit: 'из 14', note: 'последние 2 недели',
+            visual: T.ringGauge({ value: takenDays, max: 14, label: 'Дни с приёмом' }) }
+          : { wide: true, aura: 'rose', label: 'Лечение', value: 'Врач обсуждает план' },
+        { aura: 'sage', label: 'Настроение', value: mood, note: mood ? periodLabel : few,
+          visual: T.dotRow(checkins.map((c) => c.payload.mood), { max: 5 }) },
+        { aura: 'lilac', label: 'Сон', value: sleep, note: sleep ? periodLabel : few,
+          visual: T.dotRow(checkins.map((c) => c.payload.sleep), { max: 5 }) },
+        practice && { aura: 'blue', label: 'Практика дня', value: practice.title, note: `${practice.minutes} мин`, href: `material.html?id=${practice.id}` },
+        { aura: 'sage', label: 'Отметок самочувствия', value: n, unit: 'дн.', note: periodLabel },
+      ];
+    },
     // Время приёма врач не назначал — показываем только часть дня, без точных часов.
     slotHtml(s) {
       return `<button class="slot" data-dose="${s.slot}" aria-pressed="${s.taken}">${KK.ui.icon(s.slot === 'утро' ? 'sun' : 'moon', 22)}`

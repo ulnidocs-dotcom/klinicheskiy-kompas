@@ -3,6 +3,7 @@
   const ctx = app.start();
   if (!ctx) return;
   let period = 14;
+  const PERIOD_LABEL = { 14: 'за 2 недели', 30: 'за месяц', 365: 'за всё время' };
 
   function render() {
     const p = ctx.patient();
@@ -29,13 +30,13 @@
         ${[[14, '2 недели'], [30, 'Месяц'], [365, 'Всё время']].map(([d, l]) => `<button data-period="${d}" aria-pressed="${period === d}">${l}</button>`).join('')}
       </div>
       <div class="stack">
+        ${KK.tiles.tileGrid(app.pathTiles({ confirmed, takenDays, checkins, practice: app.practiceOfDay(), periodLabel: PERIOD_LABEL[period] }), { label: 'Коротко' })}
         <section class="card stack"><p class="q-title">Настроение и сон</p>
           ${ui.lineChart(series, { max: 5, ticks: false, pointValues: false, w: 320, h: 140, ariaLabel: 'Настроение и сон по дням' })}
           <div class="ticks" aria-hidden="true" style="--pos:96%"><i></i></div>
           <div class="legend"><span><i style="background:var(--chart)"></i>Настроение</span><span><i style="background:var(--chart-2)"></i>Сон</span></div>
           <p>${ui.esc(app.checkinSummary(checkins))}</p></section>
-        ${confirmed ? `<section class="tile aura aura--rose stack"><span class="label">Приём лекарства · 2 недели</span>
-          <div class="big-stat"><span class="num" aria-hidden="true">${takenDays}</span><span class="label">${ui.plural(takenDays, ['день', 'дня', 'дней'])} с отметкой<br>из 14</span></div>
+        ${confirmed ? `<section class="card stack"><p class="q-title">Приём лекарства по дням</p>
           <span class="sr-only">Отмечено ${takenDays} ${ui.plural(takenDays, ['день', 'дня', 'дней'])} из 14.</span>
           <div class="cal" aria-hidden="true">${cal}</div>
           <p class="hint">Если что-то мешает принимать лекарство — расскажите врачу.</p></section>` : ''}
