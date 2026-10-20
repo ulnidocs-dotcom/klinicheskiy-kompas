@@ -21,11 +21,16 @@
     .demo-switch .tag{padding:0 8px 0 10px;color:var(--text-3);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
     .demo-switch a{display:inline-flex;align-items:center;min-height:36px;padding:0 16px;border-radius:999px;color:var(--text);text-decoration:none}
     .demo-switch a[aria-current="page"]{background:var(--text);color:var(--bg)}
-    .demo-switch a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}`;
+    .demo-switch a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+    body.has-demo-switch .p-app{padding-bottom:calc(84px + env(safe-area-inset-bottom, 0px))}
+    body.has-demo-switch.with-tabs .p-app{padding-bottom:calc(150px + env(safe-area-inset-bottom, 0px))}
+    body.has-demo-switch .d-main{padding-bottom:84px}
+    @media (max-width:400px){.demo-switch a{padding:0 11px;font-size:12px}.demo-switch .tag{padding:0 4px 0 8px}}`;
   document.head.appendChild(style);
 
   const nav = document.createElement('nav');
-  nav.className = 'demo-switch' + (document.querySelector('.tabbar') || inPatient ? ' over-tabs' : '');
+  nav.className = 'demo-switch';
+  document.body.classList.add('has-demo-switch');
   nav.setAttribute('aria-label', 'Демо: переключение кабинета');
   nav.innerHTML = `<span class="tag">Демо</span>
     <a href="${base}patient/index.html?p=${encodeURIComponent(pid)}" data-demo-role="patient" ${inPatient ? 'aria-current="page"' : ''}>Пациент</a>
@@ -40,5 +45,7 @@
     }
   });
   // Пересчитать отступ, когда таб-бар дорисуется оболочкой.
-  setTimeout(() => { if (document.querySelector('.tabbar')) nav.classList.add('over-tabs'); else if (!inPatient) nav.classList.remove('over-tabs'); }, 0);
+  // Над таб-баром — выше; без него — у нижнего края. Контенту добавлен отступ, чтобы кнопки внизу не перекрывались.
+  const place = () => { const tabs = !!document.querySelector('.tabbar'); nav.classList.toggle('over-tabs', tabs); document.body.classList.toggle('with-tabs', tabs); };
+  place(); setTimeout(place, 0);
 })(typeof window !== 'undefined' ? window : globalThis);
