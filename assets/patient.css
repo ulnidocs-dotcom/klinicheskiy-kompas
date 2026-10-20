@@ -149,3 +149,16 @@ a.tile{min-height:120px;display:flex;flex-direction:column;justify-content:space
 .ruler--drag::after{transition:none}
 .q .dot{transition:transform .22s cubic-bezier(.2,.8,.2,1),box-shadow .22s ease,filter .22s ease}
 @media (prefers-reduced-motion:reduce){.q .dot{transition:none}}
+
+/* Первичная беседа с психологом: шаги и раскладка цветов (ЦТО). Цвета карточек — стимульный набор, не семантика. */
+.intake-steps{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px;color:var(--text-2)}
+.cto-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.cchip{position:relative;display:flex;flex-direction:column;align-items:stretch;gap:6px;min-width:var(--tap);padding:0;border:0;background:none;color:var(--text-2);font:inherit;font-size:12px;line-height:1.2;text-align:center;cursor:pointer}
+.cchip__s{display:block;height:56px;border-radius:18px;border:1px solid var(--line);background:var(--c);transition:transform var(--dur),box-shadow var(--dur)}
+.cchip[aria-pressed="true"]{cursor:default}
+.cchip[aria-pressed="true"] .cchip__s{transform:scale(.9);box-shadow:0 0 0 2px var(--bg),0 0 0 4px var(--text-3)}
+.cchip:focus-visible{outline:none}.cchip:focus-visible .cchip__s{outline:2px solid var(--text);outline-offset:3px}
+.cchip .ord{position:absolute;top:6px;left:6px;min-width:26px;height:26px;border-radius:13px;display:flex;align-items:center;justify-content:center;
+  background:var(--surface);color:var(--text);font-size:13px;font-weight:600;border:1px solid var(--line)}
+@media (max-width:360px){.cto-grid{gap:8px}.cchip__s{height:48px}}
+@media (prefers-reduced-motion:reduce){.cchip__s{transition:none;transform:none!important}}

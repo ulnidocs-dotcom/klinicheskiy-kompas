@@ -211,3 +211,26 @@ test('doctorApp.intakeCard: compact card only with a decision, link to psycholog
   assert.match(html, /\.\.\/psych\/patient\.html\?id=p_ilya/);
   assert.match(html, /умеренная/);
 });
+
+test('patientApp.intakeNextStep follows saved parts; cssrsShown asks 3–5 only after «да» on 2', () => {
+  const app = KK.patientApp;
+  const s = mk();
+  assert.equal(app.intakeNextStep(s.intakeOf('p_anna')), 'intro');
+  s.addEvent('p_anna', 'intake_form', FORM);
+  assert.equal(app.intakeNextStep(s.intakeOf('p_anna')), 'cssrs');
+  s.addEvent('p_anna', 'scale', { scaleId: 'cssrs', answers: [0, 0, null, null, null, 0], context: 'intake' });
+  assert.equal(app.intakeNextStep(s.intakeOf('p_anna')), 'tipi10');
+  s.addEvent('p_anna', 'scale', { scaleId: 'tipi10', answers: new Array(10).fill(4), context: 'intake' });
+  assert.equal(app.intakeNextStep(s.intakeOf('p_anna')), 'dass21');
+  s.addEvent('p_anna', 'scale', { scaleId: 'dass21', answers: new Array(21).fill(0), context: 'intake' });
+  assert.equal(app.intakeNextStep(s.intakeOf('p_anna')), 'cto');
+  s.completeIntake('p_anna');
+  assert.equal(app.intakeNextStep(s.intakeOf('p_anna')), 'done');
+  assert.equal(app.intakeNextStep(null), null);
+  assert.deepEqual(app.cssrsShown([0, 0]), [0, 1, 5]);
+  assert.deepEqual(app.cssrsShown([1, 1]), [0, 1, 2, 3, 4, 5]);
+  // C-SSRS из анкеты врача (без context) не засчитывается как часть батареи
+  const s2 = mk();
+  s2.addEvent('p_anna', 'scale', { scaleId: 'cssrs', answers: [0, 0, null, null, null, 0] });
+  assert.equal(s2.intakeOf('p_anna').cssrs, null);
+});

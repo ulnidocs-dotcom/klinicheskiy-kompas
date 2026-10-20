@@ -4,7 +4,9 @@
   if (!ctx) return;
   // Экран кризиса доступен всегда (и до подключения). «Врач уведомлён» — только при реально открытом алерте по PHQ-9 п. 9.
   const fromPhq = ui.param('from') === 'phq9' && app.phqAlertOpen(store.alerts({ patientId: ctx.pid, open: true }));
-  let sent = fromPhq;
+  // После скрининга безопасности в первичной беседе: «уведомлены» — только при открытом алерте C-SSRS.
+  const fromIntake = ui.param('from') === 'intake' && store.alerts({ patientId: ctx.pid, open: true }).some((a) => a.ruleId === 'cssrs_risk');
+  let sent = fromPhq || fromIntake;
   let g = -1;
   const GROUND = ['5 вещей, которые вы видите', '4 вещи, которых можете коснуться', '3 звука, которые слышите', '2 запаха вокруг', '1 вкус, который чувствуете'];
 
@@ -13,7 +15,9 @@
       <a class="p-back" href="index.html">${ui.icon('back', 18)}Назад</a>
       <section class="stack-l help-hero">
         <h1>Вы не одни</h1>
-        <p class="muted">${fromPhq ? 'Спасибо, что ответили честно. Ваш врач уже получил ответы и свяжется с вами.' : 'Сейчас главное — ваша безопасность. Выберите, что подходит.'}</p>
+        <p class="muted">${fromPhq ? 'Спасибо, что ответили честно. Ваш врач уже получил ответы и свяжется с вами.'
+          : fromIntake ? 'Спасибо, что ответили честно. Специалисты уже получили ответы и свяжутся с вами. Беседу с психологом можно продолжить позже.'
+            : 'Сейчас главное — ваша безопасность. Выберите, что подходит.'}</p>
         <div class="stack">
           <a class="help-call" href="tel:112"><span class="ic">${ui.icon('phone', 20)}</span><span><b>112</b><span class="hint">Если есть опасность для жизни</span></span></a>
           <a class="help-call" href="tel:+74959895050"><span class="ic">${ui.icon('phone', 20)}</span><span><b>8 495 989-50-50</b><span class="hint">Психологическая помощь МЧС, круглосуточно</span></span></a>
@@ -29,6 +33,7 @@
             : g < GROUND.length ? `<p style="font-size:1.25em" aria-live="polite">${GROUND[g]}</p><button class="btn btn--block" data-g>Дальше</button>`
             : '<p>Хорошо. Сделайте медленный вдох и длинный выдох.</p><a class="btn btn--block" href="material.html?id=breathing">Медленное дыхание</a>'}
         </section>
+        ${fromIntake ? '<a class="btn btn--block" href="intake.html">Вернуться к беседе с психологом</a>' : ''}
       </section>`);
   }
   document.addEventListener('click', (e) => {

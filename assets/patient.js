@@ -55,6 +55,19 @@
     },
     // Плитка «Первичная беседа с психологом» — пока приём назначен и пациент его не завершил.
     intakeDue: (p) => !!(p && p.intake && (p.intakeStatus === 'assigned' || p.intakeStatus === 'in_progress')),
+    // Следующий шаг батареи по уже сохранённым частям (store.intakeOf): intro → form → cssrs → tipi10 → dass21 → cto → done.
+    intakeNextStep(it) {
+      if (!it) return null;
+      if (it.status === 'completed' || it.status === 'decided') return 'done';
+      if (!it.form && !it.cssrs && !it.tipi && !it.dass && !it.cto) return 'intro';
+      if (!it.form) return 'form';
+      if (!it.cssrs) return 'cssrs';
+      if (!it.tipi) return 'tipi10';
+      if (!it.dass) return 'dass21';
+      return 'cto';
+    },
+    // Видимые вопросы C-SSRS при самоотчёте: 3–5 — только после «да» на вопрос 2 (как у врача).
+    cssrsShown: (answers) => [0, 1, 2, 3, 4, 5].filter((i) => i < 2 || i === 5 || answers[1] === 1),
     // Тексты экранов первичной беседы (проверяются тестом: без баллов, слов тяжести и «!»).
     INTAKE_COPY: [
       'Первичная беседа с психологом',

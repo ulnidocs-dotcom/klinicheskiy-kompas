@@ -134,6 +134,16 @@
         <div class="tile-row"><p class="tile-title">${ui.esc(m.title)}</p><span class="chev">${ui.icon('leaf', 22)}</span></div></a>`;
   }
 
+  // Назначенная первичная беседа с психологом — пока пациент её не завершил.
+  function intakeCard(p) {
+    if (!app.intakeDue(p)) return '';
+    return `
+      <a class="tile aura aura--lilac" href="intake.html">
+        <span class="label">${p.intakeStatus === 'in_progress' ? 'Можно продолжить' : 'Около 20 минут'}</span>
+        <p class="tile-title">Первичная беседа с психологом</p>
+        <span class="btn btn--pill" aria-hidden="true">${p.intakeStatus === 'in_progress' ? 'Продолжить' : 'Начать'}</span></a>`;
+  }
+
   function helpCard() {
     return `
       <a class="tile aura aura--amber" href="help.html">
@@ -166,7 +176,7 @@
     const keep = active && active.dataset && active.dataset.day ? `[data-day="${active.dataset.day}"]` : null;
     ui.mount('#app', `
       ${header(p, now)}
-      <div class="stack">${checkinCard(p)}${medsCard(p)}
+      <div class="stack">${intakeCard(p)}${checkinCard(p)}${medsCard(p)}
         <div class="tile-grid">${scalesCard(p)}${practiceCard()}${helpCard()}</div></div>`);
     const target = st.focus === 'q' ? document.getElementById('q')
       : st.focus ? document.querySelector(st.focus) : keep ? document.querySelector(keep) : null;

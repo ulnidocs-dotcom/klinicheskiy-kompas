@@ -40,9 +40,11 @@
       <a class="btn btn--pill" href="doctor/index.html">Открыть кабинет врача</a></div>
     <div class="door aura aura--rose"><span class="label">Телефон · Telegram Mini App</span><h2>Пациент</h2>
       <a class="btn btn--pill" href="patient/index.html?p=p_anna">Открыть кабинет пациента</a></div>
+    <div class="door aura aura--lilac"><span class="label">Десктоп · первичный приём, батарея тестов, маршрут</span><h2>Психолог</h2>
+      <a class="btn btn--pill" href="psych/index.html">Открыть кабинет психолога</a></div>
   </section>
   <section class="card stack">
-    <div class="row-between"><h2>Сценарии «Авиандр»</h2><button class="btn" id="reset">Сбросить демо</button></div>
+    <div class="row-between"><h2>Демо-сценарии</h2><button class="btn" id="reset">Сбросить демо</button></div>
     <table class="table"><thead><tr><th>Пациент</th><th>Сценарий</th><th>Сигналы</th><th></th></tr></thead><tbody id="rows"></tbody></table>
     <p class="hint">Совет: откройте «Пациент» и «Врач» в двух вкладках — данные, которые вводит пациент, сразу появятся у врача.</p>
   </section>
@@ -64,10 +66,10 @@
   const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
   function render() {
     document.getElementById('rows').innerHTML = s.patients().map((p) => `
-      <tr><td><b>${esc(p.name)}</b><br><span class="hint">${KK.ui.age(p.age)} · ${esc(p.diagnoses[0].code)}</span></td>
+      <tr><td><b>${esc(p.name)}</b><br><span class="hint">${KK.ui.age(p.age)}${p.diagnoses.length ? ` · ${esc(p.diagnoses[0].code)}` : ' · первичный приём'}</span></td>
       <td>${esc(scen[p.id].title)}<br><span class="hint">${esc(scen[p.id].summary)}</span></td>
       <td>${badge(p)}</td>
-      <td><a class="btn" href="patient/index.html?p=${p.id}">Как пациент</a></td></tr>`).join('');
+      <td><div class="row wrap"><a class="btn" href="patient/index.html?p=${p.id}">Как пациент</a>${p.intake ? `<a class="btn" href="psych/patient.html?id=${p.id}">Как психолог</a>` : ''}</div></td></tr>`).join('');
   }
   document.getElementById('reset').onclick = () => {
     try { Object.keys(localStorage).filter((k) => k.startsWith('kk:linked:') || k.startsWith('kk:prefs:')).forEach((k) => localStorage.removeItem(k)); } catch (e) { /* приватный режим */ }
