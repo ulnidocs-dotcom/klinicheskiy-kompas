@@ -60,3 +60,18 @@ test('preserveFocus restores focus and caret on the re-rendered field', () => {
     assert.deepEqual(calls, [['focus', 't'], ['sel', 2, 2]]);
   } finally { globalThis.document = prev; }
 });
+
+test('scaleChart: grid by scale ticks, smooth lines, value labels, empty state', () => {
+  const s = [
+    { label: 'PHQ-9', color: 'var(--chart)', points: [{ at: '2026-09-29T10:00:00Z', v: 7 }, { at: '2026-10-13T10:00:00Z', v: 5 }, { at: '2026-10-19T10:00:00Z', v: 4 }] },
+    { label: 'GAD-7', color: 'var(--chart-2)', points: [{ at: '2026-09-29T10:00:00Z', v: 13 }] },
+  ];
+  const svg = ui.scaleChart(s, { max: 27 });
+  for (const t of [0, 5, 10, 15, 20, 27]) assert.match(svg, new RegExp(`>${t}</text>`));
+  assert.match(svg, /<path d="M[\d.]+,[\d.]+ C/);
+  assert.match(svg, /stroke-dasharray/);
+  assert.match(svg, />4<\/text>/);
+  assert.match(svg, /<title>GAD-7: 13 ·/);
+  assert.doesNotMatch(svg, /NaN/);
+  assert.match(ui.scaleChart([], {}), /не заполнялись/);
+});

@@ -69,6 +69,68 @@
       const xl = [t0, t1].map((t, i) => `<text x="${i ? w - R : L}" y="${h - 4}" text-anchor="${i ? 'end' : 'start'}" font-size="11" fill="var(--text-3)">${ui.fmtDate(new Date(t).toISOString())}</text>`).join('');
       return `<svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="${ui.esc(ariaLabel)}">${zones}${tickSvg}${lines}${xl}</svg>`;
     },
+    // График шкал для врача: сетка по делениям шкалы, даты замеров по оси X, плавные линии с заливкой,
+    // подписи значений у точек, последняя точка выделена. series: [{ label, color, points: [{ at, v }] }].
+    scaleChart(series, { w = 680, h = 260, max = 27, ticks = [0, 5, 10, 15, 20, 27], bands = [], ariaLabel = 'Динамика по шкалам' } = {}) {
+      const all = series.flatMap((s) => s.points);
+      if (!all.length) return '<p class="hint">Шкалы ещё не заполнялись</p>';
+      const L = 34, R = 18, T = 22, B = 30;
+      const DAY = 86400000;
+      let t0 = Math.min(...all.map((p) => +new Date(p.at))), t1 = Math.max(...all.map((p) => +new Date(p.at)));
+      if (t1 - t0 < DAY) { t0 -= 3 * DAY; t1 += 3 * DAY; } // один замер — не прижимаем к краю
+      const x = (at) => L + ((+new Date(at) - t0) / (t1 - t0)) * (w - L - R);
+      const y = (v) => T + (1 - Math.max(0, Math.min(max, v)) / max) * (h - T - B);
+      const r1 = (n) => Math.round(n * 10) / 10;
+      const zones = bands.map((b) => `<rect x="${L}" y="${r1(y(b.to))}" width="${w - L - R}" height="${r1(y(b.from) - y(b.to))}" fill="${b.color}"/>`).join('');
+      const grid = ticks.map((v) => `<line x1="${L}" x2="${w - R}" y1="${r1(y(v))}" y2="${r1(y(v))}" stroke="var(--line)" stroke-width="1"/>`
+        + `<text x="${L - 8}" y="${r1(y(v) + 4)}" text-anchor="end" font-size="11" fill="var(--text-3)">${v}</text>`).join('');
+      // Вертикальные пунктиры и подписи — по дням замеров; подписи, которые налезают друг на друга, пропускаем.
+      const days = [...new Set(all.map((p) => ui.fmtDate(p.at)))].map((label) => ({ label, at: all.find((p) => ui.fmtDate(p.at) === label).at }))
+        .sort((a, b) => new Date(a.at) - new Date(b.at));
+      let lastX = -Infinity;
+      const vgrid = days.map((d) => {
+        const xx = r1(x(d.at));
+        const line = `<line x1="${xx}" x2="${xx}" y1="${T}" y2="${h - B}" stroke="var(--line)" stroke-dasharray="3 4"/>`;
+        if (xx - lastX < 64) return line;
+        lastX = xx;
+        const anc = xx < L + 44 ? 'start' : xx > w - R - 44 ? 'end' : 'middle';
+        return line + `<text x="${xx}" y="${h - 10}" text-anchor="${anc}" font-size="11" fill="var(--text-3)">${ui.esc(d.label)}</text>`;
+      }).join('');
+      // Плавная кривая (кардинальный сплайн), не выходящая за пределы шкалы по Y.
+      const smooth = (pts) => {
+        if (pts.length < 2) return '';
+        let d = `M${r1(pts[0][0])},${r1(pts[0][1])}`;
+        for (let i = 0; i < pts.length - 1; i++) {
+          const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
+          const k = 0.18;
+          const c1 = [p1[0] + (p2[0] - p0[0]) * k, Math.min(h - B, Math.max(T, p1[1] + (p2[1] - p0[1]) * k))];
+          const c2 = [p2[0] - (p3[0] - p1[0]) * k, Math.min(h - B, Math.max(T, p2[1] - (p3[1] - p1[1]) * k))];
+          d += ` C${r1(c1[0])},${r1(c1[1])} ${r1(c2[0])},${r1(c2[1])} ${r1(p2[0])},${r1(p2[1])}`;
+        }
+        return d;
+      };
+      const uid = `sc${Math.random().toString(36).slice(2, 7)}`;
+      const defs = series.map((s, i) => `<linearGradient id="${uid}${i}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:${s.color};stop-opacity:.22"/><stop offset="1" style="stop-color:${s.color};stop-opacity:0"/></linearGradient>`).join('');
+      const body = series.map((s, i) => {
+        const sorted = [...s.points].sort((a, b) => new Date(a.at) - new Date(b.at));
+        const pts = sorted.map((p) => [x(p.at), y(p.v)]);
+        const path = smooth(pts);
+        const area = path ? `<path d="${path} L${r1(pts.at(-1)[0])},${h - B} L${r1(pts[0][0])},${h - B} Z" fill="url(#${uid}${i})"/>` : '';
+        const line = path ? `<path d="${path}" fill="none" stroke="${s.color}" stroke-width="2.4" stroke-linecap="round"/>` : '';
+        const dots = pts.map((p, j) => {
+          const last = j === pts.length - 1;
+          // Подпись над точкой у верхней линии и под точкой у нижней — значения двух шкал не налезают друг на друга.
+          const day = ui.fmtDate(sorted[j].at);
+          const others = series.filter((o, k) => k !== i).flatMap((o) => o.points).filter((o) => ui.fmtDate(o.at) === day);
+          const isLower = others.some((o) => o.v > sorted[j].v || (o.v === sorted[j].v && i > 0));
+          const above = isLower ? 22 : -13;
+          return `<circle cx="${r1(p[0])}" cy="${r1(p[1])}" r="${last ? 6 : 4}" fill="${last ? s.color : 'var(--surface)'}" stroke="${s.color}" stroke-width="2.2"><title>${ui.esc(s.label)}: ${sorted[j].v} · ${ui.fmtDate(sorted[j].at)}</title></circle>`
+            + `<text x="${r1(p[0] < L + 20 ? p[0] + 8 : p[0] > w - R - 20 ? p[0] - 8 : p[0])}" y="${r1(Math.min(h - B - 4, Math.max(T + 10, p[1] + above)))}" text-anchor="${p[0] < L + 20 ? 'start' : p[0] > w - R - 20 ? 'end' : 'middle'}" font-size="${last ? 13 : 11}" font-weight="${last ? 600 : 400}" fill="${last ? s.color : 'var(--text-2)'}">${sorted[j].v}</text>`;
+        }).join('');
+        return area + line + dots;
+      }).join('');
+      return `<svg viewBox="0 0 ${w} ${h}" width="100%" role="img" aria-label="${ui.esc(ariaLabel)}"><defs>${defs}</defs>${zones}${grid}${vgrid}${body}</svg>`;
+    },
     // Перерисовка через innerHTML теряет фокус и каретку: запоминаем активное поле (по id, радио — по name/value) и возвращаем.
     preserveFocus(fn) {
       const doc = typeof document !== 'undefined' ? document : null;

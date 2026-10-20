@@ -52,7 +52,7 @@
           ${KK.tiles.tileGrid(D.summaryTiles(p, { checkins, aes: store.events(id, 'ae') }), { label: 'Сводка' })}
           <section class="card stack" id="dynamics"><div class="row-between"><h2>Динамика по шкалам</h2><span class="hint">фон: умеренная (10–14) и выше (≥ 15)</span></div>
             <div class="row wrap">${[['PHQ-9', 'var(--chart)'], ['GAD-7', 'var(--chart-2)']].map(([l, c]) => `<span class="hint"><i class="legend-dot" style="background:${c}"></i>${l}</span>`).join('')}</div>
-            ${ui.lineChart([series('phq9', 'var(--chart)'), series('gad7', 'var(--chart-2)')], { max: 27, bands, ariaLabel: 'Динамика PHQ-9 и GAD-7' })}</section>
+            ${ui.scaleChart([series('phq9', 'var(--chart)'), series('gad7', 'var(--chart-2)')], { max: 27, bands, ariaLabel: 'Динамика PHQ-9 и GAD-7' })}</section>
           ${urgent ? '' : signalsHtml}
           <section class="card stack"><h2>Лента событий</h2>
             <ul class="feed">${feed.map((e) => `<li><time>${ui.fmtDateTime(e.at)}</time><span><b>${ui.esc(TYPE[e.type] || e.type)}:</b> ${ui.esc(describe(e))}</span></li>`).join('') || '<li><span class="hint">Нет событий</span></li>'}</ul></section>

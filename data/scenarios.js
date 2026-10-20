@@ -18,6 +18,8 @@
         diagnoses: [{ code: 'F41.1', text: 'Генерализованное тревожное расстройство' }],
         plan: { drugId: 'aviandr', status: 'proposed', timesPerDay: 2 } }),
       seed: [
+        { type: 'scale', day: -15, payload: { scaleId: 'gad7', answers: [2, 2, 2, 1, 1, 2, 2] } },
+        { type: 'scale', day: -15, payload: { scaleId: 'phq9', answers: [1, 1, 1, 0, 0, 1, 1, 0, 0] } },
         { type: 'scale', day: -1, payload: { scaleId: 'gad7', answers: [2, 2, 3, 2, 1, 2, 2] } },
         { type: 'scale', day: -1, payload: { scaleId: 'phq9', answers: [1, 1, 1, 1, 0, 1, 1, 0, 0] } },
         ...checkins(-6, -1, (d) => ({ mood: 3, anxiety: 2, sleep: 2 })),
@@ -32,6 +34,9 @@
       seed: [
         { type: 'doses', fromDay: -20, toDay: -1, skip: [] },
         { type: 'scale', day: -20, payload: { scaleId: 'gad7', answers: [2, 2, 2, 2, 1, 1, 2] } },
+        { type: 'scale', day: -20, payload: { scaleId: 'phq9', answers: [1, 1, 1, 1, 1, 0, 1, 0, 0] } },
+        { type: 'scale', day: -10, payload: { scaleId: 'gad7', answers: [1, 2, 2, 1, 1, 1, 2] } },
+        { type: 'scale', day: -10, payload: { scaleId: 'phq9', answers: [1, 1, 1, 1, 1, 0, 0, 0, 0] } },
         { type: 'scale', day: -2, payload: { scaleId: 'gad7', answers: [1, 1, 2, 1, 1, 1, 1] } },
         { type: 'scale', day: -2, payload: { scaleId: 'phq9', answers: [1, 1, 1, 1, 0, 0, 1, 0, 0] } },
         ...checkins(-6, -1, () => ({ mood: 3, anxiety: 3, sleep: 3 })),
@@ -44,6 +49,8 @@
         conditions: ['cvd'], labs: { egfr: 52, childPugh: 'none' },
         plan: { drugId: 'aviandr', status: 'proposed', timesPerDay: 2 } }),
       seed: [
+        { type: 'scale', day: -17, payload: { scaleId: 'gad7', answers: [2, 1, 2, 1, 1, 1, 2] } },
+        { type: 'scale', day: -17, payload: { scaleId: 'phq9', answers: [1, 1, 0, 1, 0, 0, 1, 0, 0] } },
         { type: 'scale', day: -3, payload: { scaleId: 'gad7', answers: [2, 2, 2, 1, 1, 1, 2] } },
         { type: 'scale', day: -3, payload: { scaleId: 'phq9', answers: [1, 1, 1, 1, 0, 0, 1, 0, 0] } },
       ],
@@ -55,6 +62,8 @@
         plan: { drugId: 'aviandr', status: 'confirmed', confirmedAt: null, confirmedDay: -14, timesPerDay: 2 } }),
       seed: [
         { type: 'doses', fromDay: -14, toDay: -1, skip: [-6] },
+        { type: 'scale', day: -28, payload: { scaleId: 'phq9', answers: [2, 1, 2, 1, 1, 1, 1, 1, 0] } },
+        { type: 'scale', day: -28, payload: { scaleId: 'gad7', answers: [2, 1, 2, 2, 1, 2, 1] } },
         { type: 'scale', day: -14, payload: { scaleId: 'phq9', answers: [2, 2, 2, 2, 1, 2, 2, 1, 0] } },
         { type: 'scale', day: -14, payload: { scaleId: 'gad7', answers: [2, 2, 2, 2, 1, 2, 2] } },
         { type: 'scale', day: 0, payload: { scaleId: 'phq9', answers: [3, 3, 2, 2, 2, 3, 2, 2, 2] } },
@@ -69,7 +78,9 @@
       seed: [
         { type: 'doses', fromDay: -21, toDay: -1, skip: [] },
         { type: 'scale', day: -21, payload: { scaleId: 'gad7', answers: [2, 2, 2, 2, 1, 2, 2] } },
+        { type: 'scale', day: -21, payload: { scaleId: 'phq9', answers: [1, 1, 1, 1, 1, 1, 1, 0, 0] } },
         { type: 'scale', day: -7, payload: { scaleId: 'gad7', answers: [2, 1, 2, 1, 1, 1, 1] } },
+        { type: 'scale', day: -7, payload: { scaleId: 'phq9', answers: [1, 1, 1, 1, 0, 1, 0, 0, 0] } },
         { type: 'scale', day: -1, payload: { scaleId: 'gad7', answers: [1, 1, 2, 1, 1, 1, 1] } },
         { type: 'scale', day: -1, payload: { scaleId: 'phq9', answers: [1, 1, 1, 1, 0, 0, 0, 0, 0] } },
         { type: 'ae', day: -15, payload: { items: [{ id: 'somnolence', label: 'Сонливость', severity: 'mild' }] } },
