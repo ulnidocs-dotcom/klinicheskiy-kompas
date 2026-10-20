@@ -25,7 +25,7 @@
           return vals.length ? `<div class="row"><b class="score">${vals.at(-1)}</b>${ui.sparkline(vals.slice(-6), { w: 70, h: 24, max })}</div>` : '<span class="hint">—</span>';
         };
         return `<tr data-href="patient.html?id=${ui.esc(p.id)}" tabindex="0" style="cursor:pointer">
-          <td><b>${ui.esc(p.name)}</b><br><span class="hint">${ui.age(p.age)} · ${ui.esc(p.diagnoses.map((d) => d.code).join(', '))}</span></td>
+          <td><b>${ui.esc(p.name)}</b><br><span class="hint">${ui.age(p.age)} · ${p.diagnoses.length ? ui.esc(p.diagnoses.map((d) => d.code).join(', ')) : 'первичный приём'}</span></td>
           <td><div class="row wrap">${D.statusBadge(p)}${D.intakeBadge(p)}${p.routing === 'required' && !p.routingConfirmed ? `<a class="btn" href="routing.html?id=${ui.esc(p.id)}" onclick="event.stopPropagation()">Направить</a>` : ''}</div><span class="hint">${ui.esc(p.signals[0]?.title || (p.intakeRoute === 'psychiatrist_required' ? 'Решение психолога по первичному приёму' : ''))}</span></td>
           <td>${sp('phq9', 27)}</td><td>${sp('gad7', 21)}</td>
           <td>${p.pdc14 == null ? '<span class="hint">не назначено</span>' : `${Math.round(p.pdc14 * 100)}%${p.missedStreak >= 3 ? ` <span class="badge badge--warn">${p.missedStreak} дн. без приёма</span>` : ''}`}</td>
