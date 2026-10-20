@@ -90,7 +90,7 @@
       const words = key === 'sleep' ? ['ровнее', 'как обычно', 'хуже'] : ['ровнее', 'как обычно', 'труднее'];
       return d >= 0.5 ? words[0] : d <= -0.5 ? words[2] : words[1];
     },
-    // Плитки «Мой путь» (ауры как на «Сегодня»: самочувствие — шалфей, лекарство — роза, практика — кобальт): без клинических баллов и слов тяжести, без красного; только то, что есть в данных.
+    // Плитки «Мой путь» (ауры как на «Сегодня»: настроение и сон — в гамме своих шкал чек-ина, лекарство — роза, практика — кобальт): без клинических баллов и слов тяжести, без красного; только то, что есть в данных.
     pathTiles({ confirmed, takenDays, checkins, practice, periodLabel }) {
       const T = KK.tiles;
       const mood = app.trendWord(checkins, 'mood'), sleep = app.trendWord(checkins, 'sleep');
@@ -101,9 +101,9 @@
           ? { wide: true, aura: 'rose', label: 'Дни с приёмом', value: takenDays, unit: 'из 14', note: 'последние 2 недели',
             visual: T.ringGauge({ value: takenDays, max: 14, label: 'Дни с приёмом' }) }
           : { wide: true, aura: 'rose', label: 'Лечение', value: 'Врач обсуждает план' },
-        { aura: 'sage', label: 'Настроение', value: mood, note: mood ? periodLabel : few,
+        { aura: 'mood', label: 'Настроение', value: mood, note: mood ? periodLabel : few,
           visual: T.dotRow(checkins.map((c) => c.payload.mood), { max: 5 }) },
-        { aura: 'lilac', label: 'Сон', value: sleep, note: sleep ? periodLabel : few,
+        { aura: 'sleep', label: 'Сон', value: sleep, note: sleep ? periodLabel : few,
           visual: T.dotRow(checkins.map((c) => c.payload.sleep), { max: 5 }) },
         practice && { aura: 'blue', label: 'Практика дня', value: practice.title, note: `${practice.minutes} мин`, href: `material.html?id=${practice.id}` },
         { aura: 'sage', label: 'Отметок самочувствия', value: n, unit: 'дн.', note: periodLabel },
@@ -112,7 +112,8 @@
     // Время приёма врач не назначал — показываем только часть дня, без точных часов.
     slotHtml(s) {
       return `<button class="slot" data-dose="${s.slot}" aria-pressed="${s.taken}">${KK.ui.icon(s.slot === 'утро' ? 'sun' : 'moon', 22)}`
-        + `<span class="slot__l">${s.taken ? KK.ui.icon('check', 16) : ''}${s.slot === 'утро' ? 'Утро' : 'Вечер'}${s.taken ? ' · принято' : ''}</span></button>`;
+        + `<span class="slot__l">${s.taken ? KK.ui.icon('check', 16) : ''}${s.slot === 'утро' ? 'Утро' : 'Вечер'}${s.taken ? ' · принято' : ''}</span>`
+        + `${s.taken ? '<span class="sr-only">. Нажмите, если отметили по ошибке</span>' : ''}</button>`;
     },
     // Неделя Пн–Вс вокруг даты: [{ iso, label, today, mark }] — для круглых чипов дней.
     week(nowIso, markedKeys = new Set()) {
@@ -124,6 +125,45 @@
         const key = KK.util.dayKey(iso);
         return { iso, label, today: k === shift, mark: markedKeys.has(key) };
       });
+    },
+    // Вопросы чек-ина. tone — гамма шкалы (токены --mood-*, --anx-*, --sleep-* и аура того же имени).
+    CHECKIN_Q: [
+      { key: 'mood', tone: 'mood', name: 'Настроение', title: 'Какое сегодня настроение?', past: 'Какое было настроение?',
+        labels: ['Очень тяжело', 'Тяжело', 'Так себе', 'Неплохо', 'Хорошо'], ends: ['тяжело', 'хорошо'] },
+      { key: 'anxiety', tone: 'anx', name: 'Беспокойство', title: 'Сколько сегодня беспокойства?', past: 'Сколько было беспокойства?',
+        labels: ['Почти нет', 'Немного', 'Заметно', 'Много', 'Очень много'], ends: ['почти нет', 'очень много'] },
+      { key: 'sleep', tone: 'sleep', name: 'Сон', title: 'Как вы спали?', past: 'Как вы спали в ту ночь?',
+        labels: ['Очень плохо', 'Плохо', 'Средне', 'Неплохо', 'Хорошо'], ends: ['плохо', 'хорошо'] },
+    ],
+    // Значение 1..5 словами (для aria-valuetext и сводки); вне диапазона — «не выбрано».
+    checkinWord(key, v) {
+      const q = app.CHECKIN_Q.find((x) => x.key === key);
+      return q && Number.isInteger(v) && v >= 1 && v <= 5 ? q.labels[v - 1] : 'не выбрано';
+    },
+    // Сколько дней назад можно отметить самочувствие (тот же предел проверяет store.addEvent).
+    BACKDATE_DAYS: 7,
+    // Последние n дней (сегодня — справа): [{ key, iso, label, today, mark }] — чипы выбора дня на «Сегодня».
+    recentDays(nowIso, markedKeys = new Set(), n = 7) {
+      const L = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+      return Array.from({ length: n }, (_, k) => {
+        const iso = KK.util.shiftDays(nowIso, k - (n - 1));
+        const key = KK.util.dayKey(iso);
+        return { key, iso, label: L[new Date(iso).getDay()], today: k === n - 1, mark: markedKeys.has(key) };
+      });
+    },
+    // Полдень местного времени дня «ГГГГ-ММ-ДД» — время отметки задним числом.
+    noonOf(key) {
+      const [y, m, d] = String(key).split('-').map(Number);
+      return new Date(y, m - 1, d, 12, 0, 0, 0).toISOString();
+    },
+    // «пн, 19 октября»
+    dayTitle(key) {
+      const iso = app.noonOf(key);
+      return `${['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'][new Date(iso).getDay()]}, ${KK.ui.fmtDate(iso)}`;
+    },
+    // Действующая отметка самочувствия за день (последняя записанная) или null.
+    checkinOn(events, key) {
+      return KK.util.latestPerDay(events.filter((e) => e.type === 'checkin')).find((e) => KK.util.dayKey(e.at) === key) || null;
     },
     doseSlots(events, nowIso) {
       const today = KK.util.dayKey(nowIso);

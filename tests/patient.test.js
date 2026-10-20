@@ -113,3 +113,69 @@ test('patient path tiles: no clinical scores, no severity words, no red, words f
   assert.match(KK.tiles.tile(on[0]), /aria-label="Дни с приёмом: 9 из 14"/);
   assert.ok(KK.tiles.tile(on.find((t) => t && t.href)).includes(`href="material.html?id=${practice.id}"`));
 });
+
+test('check-in questions: three scales, each with its own tone; words for every value, «не выбрано» otherwise', () => {
+  const app = KK.patientApp;
+  assert.deepEqual(app.CHECKIN_Q.map((q) => [q.key, q.tone]), [['mood', 'mood'], ['anxiety', 'anx'], ['sleep', 'sleep']]);
+  for (const q of app.CHECKIN_Q) {
+    assert.equal(q.labels.length, 5);
+    assert.ok(q.title && q.past && q.name);
+    for (let v = 1; v <= 5; v++) assert.equal(app.checkinWord(q.key, v), q.labels[v - 1]);
+    for (const v of [0, 6, 2.5, null, undefined, '3']) assert.equal(app.checkinWord(q.key, v), 'не выбрано');
+  }
+  assert.equal(app.checkinWord('mood', 3), 'Так себе');
+  assert.ok(KK.tiles.tile({ aura: 'mood', value: 1 }).includes('aura--mood'));
+  assert.ok(KK.tiles.tile({ aura: 'sleep', value: 1 }).includes('aura--sleep'));
+});
+
+test('recentDays: 7 days ending today, no future, marks by day key; noonOf/dayTitle', () => {
+  const app = KK.patientApp;
+  const now = new Date(2026, 9, 20, 9, 30).toISOString();
+  const marked = new Set([KK.util.dayKey(new Date(2026, 9, 19, 20).toISOString())]);
+  const d = app.recentDays(now, marked);
+  assert.equal(d.length, 7);
+  assert.equal(d.at(-1).today, true);
+  assert.equal(d.filter((x) => x.today).length, 1);
+  assert.equal(d.at(-1).key, KK.util.dayKey(now));
+  assert.equal(d[0].key, KK.util.dayKey(new Date(2026, 9, 14, 12).toISOString()));
+  assert.ok(d.every((x) => new Date(x.iso) <= new Date(now)));
+  assert.deepEqual(d.filter((x) => x.mark).map((x) => x.key), [...marked]);
+  assert.equal(d.at(-2).label, 'Пн');
+  const noon = new Date(app.noonOf('2026-10-19'));
+  assert.deepEqual([noon.getFullYear(), noon.getMonth(), noon.getDate(), noon.getHours()], [2026, 9, 19, 12]);
+  assert.equal(app.dayTitle('2026-10-19'), 'пн, 19 октября');
+});
+
+test('checkinOn: latest recorded check-in of that day wins; null when none', () => {
+  const app = KK.patientApp;
+  const ev = [
+    { type: 'checkin', at: '2026-10-19T08:00:00Z', payload: { mood: 1 } },
+    { type: 'dose', at: '2026-10-19T09:00:00Z', payload: {} },
+    { type: 'checkin', at: '2026-10-19T09:00:00Z', recordedAt: '2026-10-20T07:00:00Z', payload: { mood: 4 } },
+    { type: 'checkin', at: '2026-10-19T18:00:00Z', payload: { mood: 2 } },
+  ];
+  assert.equal(app.checkinOn(ev, KK.util.dayKey('2026-10-19T09:00:00Z')).payload.mood, 4);
+  assert.equal(app.checkinOn(ev, '2026-10-01'), null);
+});
+
+test('dose slot: taken slot tells screen readers it can be undone', () => {
+  const app = KK.patientApp;
+  assert.match(app.slotHtml({ slot: 'утро', taken: true }), /aria-pressed="true".*по ошибке/);
+  assert.doesNotMatch(app.slotHtml({ slot: 'вечер', taken: false }), /по ошибке/);
+});
+
+test('today.js check-in: real range slider 1–5 with labels, no auto-advance, back/next, edit, past days', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const src = fs.readFileSync(path.join(__dirname, '..', 'patient', 'today.js'), 'utf8');
+  assert.match(src, /type="range" id="rng" min="1" max="5" step="1"/);
+  assert.match(src, /aria-valuetext=/);
+  assert.match(src, /aria-label="\$\{ui\.esc\(q\.name\)\}: ползунок"/);
+  for (const k of ['data-back', 'data-next', 'data-edit', 'data-day', 'data-undo-yes', 'Готово', 'Дальше', 'Назад', 'Изменить']) assert.ok(src.includes(k), k);
+  const dotHandler = src.slice(src.indexOf("closest('.q .dot')"), src.indexOf("closest('[data-next]')"));
+  assert.doesNotMatch(dotHandler, /qi\+\+|save\(/, 'касание сферы не переходит дальше');
+  const css = fs.readFileSync(path.join(__dirname, '..', 'assets', 'patient.css'), 'utf8');
+  assert.match(css, /::-webkit-slider-thumb\{[^}]*width:44px;height:44px/);
+  assert.match(css, /::-moz-range-thumb\{[^}]*width:44px;height:44px/);
+  assert.match(css, /\.ruler input:focus-visible\{outline/);
+});

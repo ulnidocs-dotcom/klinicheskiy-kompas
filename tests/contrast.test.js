@@ -34,6 +34,7 @@ const lum = (c) => {
 const ratio = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
 const mix = (top, alpha, base) => top.map((t, i) => Math.round(t * alpha + base[i] * (1 - alpha)));
 
+const AURA_HUES = ['rose', 'sage', 'blue', 'amber', 'lilac', 'mood', 'anx', 'sleep'];
 const PAIRS = [
   ['text', 'bg'], ['text-2', 'surface'], ['text-3', 'surface'], ['text-3', 'bg'], ['text-2', 'surface-2'],
   ['on-accent', 'accent'], ['on-crit', 'crit'], ['on-route', 'route'],
@@ -55,7 +56,7 @@ for (const name of SETS) {
   test(`contrast ${name}: text on aura tiles at peak alpha ≥ 4.5`, () => {
     const alpha = Number(t['aura-alpha']);
     assert.ok(alpha > 0 && alpha <= 1);
-    for (const hue of ['rose', 'sage', 'blue', 'amber', 'lilac']) {
+    for (const hue of AURA_HUES) {
       for (const key of [`aura-${hue}`, `aura-${hue}-2`]) {
         const bg = mix(rgb(t[key]), alpha, rgb(t.surface));
         // Внутри .aura вторичный/третичный текст переопределён на --on-aura-2 (ui.css).
@@ -100,11 +101,41 @@ test('pill buttons: --pill-text readable on --pill-bg over the page and over eve
     const m = /^rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)\)$/.exec(t['pill-bg']);
     const over = (base) => (m ? mix(m.slice(1, 4).map(Number), Number(m[4]), base) : rgb(t['pill-bg']));
     const bases = [rgb(t.bg), rgb(t.surface)];
-    for (const hue of ['rose', 'sage', 'blue', 'amber', 'lilac']) for (const k of [`aura-${hue}`, `aura-${hue}-2`]) bases.push(mix(rgb(t[k]), Number(t['aura-alpha']), rgb(t.surface)));
+    for (const hue of AURA_HUES) for (const k of [`aura-${hue}`, `aura-${hue}-2`]) bases.push(mix(rgb(t[k]), Number(t['aura-alpha']), rgb(t.surface)));
     for (const b of bases) {
       const r = ratio(rgb(t['pill-text']), over(b));
       assert.ok(r >= 4.5, `${name}: пилюля ${r.toFixed(2)}`);
     }
     assert.ok(ratio(rgb(t['pill-ink']), rgb(t['pill-dot'])) >= 4.5, `${name}: «+» в круге`);
+  }
+});
+
+// Шкалы чек-ина: у каждой своя гамма. Линии графика, заливка линейки и точки «Моего пути» (--*-ink) — графические объекты:
+// ≥ 3:1 к фону и поверхности (WCAG 1.4.11). Настроение и сон заметно различаются в обеих темах; настроение — коралл, не красный
+// и не янтарь «Помощи».
+test('check-in scale colors: ink ≥ 3:1 on bg/surface, ramps ordered, mood ≠ sleep, mood is coral (not red, not help amber)', () => {
+  const hueOf = ([r, g, b]) => {
+    const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn;
+    if (!d) return 0;
+    const h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4;
+    return (h * 60 + 360) % 360;
+  };
+  const dist = (a, b) => { const d = Math.abs(a - b); return Math.min(d, 360 - d); };
+  for (const name of SETS) {
+    const t = tokens(name);
+    for (const sc of ['mood', 'anx', 'sleep']) {
+      for (const bg of ['bg', 'surface']) {
+        const r = ratio(rgb(t[`${sc}-ink`]), rgb(t[bg]));
+        assert.ok(r >= 3, `${name}: --${sc}-ink на --${bg} = ${r.toFixed(2)}`);
+      }
+      const L = [1, 2, 3, 4, 5].map((k) => lum(rgb(t[`${sc}-${k}`])));
+      const dark = name.includes('dark');
+      for (let k = 1; k < 5; k++) assert.ok(dark ? L[k] > L[k - 1] : L[k] < L[k - 1], `${name}: --${sc}-1..5 не по порядку`);
+    }
+    assert.ok(dist(hueOf(rgb(t['mood-ink'])), hueOf(rgb(t['sleep-ink']))) >= 90, `${name}: настроение и сон слишком похожи`);
+    assert.ok(dist(hueOf(rgb(t['anx-ink'])), hueOf(rgb(t['sleep-ink']))) >= 25, `${name}: беспокойство и сон слишком похожи`);
+    const mh = hueOf(rgb(t['mood-ink']));
+    assert.ok(mh >= 6 && mh <= 30, `${name}: настроение уходит в красный (${mh.toFixed(0)}°)`);
+    assert.ok(dist(hueOf(rgb(t['aura-mood'])), hueOf(rgb(t['aura-amber']))) >= 12, `${name}: аура настроения похожа на «Помощь»`);
   }
 });

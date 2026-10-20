@@ -10,9 +10,8 @@
 .day .num{font-size:64px;line-height:.85}
 .day .label{display:flex;flex-direction:column;padding-bottom:4px}
 .week{display:flex;justify-content:space-between;gap:6px;margin:18px 0 4px;padding:0;list-style:none}
-.week li{position:relative;flex:1;max-width:44px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:50%;border:1px solid var(--line);font-size:.72em;color:var(--text-2)}
-.week li.today{background:var(--text);border-color:var(--text);color:var(--bg);font-weight:600}
-.week li.mark::after{content:'';position:absolute;bottom:-9px;width:4px;height:4px;border-radius:50%;background:var(--text-2)}
+.week li{position:relative;flex:1;max-width:44px;display:flex;justify-content:center}
+.week li.mark::after{content:"";position:absolute;bottom:-9px;left:50%;width:4px;height:4px;margin-left:-2px;border-radius:50%;background:var(--text-2)}
 
 /* Плитки */
 .tile{display:block;position:relative;border-radius:var(--radius-l);padding:20px 18px;color:var(--text);text-decoration:none;overflow:hidden}
@@ -84,3 +83,65 @@ a.tile{min-height:120px;display:flex;flex-direction:column;justify-content:space
 .tile-link{display:inline-flex;align-items:center;min-height:var(--tap);margin:-12px -6px -12px 0;padding:0 6px;font-size:.75em;color:var(--text)}
 .tile-grid>:last-child:nth-child(odd){grid-column:1/-1;min-height:110px}
 .tile .btn--pill{align-self:flex-start;font-size:.85em;min-height:44px}
+
+/* Чек-ин: у каждой шкалы своя гамма (токены --mood-*, --anx-*, --sleep-*). Сферы и ползунок показывают одно значение. */
+.q--mood{--q-1:var(--mood-1);--q-2:var(--mood-2);--q-3:var(--mood-3);--q-4:var(--mood-4);--q-5:var(--mood-5);--q-ink:var(--mood-ink)}
+.q--anx{--q-1:var(--anx-1);--q-2:var(--anx-2);--q-3:var(--anx-3);--q-4:var(--anx-4);--q-5:var(--anx-5);--q-ink:var(--anx-ink)}
+.q--sleep{--q-1:var(--sleep-1);--q-2:var(--sleep-2);--q-3:var(--sleep-3);--q-4:var(--sleep-4);--q-5:var(--sleep-5);--q-ink:var(--sleep-ink)}
+.q .dot[data-v="1"]{--dot-c:var(--q-1)}.q .dot[data-v="2"]{--dot-c:var(--q-2)}.q .dot[data-v="3"]{--dot-c:var(--q-3)}.q .dot[data-v="4"]{--dot-c:var(--q-4)}.q .dot[data-v="5"]{--dot-c:var(--q-5)}
+.q .tile-title:focus{outline:none}
+.q-nav{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:6px}
+.q-nav .btn--pill{margin-left:auto;min-width:148px}
+.q-nav .btn--pill[aria-disabled="true"]{opacity:.45;cursor:not-allowed;filter:none}
+.q-sum{font-size:.85em;color:var(--text-2)}
+
+/* Ползунок-линейка: настоящий <input type="range"> 1–5 поверх рисок. Трек прозрачный, риски и заливка — псевдоэлементы
+   обёртки; «бегунок» — жёлтый треугольник со штрихом в зоне 44×44 (удобно пальцу). Отступы 22px = полширины бегунка,
+   поэтому крайние риски совпадают с крайними положениями. */
+.ruler{position:relative;height:44px;margin-top:2px;--f:.5}
+.ruler::before{content:'';position:absolute;left:22px;right:22px;top:50%;height:16px;transform:translateY(-50%);pointer-events:none;
+  background:
+    linear-gradient(var(--text-2),var(--text-2)) 0 0/1.5px 100% no-repeat,
+    linear-gradient(var(--text-2),var(--text-2)) 25% 0/1.5px 100% no-repeat,
+    linear-gradient(var(--text-2),var(--text-2)) 50% 0/1.5px 100% no-repeat,
+    linear-gradient(var(--text-2),var(--text-2)) 75% 0/1.5px 100% no-repeat,
+    linear-gradient(var(--text-2),var(--text-2)) 100% 0/1.5px 100% no-repeat,
+    linear-gradient(var(--line),var(--line)) center/100% 1px no-repeat,
+    repeating-linear-gradient(90deg,var(--text-3) 0 1px,transparent 1px 8px) center/100% 6px no-repeat}
+.ruler::after{content:'';position:absolute;left:22px;top:50%;height:3px;margin-top:-1.5px;width:calc((100% - 44px) * var(--f));border-radius:2px;background:var(--q-ink,var(--marker));pointer-events:none;transition:width var(--dur)}
+.ruler--unset::after{display:none}
+.ruler input{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;background:transparent;-webkit-appearance:none;appearance:none;cursor:pointer;z-index:1}
+.ruler input:focus{outline:none}
+.ruler input:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:12px}
+.ruler input::-webkit-slider-runnable-track{height:44px;background:transparent;border:0}
+.ruler input::-moz-range-track{height:44px;background:transparent;border:0}
+.ruler input::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:44px;height:44px;border:0;border-radius:0;cursor:grab;
+  background:
+    linear-gradient(to bottom left,var(--marker) 48%,transparent 52%) 15px 4px/7px 10px no-repeat,
+    linear-gradient(to bottom right,var(--marker) 48%,transparent 52%) 22px 4px/7px 10px no-repeat,
+    linear-gradient(var(--marker),var(--marker)) 21px 10px/2px 26px no-repeat}
+.ruler input::-moz-range-thumb{width:44px;height:44px;border:0;border-radius:0;cursor:grab;
+  background:
+    linear-gradient(to bottom left,var(--marker) 48%,transparent 52%) 15px 4px/7px 10px no-repeat,
+    linear-gradient(to bottom right,var(--marker) 48%,transparent 52%) 22px 4px/7px 10px no-repeat,
+    linear-gradient(var(--marker),var(--marker)) 21px 10px/2px 26px no-repeat}
+.ruler input:active::-webkit-slider-thumb{cursor:grabbing}
+.ruler--unset input::-webkit-slider-thumb{opacity:.4}
+.ruler--unset input::-moz-range-thumb{opacity:.4}
+
+/* Выбор дня: последние 7 дней, сегодня справа. Выбранный день — залит, сегодня — обведён. */
+.week button{width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;padding:0;border-radius:50%;border:1px solid var(--line);background:transparent;font:inherit;font-size:.72em;color:var(--text-2);cursor:pointer}
+.week li.today button{border-color:var(--text);color:var(--text);font-weight:600}
+.week li button[aria-pressed="true"]{background:var(--text);border-color:var(--text);color:var(--bg);font-weight:600}
+
+/* Снять ошибочную отметку приёма */
+.undo{display:flex;flex-direction:column;gap:10px;padding:12px 14px;border-radius:18px;border:1px solid var(--line);background:var(--surface)}
+.undo .row{display:flex;flex-wrap:wrap;gap:8px}
+
+/* «Мой путь»: точки и линии настроения/сна — в гамме своих шкал */
+.aura--mood .drow{color:var(--mood-ink)}
+.aura--sleep .drow{color:var(--sleep-ink)}
+@media (prefers-reduced-motion:reduce){.ruler::after{transition:none}}
+/* Пилюля шага чек-ина: стрелка «дальше» / галочка «готово» вместо «+» */
+.btn--pill.btn--step::after{content:'\2192';display:flex;align-items:center;justify-content:center;font-size:18px;line-height:1;color:var(--pill-ink);background:var(--pill-dot)}
+.btn--pill.btn--step.is-last::after{content:'\2713';font-size:16px}

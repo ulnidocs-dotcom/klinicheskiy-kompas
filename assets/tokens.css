@@ -38,6 +38,12 @@
   --aura-blue: 150 168 240; --aura-blue-2: 190 205 245;
   --aura-amber: 240 170 130; --aura-amber-2: 245 205 170;
   --aura-lilac: 205 180 225; --aura-lilac-2: 230 205 230;
+  --mood-1: #F8DDD8; --mood-2: #F2C2B9; --mood-3: #EAA396; --mood-4: #DF8574; --mood-5: #C9674F; --mood-ink: #B4573F;
+  --anx-1: #E7DEF1; --anx-2: #D4C4E9; --anx-3: #BCA4DD; --anx-4: #9F81CC; --anx-5: #805EB4; --anx-ink: #6F4FA3;
+  --sleep-1: #DCE2F6; --sleep-2: #C0CBF0; --sleep-3: #9AAAE6; --sleep-4: #7286D8; --sleep-5: #4A62C4; --sleep-ink: #3D55B8;
+  --aura-mood: 244 166 160; --aura-mood-2: 248 204 178;
+  --aura-anx: 192 168 234; --aura-anx-2: 222 205 240;
+  --aura-sleep: 162 160 242; --aura-sleep-2: 196 198 246;
   --aura-core: 248 247 244; --aura-core-alpha: .55; --on-aura-2: #46443F;
   --aura-alpha: .85; --aura-alpha-subtle: .35;
   --fs: 17px;
@@ -65,6 +71,12 @@
   --aura-blue: 45 76 224; --aura-blue-2: 80 100 220;
   --aura-amber: 210 104 58; --aura-amber-2: 170 100 70;
   --aura-lilac: 150 110 190; --aura-lilac-2: 130 100 150;
+  --mood-1: #3A2723; --mood-2: #5C372E; --mood-3: #855041; --mood-4: #BA725C; --mood-5: #F0A08A; --mood-ink: #F2A891;
+  --anx-1: #2A2335; --anx-2: #3F3356; --anx-3: #5E4B82; --anx-4: #8B71B9; --anx-5: #C2A8EC; --anx-ink: #C8B0F0;
+  --sleep-1: #1E2440; --sleep-2: #2A3563; --sleep-3: #3F5196; --sleep-4: #6479D4; --sleep-5: #9CADFA; --sleep-ink: #A6B6FC;
+  --aura-mood: 214 86 110; --aura-mood-2: 190 110 80;
+  --aura-anx: 132 92 200; --aura-anx-2: 120 96 160;
+  --aura-sleep: 74 70 214; --aura-sleep-2: 92 96 200;
   --aura-core: 12 12 12; --aura-core-alpha: .7;
   --aura-alpha: .6; --aura-alpha-subtle: .22; --on-aura-2: #DEDBD3;
 }
@@ -92,6 +104,12 @@
   --aura-blue: 150 168 240; --aura-blue-2: 190 205 245;
   --aura-amber: 240 170 130; --aura-amber-2: 245 205 170;
   --aura-lilac: 205 180 225; --aura-lilac-2: 230 205 230;
+  --mood-1: #F8DDD8; --mood-2: #F2C2B9; --mood-3: #EAA396; --mood-4: #DF8574; --mood-5: #C9674F; --mood-ink: #B4573F;
+  --anx-1: #E7DEF1; --anx-2: #D4C4E9; --anx-3: #BCA4DD; --anx-4: #9F81CC; --anx-5: #805EB4; --anx-ink: #6F4FA3;
+  --sleep-1: #DCE2F6; --sleep-2: #C0CBF0; --sleep-3: #9AAAE6; --sleep-4: #7286D8; --sleep-5: #4A62C4; --sleep-ink: #3D55B8;
+  --aura-mood: 244 166 160; --aura-mood-2: 248 204 178;
+  --aura-anx: 192 168 234; --aura-anx-2: 222 205 240;
+  --aura-sleep: 162 160 242; --aura-sleep-2: 196 198 246;
   --aura-core: 251 250 248; --aura-core-alpha: .55; --on-aura-2: #45433F;
   --aura-alpha: .85; --aura-alpha-subtle: .35;
   --fs: 14px;
@@ -120,6 +138,12 @@
   --aura-blue: 45 76 224; --aura-blue-2: 80 100 220;
   --aura-amber: 210 104 58; --aura-amber-2: 170 100 70;
   --aura-lilac: 150 110 190; --aura-lilac-2: 130 100 150;
+  --mood-1: #3A2723; --mood-2: #5C372E; --mood-3: #855041; --mood-4: #BA725C; --mood-5: #F0A08A; --mood-ink: #F2A891;
+  --anx-1: #2A2335; --anx-2: #3F3356; --anx-3: #5E4B82; --anx-4: #8B71B9; --anx-5: #C2A8EC; --anx-ink: #C8B0F0;
+  --sleep-1: #1E2440; --sleep-2: #2A3563; --sleep-3: #3F5196; --sleep-4: #6479D4; --sleep-5: #9CADFA; --sleep-ink: #A6B6FC;
+  --aura-mood: 214 86 110; --aura-mood-2: 190 110 80;
+  --aura-anx: 132 92 200; --aura-anx-2: 120 96 160;
+  --aura-sleep: 74 70 214; --aura-sleep-2: 92 96 200;
   --aura-core: 12 12 12; --aura-core-alpha: .7;
   --aura-alpha: .6; --aura-alpha-subtle: .22; --on-aura-2: #DEDBD3;
 }
@@ -148,6 +172,12 @@
     --aura-blue: 45 76 224; --aura-blue-2: 80 100 220;
     --aura-amber: 210 104 58; --aura-amber-2: 170 100 70;
     --aura-lilac: 150 110 190; --aura-lilac-2: 130 100 150;
+    --mood-1: #3A2723; --mood-2: #5C372E; --mood-3: #855041; --mood-4: #BA725C; --mood-5: #F0A08A; --mood-ink: #F2A891;
+    --anx-1: #2A2335; --anx-2: #3F3356; --anx-3: #5E4B82; --anx-4: #8B71B9; --anx-5: #C2A8EC; --anx-ink: #C8B0F0;
+    --sleep-1: #1E2440; --sleep-2: #2A3563; --sleep-3: #3F5196; --sleep-4: #6479D4; --sleep-5: #9CADFA; --sleep-ink: #A6B6FC;
+    --aura-mood: 214 86 110; --aura-mood-2: 190 110 80;
+    --aura-anx: 132 92 200; --aura-anx-2: 120 96 160;
+    --aura-sleep: 74 70 214; --aura-sleep-2: 92 96 200;
     --aura-core: 12 12 12; --aura-core-alpha: .7;
     --aura-alpha: .6; --aura-alpha-subtle: .22; --on-aura-2: #DEDBD3;
   }
@@ -174,6 +204,12 @@
     --aura-blue: 45 76 224; --aura-blue-2: 80 100 220;
     --aura-amber: 210 104 58; --aura-amber-2: 170 100 70;
     --aura-lilac: 150 110 190; --aura-lilac-2: 130 100 150;
+    --mood-1: #3A2723; --mood-2: #5C372E; --mood-3: #855041; --mood-4: #BA725C; --mood-5: #F0A08A; --mood-ink: #F2A891;
+    --anx-1: #2A2335; --anx-2: #3F3356; --anx-3: #5E4B82; --anx-4: #8B71B9; --anx-5: #C2A8EC; --anx-ink: #C8B0F0;
+    --sleep-1: #1E2440; --sleep-2: #2A3563; --sleep-3: #3F5196; --sleep-4: #6479D4; --sleep-5: #9CADFA; --sleep-ink: #A6B6FC;
+    --aura-mood: 214 86 110; --aura-mood-2: 190 110 80;
+    --aura-anx: 132 92 200; --aura-anx-2: 120 96 160;
+    --aura-sleep: 74 70 214; --aura-sleep-2: 92 96 200;
     --aura-core: 12 12 12; --aura-core-alpha: .7;
     --aura-alpha: .6; --aura-alpha-subtle: .22; --on-aura-2: #DEDBD3;
   }

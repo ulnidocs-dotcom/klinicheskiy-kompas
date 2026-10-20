@@ -39,6 +39,10 @@ code{font-size:.92em}
 .aura--blue{--aura-a:var(--aura-blue);--aura-b:var(--aura-blue-2)}
 .aura--amber{--aura-a:var(--aura-amber);--aura-b:var(--aura-amber-2)}
 .aura--lilac{--aura-a:var(--aura-lilac);--aura-b:var(--aura-lilac-2)}
+/* Гаммы шкал чек-ина (настроение · беспокойство · сон): аура плитки, сферы, линейка, точки и линии «Моего пути» */
+.aura--mood{--aura-a:var(--aura-mood);--aura-b:var(--aura-mood-2)}
+.aura--anx{--aura-a:var(--aura-anx);--aura-b:var(--aura-anx-2)}
+.aura--sleep{--aura-a:var(--aura-sleep);--aura-b:var(--aura-sleep-2)}
 .aura--subtle{--aura-k:var(--aura-alpha-subtle)}
 
 .card{background:var(--surface);border-radius:var(--radius-l);padding:18px}
@@ -90,11 +94,11 @@ code{font-size:.92em}
 .dot:hover{transform:scale(1.05)}
 .dot[aria-pressed="true"]{border-color:var(--text);box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--text);transform:scale(1.06)}
 
-/* Тонкая линейка-риски с жёлтым маркером (декор, aria-hidden) */
+/* Тонкая линейка-риски (только показ, aria-hidden): маленький треугольник без «ручки», чтобы не выглядеть ползунком.
+   Ползунок, который пациент двигает, — .ruler в patient.css. */
 .ticks{position:relative;height:18px;--pos:50%;
   background:repeating-linear-gradient(90deg,var(--text-3) 0 1px,transparent 1px 8px) left center/100% 8px no-repeat;opacity:.9}
 .ticks::before{content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:var(--line)}
-.ticks::after{content:'';position:absolute;left:var(--pos);top:0;bottom:0;width:2px;margin-left:-1px;border-radius:1px;background:var(--marker)}
 .ticks i{position:absolute;left:var(--pos);top:-6px;width:0;height:0;margin-left:-5px;border:5px solid transparent;border-top:6px solid var(--marker)}
 
 /* Варианты ответа опросника */

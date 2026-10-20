@@ -5,7 +5,12 @@
   if (!store.patient(id)) { location.replace('index.html'); return; }
   const TYPE = { checkin: 'Самочувствие', dose: 'Приём', scale: 'Шкала', ae: 'Нежелательные явления', sos: 'Кнопка «Мне тяжело»' };
   const describe = (e) => {
-    if (e.type === 'checkin') return `настроение ${e.payload.mood}/5, беспокойство ${e.payload.anxiety}/5, сон ${e.payload.sleep}/5`;
+    if (e.type === 'checkin') {
+      const sameDay = store.events(id, 'checkin').filter((x) => KK.util.dayKey(x.at) === KK.util.dayKey(e.at)).length;
+      const late = e.recordedAt && KK.util.dayKey(e.recordedAt) !== KK.util.dayKey(e.at);
+      return `настроение ${e.payload.mood}/5, беспокойство ${e.payload.anxiety}/5, сон ${e.payload.sleep}/5`
+        + (sameDay > 1 ? ' · пациент изменил отметку' : '') + (late ? ` · внесено ${ui.fmtDate(e.recordedAt)}` : '');
+    }
     if (e.type === 'dose') return `${data.drugs.aviandr.name}, ${e.payload.slot}`;
     if (e.type === 'scale') {
       const head = data.scales[e.payload.scaleId].title.split(' —')[0];
@@ -21,7 +26,10 @@
     const mode = D.mode();
     const series = (sid, color) => ({ label: sid === 'phq9' ? 'PHQ-9' : 'GAD-7', color, points: store.events(id, 'scale').filter((e) => e.payload.scaleId === sid).map((e) => ({ at: e.at, v: e.payload.total })) });
     const bands = [{ from: 10, to: 14, color: 'var(--band-warn)' }, { from: 15, to: 27, color: 'var(--band-crit)' }];
-    const feed = [...store.events(id)].filter((e) => e.type !== 'dose').reverse().slice(0, 12);
+    // Пациент может изменить отметку самочувствия (за сегодня или до 7 дней назад): в ленте и сводке — последняя за день.
+    const checkins = KK.util.latestPerDay(store.events(id, 'checkin'));
+    const keep = new Set(checkins.map((e) => e.id));
+    const feed = [...store.events(id)].filter((e) => e.type !== 'dose' && (e.type !== 'checkin' || keep.has(e.id))).reverse().slice(0, 12);
     const aes = store.events(id, 'ae').slice(-5).reverse();
     const plan = p.plan;
     const drug = data.drugs[plan?.drugId];
@@ -36,7 +44,7 @@
       </div>
       <div class="grid2">
         <div class="stack">
-          ${KK.tiles.tileGrid(D.summaryTiles(p, { checkins: store.events(id, 'checkin'), aes: store.events(id, 'ae') }), { label: 'Сводка' })}
+          ${KK.tiles.tileGrid(D.summaryTiles(p, { checkins, aes: store.events(id, 'ae') }), { label: 'Сводка' })}
           <section class="card stack"><h2>Сигналы</h2>
             ${p.signals.length ? p.signals.map((s) => D.signalHtml(s, mode)).join('') : '<p class="muted">Сигналов нет. Состояние стабильно.</p>'}</section>
           <section class="card stack"><div class="row-between"><h2>Динамика по шкалам</h2><span class="hint">фон: умеренная (10–14) и выше (≥ 15)</span></div>
