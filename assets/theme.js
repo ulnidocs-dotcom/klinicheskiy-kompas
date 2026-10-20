@@ -66,4 +66,33 @@
     if (doc.readyState === 'loading') doc.addEventListener('DOMContentLoaded', () => theme.sync());
     else theme.sync();
   }
+
+  // Адаптивные таблицы: на узком экране строка таблицы становится карточкой, а у каждой ячейки
+  // появляется подпись колонки (data-label из заголовка). Страницы перерисовываются через innerHTML,
+  // поэтому подписи проставляются и при каждом изменении DOM.
+  function labelTables(root) {
+    root.querySelectorAll('table.table').forEach((t) => {
+      const heads = [...t.querySelectorAll('thead th')].map((th) => th.textContent.trim());
+      if (!heads.length) return;
+      t.classList.add('table--stack');
+      t.querySelectorAll('tbody tr').forEach((tr) => {
+        [...tr.children].forEach((td, i) => {
+          if (td.tagName === 'TD' && !td.hasAttribute('data-label') && heads[i]) td.setAttribute('data-label', heads[i]);
+        });
+      });
+    });
+  }
+  KK.labelTables = labelTables;
+  if (doc && typeof g.MutationObserver === 'function') {
+    const start = () => {
+      labelTables(doc.body);
+      let queued = false;
+      new g.MutationObserver(() => {
+        if (queued) return;
+        queued = true;
+        (g.requestAnimationFrame || setTimeout)(() => { queued = false; labelTables(doc.body); });
+      }).observe(doc.body, { childList: true, subtree: true });
+    };
+    if (doc.readyState === 'loading') doc.addEventListener('DOMContentLoaded', start); else start();
+  }
 })(typeof window !== 'undefined' ? window : globalThis);
