@@ -18,7 +18,7 @@
           `<button id="th-${v}" data-theme-set="${v}" aria-pressed="${KK.theme.pref() === v}">${l}</button>`).join('')}</div>
         <p class="hint">Выбор общий для кабинетов врача и пациента на этом устройстве.</p></section>
       <section class="card stack" style="max-width:560px;margin-top:16px"><h2>Демо</h2>
-        <p class="hint">Сброс вернёт 5 сценариев в исходное состояние на этом устройстве.</p>
+        <p class="hint">Сброс вернёт 6 сценариев в исходное состояние на этом устройстве.</p>
         <button class="btn" data-reset>Сбросить демо-данные</button></section>`));
   }
   // Тема переключается и из шапки: обновляем только сегмент, не трогая введённые данные.

@@ -16,7 +16,9 @@
       patient: base({ id: 'p_anna', name: 'Анна Соколова', initials: 'АС', age: 34, sex: 'f',
         phone: '+7 900 000-00-01', inviteCode: 'KMP-4821',
         diagnoses: [{ code: 'F41.1', text: 'Генерализованное тревожное расстройство' }],
-        plan: { drugId: 'aviandr', status: 'proposed', timesPerDay: 2 } }),
+        plan: { drugId: 'aviandr', status: 'proposed', timesPerDay: 2 },
+        // Первичный приём психолога назначен, батарея не начата — демонстрация потока пациента.
+        intake: { assignedDay: -1 } }),
       seed: [
         { type: 'scale', day: -15, payload: { scaleId: 'gad7', answers: [2, 2, 2, 1, 1, 2, 2] } },
         { type: 'scale', day: -15, payload: { scaleId: 'phq9', answers: [1, 1, 1, 0, 0, 1, 1, 0, 0] } },
@@ -87,6 +89,33 @@
         ...checkins(-13, -1, (d) => ({ mood: d > -7 ? 4 : 3, anxiety: d > -7 ? 2 : 3, sleep: 3 })),
       ],
     },
+    {
+      id: 's6', title: 'Первичный приём психолога', summary: 'Батарея заполнена: DASS-21 Д 18, Т 12, С 24 — психотерапия желательно',
+      patient: base({ id: 'p_ilya', name: 'Илья Смирнов', initials: 'ИС', age: 27, sex: 'm', inviteCode: 'KMP-3175',
+        diagnoses: [], plan: null,
+        intake: { assignedDay: -5, completedDay: -2 } }),
+      seed: [
+        { type: 'intake_form', day: -2, hour: 18, payload: { complaint: 'В целом всё в порядке, просто постоянно устаю и плохо сплю',
+          reason: 'Терапевт посоветовал поговорить с психологом', priorPsychiatrist: false, meds: false, psychotic: false, mania: false } },
+        { type: 'scale', day: -2, hour: 18, payload: { scaleId: 'cssrs', answers: [0, 0, null, null, null, 0], context: 'intake' } },
+        { type: 'scale', day: -2, hour: 18, payload: { scaleId: 'tipi10', answers: [3, 4, 6, 6, 5, 5, 6, 3, 2, 3], context: 'intake' } },
+        // Д: 9 → 18 (умеренная), Т: 6 → 12 (умеренная), С: 12 → 24 (умеренная).
+        { type: 'scale', day: -2, hour: 19, payload: { scaleId: 'dass21', answers: [2, 1, 2, 1, 1, 2, 0, 2, 2, 1, 1, 2, 2, 2, 1, 1, 1, 1, 0, 1, 1], context: 'intake' } },
+        { type: 'cto', day: -2, hour: 19, payload: {
+          concepts: {
+            self: ['grey', 'blue', 'brown', 'green', 'violet', 'yellow', 'red', 'black'],
+            future: ['green', 'yellow', 'blue', 'red', 'violet', 'grey', 'brown', 'black'],
+            mother: ['grey', 'blue', 'green', 'brown', 'violet', 'yellow', 'red', 'black'],
+            father: ['black', 'brown', 'red', 'grey', 'blue', 'violet', 'green', 'yellow'],
+            close: ['yellow', 'green', 'red', 'blue', 'violet', 'grey', 'brown', 'black'],
+            work: ['grey', 'black', 'brown', 'blue', 'red', 'violet', 'green', 'yellow'],
+            illness: ['grey', 'brown', 'black', 'blue', 'violet', 'green', 'red', 'yellow'],
+            treatment: ['blue', 'green', 'grey', 'yellow', 'violet', 'red', 'brown', 'black'],
+          },
+          preference: ['green', 'blue', 'yellow', 'violet', 'red', 'grey', 'brown', 'black'],
+        } },
+      ],
+    },
   ];
 
   // Превращает seed сценария в события с ISO-датами; шкалы — в результаты подсчёта.
@@ -105,9 +134,11 @@
           out.push({ type: 'dose', at: atDay(d, 21), payload: { slot: 'вечер', taken: true } });
         }
       } else if (s.type === 'scale') {
-        out.push({ type: 'scale', at: atDay(s.day, s.day === 0 ? null : 10), payload: KK.scales.score(s.payload.scaleId, s.payload.answers) });
+        const p = KK.scales.score(s.payload.scaleId, s.payload.answers);
+        if (s.payload.context) p.context = s.payload.context;
+        out.push({ type: 'scale', at: atDay(s.day, s.day === 0 ? null : s.hour ?? 10), payload: p });
       } else {
-        out.push({ type: s.type, at: atDay(s.day, s.day === 0 ? null : 20), payload: s.payload });
+        out.push({ type: s.type, at: atDay(s.day, s.day === 0 ? null : s.hour ?? 20), payload: s.payload });
       }
     }
     return out.sort(KK.util.byDateAsc);
@@ -119,6 +150,14 @@
     if (p.plan && p.plan.confirmedDay != null) {
       p.plan.confirmedAt = KK.util.shiftDays(nowIso, p.plan.confirmedDay);
       delete p.plan.confirmedDay;
+    }
+    // Первичный приём психолога: assignedDay/completedDay → ISO-даты относительно now.
+    if (p.intake) {
+      if (p.intake.assignedDay != null) { p.intake.assignedAt = KK.util.shiftDays(nowIso, p.intake.assignedDay); delete p.intake.assignedDay; }
+      if (p.intake.completedDay != null) {
+        const d = new Date(KK.util.shiftDays(nowIso, p.intake.completedDay)); d.setHours(19, 30, 0, 0);
+        p.intake.completedAt = d.toISOString(); delete p.intake.completedDay;
+      }
     }
     return p;
   };

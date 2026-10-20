@@ -11,9 +11,9 @@ function signals(s) {
 }
 const S = (id) => KK.data.scenarios.find((x) => x.id === id);
 
-test('five scenarios with unique ids', () => {
-  assert.equal(KK.data.scenarios.length, 5);
-  assert.equal(new Set(KK.data.scenarios.map((s) => s.id)).size, 5);
+test('six scenarios with unique ids', () => {
+  assert.equal(KK.data.scenarios.length, 6);
+  assert.equal(new Set(KK.data.scenarios.map((s) => s.id)).size, 6);
 });
 
 test('S1 GAD at GP: eligible, no signals', () => {
@@ -43,4 +43,20 @@ test('S5 post-COVID: indicated, improving, no signals', () => {
   assert.deepEqual(signals(s).map((x) => x.ruleId), []);
   const gad = eventsOf(s).filter((e) => e.type === 'scale' && e.payload.scaleId === 'gad7').map((e) => e.payload.total);
   assert.ok(gad[0] > gad.at(-1));
+});
+
+test('S6 psychologist intake: no doctor signals, no plan, intake completed in seed', () => {
+  const s = S('s6');
+  const p = KK.data.materializePatient(s.patient, NOW);
+  assert.deepEqual(signals(s).map((x) => x.ruleId), []);
+  assert.ok(p.intake.assignedAt && p.intake.completedAt);
+  const ev = eventsOf(s);
+  assert.ok(ev.filter((e) => e.type === 'scale').every((e) => e.payload.context === 'intake'));
+  assert.deepEqual(ev.map((e) => e.type).filter((t) => t !== 'scale'), ['intake_form', 'cto']);
+});
+
+test('S1 Anna: intake assigned, not completed', () => {
+  const p = KK.data.materializePatient(S('s1').patient, NOW);
+  assert.ok(p.intake.assignedAt);
+  assert.equal(p.intake.completedAt, undefined);
 });

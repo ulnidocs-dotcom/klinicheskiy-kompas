@@ -34,6 +34,8 @@
   };
   let showing = false; // повторный вход в showCriticalModal (подписчики стора вызываются синхронно)
   let lastFocus = null;
+  // Настройки критического окна (задаются в start): выбор алерта, отметка показа, автор подтверждения.
+  let modal = { pick: (alerts, openId) => app.nextCriticalToShow(alerts, openId), mark: (id) => KK.store.markDelivered(id), actor: undefined };
   let audioCtx = null;
   function audio() {
     try {
@@ -155,6 +157,20 @@
           note: days == null ? 'не назначено' : `с ${ui.fmtDate(p.plan.confirmedAt)}` },
       ];
     },
+    // Компактная карточка «Первичный приём психолога» — только после решения психолога (store.intakeOf).
+    intakeCard(p, it) {
+      if (!p || !it || !it.intake || !it.intake.decision) return '';
+      const e = ui().esc, B = KK.battery;
+      const dec = it.intake.decision;
+      const dass = it.dass ? B.scoreDass(it.dass) : null;
+      const chips = dass ? Object.values(dass.subscales).map((s) => `<span class="badge badge--info">${e(s.title)}: ${e(s.label)}</span>`).join('') : '<span class="hint">DASS-21: нет данных</span>';
+      return `<section class="card stack intake-card"><div class="row-between"><h2>Первичный приём психолога</h2><span class="hint">${ui().fmtDate(dec.at)}</span></div>
+        <p><b>${e(B.levelLabel(dec.level))}</b>${dec.overridden ? ' <span class="hint">· изменено психологом</span>' : ''}</p>
+        <div class="row wrap">${chips}</div>
+        ${it.intake.handoff ? `<p class="hint">Передано врачу ${ui().fmtDateTime(it.intake.handoff.at)}</p>` : ''}
+        <p class="hint">Предварительная оценка психолога, не диагноз.</p>
+        <a href="../psych/patient.html?id=${e(p.id)}">Подробнее</a></section>`;
+    },
     ROUTING_PATIENT_MSG: 'Я оформил(а) направление на консультацию к врачу-психиатру. Подробности обсудим по телефону.',
     // Ключи пациентского приложения на этом устройстве, которые сбрасываются вместе с демо-данными (как на index.html).
     demoDeviceKeys: (keys) => keys.filter((k) => k.startsWith('kk:linked:') || k.startsWith('kk:prefs:')),
@@ -222,7 +238,7 @@
       if (showing) return;
       const root = document.getElementById('modal-root');
       if (!root) return;
-      const pending = app.nextCriticalToShow(KK.store.alerts({ open: true }), root.dataset.open);
+      const pending = modal.pick(KK.store.alerts({ open: true }), root.dataset.open);
       if (!pending) return;
       showing = true;
       try {
@@ -235,12 +251,12 @@
         root.innerHTML = `<div class="modal-backdrop" role="alertdialog" aria-modal="true" aria-labelledby="mt">
         <div class="modal stack"><span class="badge badge--critical">${ui().icon('alert', 14)}Критический сигнал</span>
           <h2 id="mt">${e(p ? p.name : pending.patientId)}: ${e(pending.title)}</h2><p>${e(pending.text)}</p>
-          ${app.mode() === 'nonPsychiatrist' && HINTS[pending.ruleId] ? `<p class="hint-box">${e(HINTS[pending.ruleId])}</p>` : ''}
+          ${modal.hints !== false && app.mode() === 'nonPsychiatrist' && HINTS[pending.ruleId] ? `<p class="hint-box">${e(HINTS[pending.ruleId])}</p>` : ''}
           <p class="hint">Данные поступили ${ui().fmtDateTime(pending.dataAt)} · ${e(pending.source)}</p>
           <div class="row wrap"><a class="btn btn--danger" href="patient.html?id=${e(pending.patientId)}" data-ack-open="${e(pending.id)}">Открыть карточку</a>
             <button class="btn" data-ack="${e(pending.id)}" data-action="Связался с пациентом">Связался с пациентом</button>
             <button class="btn btn--ghost" data-close>Позже</button></div></div></div>`;
-        KK.store.markDelivered(pending.id);
+        modal.mark(pending.id);
         app.beep();
         root.querySelector('.btn')?.focus();
       } finally {
@@ -251,18 +267,21 @@
     closeCriticalModal(ackId, action) {
       const root = document.getElementById('modal-root');
       if (root) { root.innerHTML = ''; delete root.dataset.open; }
-      if (ackId) KK.store.ackAlert(ackId, action);
+      if (ackId) KK.store.ackAlert(ackId, action, modal.actor);
       app.showCriticalModal();
       if (root && !root.dataset.open) {
         if (lastFocus && lastFocus.isConnected && typeof lastFocus.focus === 'function') lastFocus.focus();
         lastFocus = null;
       }
     },
-    start({ nav } = {}) {
+    // opts (для кабинета психолога): renderSide — своя боковая панель; pick/mark — какие критические алерты
+    // показывать и как отмечать показ (по умолчанию — доставка врачу); actor — кто подтверждает алерт.
+    start({ nav, renderSide = app.renderSide, pick, mark, actor, hints = true } = {}) {
       if (nav) document.body.dataset.nav = nav;
-      app.renderSide();
+      modal = { pick: pick || app.nextCriticalToShow, mark: mark || ((id) => KK.store.markDelivered(id)), actor, hints };
+      renderSide();
       app.showCriticalModal();
-      KK.store.subscribe(() => { app.renderSide(); app.showCriticalModal(); });
+      KK.store.subscribe(() => { renderSide(); app.showCriticalModal(); });
       // Браузер разрешает звук только после жеста пользователя — разблокируем AudioContext заранее.
       const unlock = () => { audio(); document.removeEventListener('click', unlock, true); document.removeEventListener('keydown', unlock, true); };
       document.addEventListener('click', unlock, true);
@@ -273,7 +292,7 @@
         if (ack) {
           const id = ack.dataset.ack;
           if (root && (root.contains(ack) || root.dataset.open === id)) app.closeCriticalModal(id, ack.dataset.action);
-          else KK.store.ackAlert(id, ack.dataset.action);
+          else KK.store.ackAlert(id, ack.dataset.action, modal.actor);
         }
         if (root && ev.target.closest('[data-close]') && root.contains(ev.target)) app.closeCriticalModal();
       });

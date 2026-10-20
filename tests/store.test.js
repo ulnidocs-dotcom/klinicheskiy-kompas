@@ -10,10 +10,10 @@ function memStorage() {
 const NOW = new Date('2026-10-19T12:00:00.000Z');
 const mk = () => { const s = KK.createStore({ storage: memStorage(), clock: () => NOW }); s.reset(); return s; };
 
-test('reset loads 5 patients, sorted by urgency (S4 first)', () => {
+test('reset loads 6 patients, sorted by urgency (S4 first)', () => {
   const s = mk();
   const ps = s.patients();
-  assert.equal(ps.length, 5);
+  assert.equal(ps.length, 6);
   assert.equal(ps[0].id, 'p_dmitry');
   assert.equal(ps[0].routing, 'required');
 });

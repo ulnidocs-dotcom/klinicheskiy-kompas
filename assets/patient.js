@@ -46,18 +46,33 @@
       return { pid, patient: () => KK.store.patient(pid) };
     },
 
-    // Опросник, доступный пациенту: только собственные ключи KK.data.scales (без __proto__ и т.п.) и не «врачебные».
+    // Опросник, доступный пациенту: только собственные ключи KK.data.scales (без __proto__ и т.п.) и без audience
+    // («врачебные» и шкалы первичного приёма психолога проходят только через свои экраны).
     patientScale(id) {
       if (typeof id !== 'string' || !Object.hasOwn(KK.data.scales, id)) return null;
       const d = KK.data.scales[id];
-      return d.audience === 'doctor' ? null : d;
+      return d.audience ? null : d;
     },
+    // Плитка «Первичная беседа с психологом» — пока приём назначен и пациент его не завершил.
+    intakeDue: (p) => !!(p && p.intake && (p.intakeStatus === 'assigned' || p.intakeStatus === 'in_progress')),
+    // Тексты экранов первичной беседы (проверяются тестом: без баллов, слов тяжести и «!»).
+    INTAKE_COPY: [
+      'Первичная беседа с психологом',
+      'Около 20 минут. Можно сделать перерыв и вернуться — ответы сохранятся.',
+      'Ответы увидят ваш психолог и лечащий врач. Это не экстренная служба: если сейчас очень плохо, нажмите «Мне тяжело».',
+      'Цвета и отношения',
+      'Это задание по желанию. Для каждого слова выберите цвета по порядку: сначала тот, что подходит больше всего.',
+      'Теперь расположите цвета по тому, насколько они вам приятны прямо сейчас.',
+      'Ответы переданы психологу',
+      'Спасибо. Психолог посмотрит ответы перед встречей и обсудит их с вами.',
+      'Продолжить беседу',
+    ],
     nextScales: (param) => String(param || '').split(',').filter((x) => !!app.patientScale(x)),
     // «Врач уведомлён» после PHQ-9 — только если по п. 9 действительно открыт алерт врачу.
     phqAlertOpen: (alerts) => alerts.some((a) => a.ruleId === 'si_phq9' && !a.ackAt),
     // История опросников для пациента: без C-SSRS и без неполных форм; текст — из сохранённой интерпретации.
     scaleHistory(events, n = 6) {
-      return events.filter((e) => e.type === 'scale' && e.payload.scaleId !== 'cssrs' && e.payload.complete)
+      return events.filter((e) => e.type === 'scale' && e.payload.complete && !!app.patientScale(e.payload.scaleId))
         .slice(-n).reverse()
         .map((e) => ({ at: e.at, scaleId: e.payload.scaleId, label: e.payload.band?.patientText || 'Ответы получены врачом.' }));
     },

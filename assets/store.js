@@ -14,6 +14,12 @@
   const BACKDATE_TYPES = ['checkin'];
   const BACKDATE_DAYS = 7;
   const PLAN_LOCKED = ['status', 'confirmedAt', 'cancelledAt', 'offLabel'];
+  const VERSION = 2;
+  const PSYCHOLOGIST = { id: 'psy1', name: 'Мария Белова', specialty: 'клинический психолог' };
+  // Первичный приём психолога: части батареи (C-SSRS, TIPI-10, DASS-21 — события scale с context 'intake').
+  const INTAKE_SCALES = { cssrs: 'cssrs', tipi: 'tipi10', dass: 'dass21' };
+  const INTAKE_REQUIRED = ['form', 'cssrs', 'tipi', 'dass'];
+  const INTAKE_LEVELS = ['psychiatrist_required', 'psychotherapy_desirable', 'consultation', 'observation'];
 
   function createStore({ storage, clock }) {
     const listeners = new Set();
@@ -22,7 +28,7 @@
     let db = read();
     const write = () => { storage.setItem(KEY, JSON.stringify(db)); listeners.forEach((fn) => fn()); };
     // Перед каждой операцией перечитываем хранилище: другая вкладка могла записать свежие данные.
-    const need = () => { db = read() || db; if (!db) reset(); return db; };
+    const need = () => { db = read() || db; if (!db) reset(); else if (!(db.version >= VERSION)) migrate(); return db; };
     if (typeof g.addEventListener === 'function') {
       g.addEventListener('storage', (e) => {
         if (e.key !== KEY) return;
@@ -31,19 +37,37 @@
       });
     }
 
+    function addScenario(s, now) {
+      const p = KK.data.materializePatient(s.patient, now);
+      p.scenarioId = s.id; p.doctorId = 'd1';
+      db.patients[p.id] = p;
+      db.events[p.id] = KK.data.expandSeed(s.seed, now).map((e) => Object.assign({ id: KK.util.uid('ev') }, e));
+      db.messages[p.id] = [];
+      syncAlerts(p.id, db.events[p.id].at(-1)?.at || now);
+    }
+
     function reset() {
       const now = nowIso();
-      db = { version: 1, createdAt: now, activePatientId: 'p_anna',
+      db = { version: VERSION, createdAt: now, activePatientId: 'p_anna',
         doctor: { id: 'd1', name: 'Елена Иванова', specialty: 'терапевт', mode: 'nonPsychiatrist' },
-        patients: {}, events: {}, alerts: [], audit: [], messages: {} };
+        psychologist: Object.assign({}, PSYCHOLOGIST),
+        patients: {}, events: {}, alerts: [], audit: [], messages: {}, inbox: [] };
+      for (const s of KK.data.scenarios) addScenario(s, now);
+      write();
+    }
+
+    // Данные первой версии (без психолога): сохраняем всё, добавляем профиль психолога, новые сценарии
+    // и назначенный первичный приём сценарным пациентам, у которых его ещё нет.
+    function migrate() {
+      const now = nowIso();
+      db.psychologist = db.psychologist || Object.assign({}, PSYCHOLOGIST);
+      db.inbox = db.inbox || [];
       for (const s of KK.data.scenarios) {
-        const p = KK.data.materializePatient(s.patient, now);
-        p.scenarioId = s.id; p.doctorId = 'd1';
-        db.patients[p.id] = p;
-        db.events[p.id] = KK.data.expandSeed(s.seed, now).map((e) => Object.assign({ id: KK.util.uid('ev') }, e));
-        db.messages[p.id] = [];
-        syncAlerts(p.id, db.events[p.id].at(-1)?.at || now);
+        if (!Object.hasOwn(db.patients, s.patient.id)) { addScenario(s, now); continue; }
+        const p = db.patients[s.patient.id];
+        if (s.patient.intake && !p.intake) p.intake = KK.data.materializePatient(s.patient, now).intake;
       }
+      db.version = VERSION;
       write();
     }
 
@@ -80,7 +104,7 @@
       return Object.assign(JSON.parse(JSON.stringify(p)), {
         signals, routing: KK.rules.routing(signals),
         openAlerts: db.alerts.filter((a) => a.patientId === id && !a.ackAt),
-        therapy: ctx.therapy, pdc14: ctx.pdc14, missedStreak: ctx.missedStreak,
+        therapy: ctx.therapy, pdc14: ctx.pdc14, missedStreak: ctx.missedStreak, intakeStatus: intakeStatus(id),
         latest: { phq9: ctx.latest('phq9'), gad7: ctx.latest('gad7'), cssrs: ctx.latest('cssrs') },
         lastActivityAt: ev.at(-1)?.at || null,
       });
@@ -92,13 +116,42 @@
       return [lvl, r, -(v.missedStreak || 0)];
     }
 
-    function audit(patientId, action, details) {
-      db.audit.push({ id: KK.util.uid('au'), at: nowIso(), patientId, actor: db.doctor.id, action, details: details || {} });
+    function audit(patientId, action, details, actor) {
+      db.audit.push({ id: KK.util.uid('au'), at: nowIso(), patientId, actor: actor || db.doctor.id, action, details: details || {} });
+    }
+
+    // Последние части батареи после назначения приёма: { form, cssrs, tipi, dass, cto } (payload или null).
+    function intakeParts(id) {
+      const p = db.patients[id];
+      if (!p || !p.intake) return null;
+      const from = p.intake.assignedAt ? +new Date(p.intake.assignedAt) : -Infinity;
+      const ev = (db.events[id] || []).filter((e) => +new Date(e.at) >= from);
+      const last = (pred) => { const e = ev.filter(pred).at(-1); return e ? e : null; };
+      const parts = { form: last((e) => e.type === 'intake_form'), cto: last((e) => e.type === 'cto') };
+      for (const [k, sid] of Object.entries(INTAKE_SCALES)) {
+        parts[k] = last((e) => e.type === 'scale' && e.payload.scaleId === sid && (sid !== 'cssrs' || e.payload.context === 'intake'));
+      }
+      return parts;
+    }
+    function intakeStatus(id) {
+      const p = db.patients[id];
+      if (!p || !p.intake) return null;
+      if (p.intake.decision) return 'decided';
+      if (p.intake.completedAt) return 'completed';
+      const parts = intakeParts(id);
+      return Object.values(parts).some(Boolean) ? 'in_progress' : 'assigned';
+    }
+    function pushEvent(patientId, type, payload) {
+      const e = { id: KK.util.uid('ev'), type, at: nowIso(), recordedAt: nowIso(), payload };
+      db.events[patientId].push(e);
+      return e;
     }
 
     const api = {
       reset,
       doctor: () => need().doctor,
+      psychologist: () => need().psychologist || Object.assign({}, PSYCHOLOGIST),
+      setPsychologist(patch) { need(); db.psychologist = Object.assign({}, PSYCHOLOGIST, db.psychologist, patch); write(); },
       setDoctor(patch) { need(); Object.assign(db.doctor, patch); write(); },
       activePatientId: () => need().activePatientId,
       setActivePatient(id) { need(); db.activePatientId = id; write(); },
@@ -130,6 +183,7 @@
           at = t.toISOString();
         }
         const p = type === 'scale' ? KK.scales.score(payload.scaleId, payload.answers) : payload;
+        if (type === 'scale' && payload.context) p.context = String(payload.context);
         const e = { id: KK.util.uid('ev'), type, at, recordedAt: now, payload: p };
         const list = db.events[patientId];
         let k = list.length;
@@ -160,16 +214,21 @@
           .filter((a) => (!patientId || a.patientId === patientId) && (!open || !a.ackAt))
           .sort((a, b) => LEVEL_RANK[a.level] - LEVEL_RANK[b.level] || new Date(b.createdAt) - new Date(a.createdAt));
       },
+      // Отметка «показано» для отдельной роли (психолог): не трогает доставку врачу.
+      markSeen(alertId, role) {
+        need(); const a = db.alerts.find((x) => x.id === alertId);
+        if (a && !(a.seenBy && a.seenBy[role])) { a.seenBy = Object.assign({}, a.seenBy, { [role]: nowIso() }); write(); }
+      },
       markDelivered(alertId) {
         need(); const a = db.alerts.find((x) => x.id === alertId);
         if (a && !a.deliveredAt) { a.deliveredAt = nowIso(); write(); }
       },
-      ackAlert(alertId, action) {
+      ackAlert(alertId, action, actor) {
         need(); const a = db.alerts.find((x) => x.id === alertId);
         if (!a) return;
         a.ackAt = nowIso(); a.ackAction = action || 'Просмотрено';
         if (!a.deliveredAt) a.deliveredAt = a.ackAt;
-        audit(a.patientId, 'ack_alert', { alertId, ruleId: a.ruleId, action: a.ackAction });
+        audit(a.patientId, 'ack_alert', { alertId, ruleId: a.ruleId, action: a.ackAction }, actor);
         write();
       },
       confirm(patientId, action, details = {}) {
@@ -203,6 +262,61 @@
         audit(patientId, action, details);
         write();
       },
+      // ——— Первичный приём психолога ———
+      // { intake, status, form, cssrs, tipi, dass, cto, events } — последние части после назначения; null, если приём не назначен.
+      intakeOf(id) {
+        need();
+        if (!has(id) || !db.patients[id].intake) return null;
+        const parts = intakeParts(id);
+        const pl = (k) => (parts[k] ? JSON.parse(JSON.stringify(parts[k].payload)) : null);
+        return { intake: JSON.parse(JSON.stringify(db.patients[id].intake)), status: intakeStatus(id),
+          form: pl('form'), cssrs: pl('cssrs'), tipi: pl('tipi'), dass: pl('dass'), cto: pl('cto'),
+          at: Object.fromEntries(Object.entries(parts).map(([k, e]) => [k, e ? e.at : null])) };
+      },
+      // Пациент завершил батарею: нужны анкета, C-SSRS, TIPI-10 и DASS-21 (ЦТО — по желанию).
+      completeIntake(id) {
+        need();
+        if (!has(id) || !db.patients[id].intake) throw new Error(`У пациента ${id} нет назначенного первичного приёма`);
+        const parts = intakeParts(id);
+        const lack = INTAKE_REQUIRED.filter((k) => !parts[k]);
+        if (lack.length) throw new Error(`Части батареи не заполнены: ${lack.join(', ')}`);
+        const p = db.patients[id];
+        if (!p.intake.completedAt) p.intake.completedAt = nowIso();
+        audit(id, 'intake_completed', { cto: !!parts.cto && !parts.cto.payload.skipped }, id);
+        write();
+      },
+      // Решение психолога по маршруту. Отличие от предложенного уровня — только с причиной. Всё — в аудит.
+      confirmIntake(id, { level, note = '', proposed = null } = {}) {
+        need();
+        if (!has(id) || !db.patients[id].intake) throw new Error(`У пациента ${id} нет назначенного первичного приёма`);
+        const p = db.patients[id];
+        if (!p.intake.completedAt) throw new Error('Батарея не завершена пациентом: решение пока невозможно');
+        if (!INTAKE_LEVELS.includes(level)) throw new Error(`Неизвестный уровень маршрута: ${level}`);
+        const text = String(note || '').trim().slice(0, 2000);
+        const overridden = !!proposed && level !== proposed;
+        if (overridden && !text) throw new Error('Изменение предложенного маршрута требует причины');
+        const psy = db.psychologist || PSYCHOLOGIST; // не api.psychologist(): need() перечитал бы db и p устарел бы
+        p.intake.decision = { at: nowIso(), level, proposed, overridden, note: text, by: psy.id };
+        pushEvent(id, 'intake_decision', { level, proposed, overridden, note: text });
+        audit(id, 'intake_decision', { level, proposed, overridden, note: text }, psy.id);
+        write();
+      },
+      // «Передать лечащему врачу»: сообщение во входящие врача + отметка в первичном приёме.
+      handoffIntake(id, text) {
+        need();
+        if (!has(id)) throw new Error(`Unknown patient ${id}`);
+        const p = db.patients[id];
+        if (!p.intake || !p.intake.decision) throw new Error('Сначала примите решение по маршруту');
+        const psy = db.psychologist || PSYCHOLOGIST; // не api.psychologist(): need() перечитал бы db и p устарел бы
+        const body = String(text || '').slice(0, 4000);
+        const m = { id: KK.util.uid('in'), at: nowIso(), from: psy.id, fromName: psy.name, to: p.doctorId || db.doctor.id, patientId: id, text: body };
+        (db.inbox = db.inbox || []).push(m);
+        p.intake.handoff = { at: m.at, text: body, to: m.to };
+        audit(id, 'intake_handoff', { to: m.to }, psy.id);
+        write();
+        return m;
+      },
+      inbox: ({ to, patientId } = {}) => (need(), (db.inbox || []).filter((m) => (!to || m.to === to) && (!patientId || m.patientId === patientId))),
       audit: (patientId) => (need(), db.audit.filter((a) => !patientId || a.patientId === patientId)),
       messages: (id) => (need(), has(id) ? (db.messages[id] || []).slice() : []),
       sendMessage(patientId, from, text) {
