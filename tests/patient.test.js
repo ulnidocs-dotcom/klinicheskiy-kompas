@@ -168,7 +168,7 @@ test('today.js check-in: real range slider 1–5 with labels, no auto-advance, b
   const fs = require('node:fs');
   const path = require('node:path');
   const src = fs.readFileSync(path.join(__dirname, '..', 'patient', 'today.js'), 'utf8');
-  assert.match(src, /type="range" id="rng" min="1" max="5" step="1"/);
+  assert.match(src, /type="range" id="rng" min="1" max="5" step="0.01"/);
   assert.match(src, /aria-valuetext=/);
   assert.match(src, /aria-label="\$\{ui\.esc\(q\.name\)\}: ползунок"/);
   for (const k of ['data-back', 'data-next', 'data-edit', 'data-day', 'data-undo-yes', 'Готово', 'Дальше', 'Назад', 'Изменить']) assert.ok(src.includes(k), k);

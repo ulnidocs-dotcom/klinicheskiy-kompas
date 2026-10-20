@@ -145,3 +145,7 @@ a.tile{min-height:120px;display:flex;flex-direction:column;justify-content:space
 /* Пилюля шага чек-ина: стрелка «дальше» / галочка «готово» вместо «+» */
 .btn--pill.btn--step::after{content:'\2192';display:flex;align-items:center;justify-content:center;font-size:18px;line-height:1;color:var(--pill-ink);background:var(--pill-dot)}
 .btn--pill.btn--step.is-last::after{content:'\2713';font-size:16px}
+/* Плавный ползунок: во время перетаскивания заливка идёт за пальцем без задержки; сферы меняются мягко */
+.ruler--drag::after{transition:none}
+.q .dot{transition:transform .22s cubic-bezier(.2,.8,.2,1),box-shadow .22s ease,filter .22s ease}
+@media (prefers-reduced-motion:reduce){.q .dot{transition:none}}

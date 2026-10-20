@@ -54,7 +54,7 @@
         </div>
         <div class="dot-labels" aria-hidden="true"><span>${q.ends[0]}</span><span>${q.ends[1]}</span></div>
         <div class="ruler${has ? '' : ' ruler--unset'}" style="--f:${has ? (v - 1) / 4 : 0.5}">
-          <input type="range" id="rng" min="1" max="5" step="1" value="${has ? v : 3}"
+          <input type="range" id="rng" min="1" max="5" step="0.01" value="${has ? v : 3}"
             aria-label="${ui.esc(q.name)}: ползунок" aria-valuetext="${ui.esc(app.checkinWord(q.key, v))}">
         </div>
         <div class="q-nav">${left}
@@ -73,9 +73,8 @@
     card.querySelectorAll('.dot').forEach((d) => d.setAttribute('aria-pressed', String(Number(d.dataset.v) === v)));
     const ruler = card.querySelector('.ruler');
     ruler.classList.remove('ruler--unset');
-    ruler.style.setProperty('--f', String((v - 1) / 4));
     const rng = card.querySelector('#rng');
-    if (!fromSlider) rng.value = String(v);
+    if (!fromSlider) glide(rng, v);
     rng.setAttribute('aria-valuetext', app.checkinWord(q.key, v));
     card.querySelector('[data-next]').removeAttribute('aria-disabled');
   }
@@ -175,8 +174,51 @@
     if (target) target.focus({ preventScroll: true });
   }
 
+  // Плавный ползунок: тянется непрерывно (step 0.01), сферы подсвечиваются по ближайшему делению,
+  // после отпускания бегунок мягко доезжает до деления; клавиши стрелок шагают по целым значениям.
+  const reduceMotion = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function paint(rng, x) {
+    rng.value = String(x);
+    rng.closest('.ruler')?.style.setProperty('--f', String((x - 1) / 4));
+  }
+  function stopGlide(rng) { cancelAnimationFrame(rng._raf); clearTimeout(rng._fin); }
+  function glide(rng, to) {
+    stopGlide(rng);
+    const from = Number(rng.value);
+    if (reduceMotion() || Math.abs(from - to) < 0.005) { paint(rng, to); return; }
+    const t0 = performance.now(), dur = 220;
+    const step = (t) => {
+      const k = Math.min(1, (t - t0) / dur);
+      paint(rng, from + (to - from) * (1 - Math.pow(1 - k, 3)));
+      if (k < 1) rng._raf = requestAnimationFrame(step);
+    };
+    rng._raf = requestAnimationFrame(step);
+    // Если кадры не идут (вкладка в фоне), бегунок всё равно встаёт на деление.
+    rng._fin = setTimeout(() => { cancelAnimationFrame(rng._raf); paint(rng, to); }, dur + 80);
+  }
   document.addEventListener('input', (e) => {
-    if (e.target.id === 'rng') setValue(Number(e.target.value), { fromSlider: true });
+    if (e.target.id !== 'rng') return;
+    const rng = e.target;
+    stopGlide(rng);
+    rng.closest('.ruler')?.classList.add('ruler--drag');
+    paint(rng, Number(rng.value));
+    setValue(Math.round(Number(rng.value)), { fromSlider: true });
+  });
+  document.addEventListener('change', (e) => {
+    if (e.target.id !== 'rng') return;
+    e.target.closest('.ruler')?.classList.remove('ruler--drag');
+    glide(e.target, Math.round(Number(e.target.value)));
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.target.id !== 'rng') return;
+    const d = { ArrowRight: 1, ArrowUp: 1, ArrowLeft: -1, ArrowDown: -1 }[e.key];
+    const edge = { Home: 1, End: 5 }[e.key];
+    if (!d && !edge) return;
+    e.preventDefault();
+    const cur = Math.round(Number(e.target.value));
+    const next = edge || Math.min(5, Math.max(1, cur + d));
+    setValue(next, { fromSlider: true });
+    glide(e.target, next);
   });
 
   document.addEventListener('click', (e) => {
