@@ -1,16 +1,16 @@
 # Graph Report - klinicheskiy-kompas  (2026-10-20)
 
 ## Corpus Check
-- 62 files · ~64,742 words
+- 65 files · ~70,940 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 332 nodes · 332 edges · 55 communities (44 shown, 11 thin omitted)
+- 350 nodes · 353 edges · 58 communities (46 shown, 12 thin omitted)
 - Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 10 edges (avg confidence: 0.65)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `8c6c0e9b`
+- Built from commit: `52b05239`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -48,6 +48,8 @@
 - [[_COMMUNITY_therapy.js|therapy.js]]
 - [[_COMMUNITY_build.test.js|build.test.js]]
 - [[_COMMUNITY_contrast.test.js|contrast.test.js]]
+- [[_COMMUNITY_tiles.js|tiles.js]]
+- [[_COMMUNITY_tiles.test.js|tiles.test.js]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `Структура файлов` - 13 edges
@@ -76,7 +78,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (55 total, 11 thin omitted)
+## Communities (58 total, 12 thin omitted)
 
 ### Community 0 - "Структура файлов"
 Cohesion: 0.12
@@ -143,15 +145,15 @@ Cohesion: 0.27
 Nodes (8): createStore(), current(), read(), set(), sync(), systemDark(), toggle(), toggleHtml()
 
 ### Community 29 - "patient.js"
-Cohesion: 0.11
-Nodes (4): pid(), start(), render(), render()
+Cohesion: 0.10
+Nodes (6): pathTiles(), pid(), start(), trendWord(), render(), render()
 
 ### Community 30 - "today.js"
 Cohesion: 0.42
 Nodes (8): checkinCard(), checkinToday(), header(), helpCard(), medsCard(), practiceCard(), render(), scalesCard()
 
 ### Community 42 - "doctor.js"
-Cohesion: 0.17
+Cohesion: 0.16
 Nodes (11): audio(), beep(), closeCriticalModal(), nextCriticalToShow(), patientHeader(), renderSide(), showCriticalModal(), signalBadge() (+3 more)
 
 ### Community 43 - "Клинический компас — демо-прототип"
@@ -166,16 +168,20 @@ Nodes (13): assert, { build }, fs, os, path, test, build(), fs (+5 more)
 Cohesion: 0.17
 Nodes (9): assert, css, fs, lum(), PAIRS, path, ratio(), SETS (+1 more)
 
+### Community 55 - "tiles.js"
+Cohesion: 0.27
+Nodes (6): dotLayout(), dotRow(), frac(), rangeBar(), ringArc(), ringGauge()
+
 ## Knowledge Gaps
-- **114 isolated node(s):** `name`, `version`, `private`, `description`, `test` (+109 more)
+- **116 isolated node(s):** `name`, `version`, `private`, `description`, `test` (+111 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **11 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **12 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **What connects `name`, `version`, `private` to the rest of the system?**
-  _114 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _116 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Структура файлов` be split into smaller, more focused modules?**
   _Cohesion score 0.125 - nodes in this community are weakly interconnected._
 - **Should `Структура файлов` be split into smaller, more focused modules?**
@@ -185,4 +191,4 @@ _Questions this graph is uniquely positioned to answer:_
 - **Should `«Клинический компас» — HTML-интерфейсы врача и пациента (демо-прототип)` be split into smaller, more focused modules?**
   _Cohesion score 0.14285714285714285 - nodes in this community are weakly interconnected._
 - **Should `patient.js` be split into smaller, more focused modules?**
-  _Cohesion score 0.10526315789473684 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.09956709956709957 - nodes in this community are weakly interconnected._
