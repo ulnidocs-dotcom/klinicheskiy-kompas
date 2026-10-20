@@ -56,5 +56,16 @@
   "54": "contrast.test.js",
   "55": "tiles.js",
   "56": "tiles.test.js",
-  "57": "demo-switch.js"
+  "57": "demo-switch.js",
+  "58": "psych.js",
+  "59": "intake.js",
+  "60": "battery.test.js",
+  "61": "battery.js",
+  "62": "intake.test.js",
+  "63": "patient.js",
+  "64": "index.js",
+  "65": "profile.js",
+  "66": "cto.js",
+  "67": "intake.js",
+  "68": "materials.js"
 }

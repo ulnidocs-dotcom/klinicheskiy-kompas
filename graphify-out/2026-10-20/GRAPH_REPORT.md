@@ -1,16 +1,16 @@
 # Graph Report - klinicheskiy-kompas  (2026-10-20)
 
 ## Corpus Check
-- 65 files · ~77,447 words
+- 76 files · ~91,544 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 361 nodes · 371 edges · 58 communities (46 shown, 12 thin omitted)
-- Extraction: 96% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 13 edges (avg confidence: 0.68)
+- 442 nodes · 473 edges · 69 communities (56 shown, 13 thin omitted)
+- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 15 edges (avg confidence: 0.7)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `8cef8f20`
+- Built from commit: `6df15c17`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -50,18 +50,24 @@
 - [[_COMMUNITY_contrast.test.js|contrast.test.js]]
 - [[_COMMUNITY_tiles.js|tiles.js]]
 - [[_COMMUNITY_tiles.test.js|tiles.test.js]]
+- [[_COMMUNITY_psych.js|psych.js]]
+- [[_COMMUNITY_intake.js|intake.js]]
+- [[_COMMUNITY_battery.test.js|battery.test.js]]
+- [[_COMMUNITY_battery.js|battery.js]]
+- [[_COMMUNITY_intake.test.js|intake.test.js]]
+- [[_COMMUNITY_patient.js|patient.js]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `Структура файлов` - 13 edges
+1. `«Клинический компас» — HTML-интерфейсы врача и пациента (демо-прототип)` - 14 edges
 2. `Структура файлов` - 13 edges
-3. `«Клинический компас» — HTML-интерфейсы врача и пациента (демо-прототип)` - 13 edges
+3. `Структура файлов` - 13 edges
 4. `Структура файлов` - 12 edges
-5. `render()` - 9 edges
-6. `Клинический компас — демо-прототип` - 8 edges
-7. `showCriticalModal()` - 5 edges
-8. `def()` - 5 edges
-9. `current()` - 5 edges
-10. `build()` - 5 edges
+5. `render()` - 11 edges
+6. `render()` - 10 edges
+7. `Клинический компас — демо-прототип` - 8 edges
+8. `head()` - 6 edges
+9. `save()` - 6 edges
+10. `13. Роль: клинический психолог (2026-10-20, `feat/psychologist`)` - 6 edges
 
 ## Surprising Connections (you probably didn't know these)
 - `render()` --indirect_call--> `pid()`  [INFERRED]
@@ -78,7 +84,7 @@
 ## Import Cycles
 - None detected.
 
-## Communities (58 total, 12 thin omitted)
+## Communities (69 total, 13 thin omitted)
 
 ### Community 0 - "Структура файлов"
 Cohesion: 0.12
@@ -93,11 +99,11 @@ Cohesion: 0.14
 Nodes (13): Task 10: Профиль, Task 11: Сквозная проверка пациента, Task 1: Оболочка пациента и материалы, Task 2: Вход и связь с врачом, Task 3: «Сегодня», Task 4: Пошаговый опросник, Task 5: «Мне сейчас очень плохо», Task 6: Лечение и самочувствие на терапии (+5 more)
 
 ### Community 3 - "«Клинический компас» — HTML-интерфейсы врача и пациента (демо-прототип)"
-Cohesion: 0.14
-Nodes (13): 10. Клинические сценарии, 11. Проверка, 12. Открытые вопросы, 1. Цель и рамки, 2. Научная база UX-решений, 3. Визуальная система, 4. Архитектура, 5. Экраны пациента (+5 more)
+Cohesion: 0.10
+Nodes (19): 10. Клинические сценарии, 11. Проверка, 12. Открытые вопросы, 13.1 Батарея и порядок (≈ 20 минут), 13.2 Источники и лицензии, 13.3 Предложение маршрута (правила команды, до экспертной проверки), 13.4 ЦТО без автоматической интерпретации, 13.5 Данные и экраны (+11 more)
 
 ### Community 4 - "ui.js"
-Cohesion: 0.20
+Cohesion: 0.18
 Nodes (3): fmtDate(), fmtDateTime(), fmtTime()
 
 ### Community 5 - "kk.js"
@@ -145,16 +151,16 @@ Cohesion: 0.27
 Nodes (8): createStore(), current(), read(), set(), sync(), systemDark(), toggle(), toggleHtml()
 
 ### Community 29 - "patient.js"
-Cohesion: 0.09
+Cohesion: 0.08
 Nodes (8): dayTitle(), noonOf(), pathTiles(), pid(), start(), trendWord(), render(), render()
 
 ### Community 30 - "today.js"
-Cohesion: 0.27
-Nodes (12): checkinOn(), checkinCard(), closeFlow(), doneCard(), header(), helpCard(), medsCard(), openDay() (+4 more)
+Cohesion: 0.22
+Nodes (17): checkinOn(), checkinCard(), closeFlow(), doneCard(), glide(), header(), helpCard(), intakeCard() (+9 more)
 
 ### Community 42 - "doctor.js"
-Cohesion: 0.16
-Nodes (11): audio(), beep(), closeCriticalModal(), nextCriticalToShow(), patientHeader(), renderSide(), showCriticalModal(), signalBadge() (+3 more)
+Cohesion: 0.14
+Nodes (10): audio(), beep(), closeCriticalModal(), patientHeader(), renderSide(), showCriticalModal(), signalBadge(), signalHtml() (+2 more)
 
 ### Community 43 - "Клинический компас — демо-прототип"
 Cohesion: 0.22
@@ -172,25 +178,45 @@ Nodes (10): assert, AURA_HUES, css, fs, lum(), PAIRS, path, ratio() (+2 more)
 Cohesion: 0.27
 Nodes (6): dotLayout(), dotRow(), frac(), rangeBar(), ringArc(), ringGauge()
 
+### Community 58 - "psych.js"
+Cohesion: 0.18
+Nodes (6): colorStrip(), ctoHtml(), levelBadge(), queue(), renderSide(), routeHtml()
+
+### Community 59 - "intake.js"
+Cohesion: 0.32
+Nodes (12): answered(), cssrsStep(), ctoIntro(), ctoStep(), done(), finish(), formStep(), go() (+4 more)
+
+### Community 60 - "battery.test.js"
+Cohesion: 0.20
+Nodes (10): A_ITEMS, assert, cs(), CS_NONE, D_ITEMS, dass(), intake(), NO (+2 more)
+
+### Community 61 - "battery.js"
+Cohesion: 0.43
+Nodes (7): checked(), ctoSimilarity(), dassBand(), routeIntake(), scoreDass(), scoreTipi(), spearman()
+
+### Community 62 - "intake.test.js"
+Cohesion: 0.25
+Nodes (4): assert, FORM, NOW, test
+
 ## Knowledge Gaps
-- **117 isolated node(s):** `name`, `version`, `private`, `description`, `test` (+112 more)
+- **133 isolated node(s):** `name`, `version`, `private`, `description`, `test` (+128 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **12 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **13 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `checkinOn()` connect `today.js` to `patient.js`?**
-  _High betweenness centrality (0.005) - this node is a cross-community bridge._
+  _High betweenness centrality (0.009) - this node is a cross-community bridge._
+- **Why does `save()` connect `today.js` to `intake.js`?**
+  _High betweenness centrality (0.008) - this node is a cross-community bridge._
+- **Why does `go()` connect `intake.js` to `today.js`?**
+  _High betweenness centrality (0.003) - this node is a cross-community bridge._
 - **What connects `name`, `version`, `private` to the rest of the system?**
-  _117 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _133 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Структура файлов` be split into smaller, more focused modules?**
   _Cohesion score 0.125 - nodes in this community are weakly interconnected._
 - **Should `Структура файлов` be split into smaller, more focused modules?**
   _Cohesion score 0.13333333333333333 - nodes in this community are weakly interconnected._
 - **Should `Структура файлов` be split into smaller, more focused modules?**
   _Cohesion score 0.14285714285714285 - nodes in this community are weakly interconnected._
-- **Should `«Клинический компас» — HTML-интерфейсы врача и пациента (демо-прототип)` be split into smaller, more focused modules?**
-  _Cohesion score 0.14285714285714285 - nodes in this community are weakly interconnected._
-- **Should `patient.js` be split into smaller, more focused modules?**
-  _Cohesion score 0.08615384615384615 - nodes in this community are weakly interconnected._
