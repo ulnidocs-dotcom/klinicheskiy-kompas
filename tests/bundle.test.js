@@ -52,3 +52,33 @@ test('unknown format or version is rejected without changes', () => {
 test('file name is stable and safe', () => {
   assert.equal(KK.bundle.fileName('p_olga', NOW), 'kompas-p_olga-2026-10-19.json');
 });
+
+test('decisions carry the rule version when the audit entry has it', () => {
+  const s = mk();
+  const a = s.alerts({ patientId: 'p_dmitry' })[0] || s.alerts()[0];
+  assert.ok(a && a.ruleVersion, 'seed alert has a rule version');
+  s.ackAlert(a.id, 'Просмотрено');
+  const b = KK.bundle.exportBundle(s, a.patientId, NOW);
+  const d = b.decisions.find((x) => x.kind === 'ack_alert');
+  assert.equal(d.ruleVersion, a.ruleVersion);
+  const other = b.decisions.find((x) => x.kind !== 'ack_alert');
+  if (other) assert.equal('ruleVersion' in other, false);
+});
+
+test('export includes still-queued events and messages marked pending; import skips them', () => {
+  const s = mk();
+  const queued = [
+    { clientId: 'cl_1', patientId: 'p_olga', type: 'dose', payload: { slot: 'утро', taken: true }, opts: {}, channel: 'max', queuedAt: '2026-10-19T08:00:00.000Z' },
+    { clientId: 'cl_2', patientId: 'p_olga', type: 'message', payload: { text: 'Добрый день' }, opts: {}, channel: 'max', queuedAt: '2026-10-19T09:00:00.000Z' },
+  ];
+  const b = KK.bundle.exportBundle(s, 'p_olga', NOW, queued);
+  const pe = b.events.filter((e) => e.pending);
+  assert.deepEqual(pe.map((e) => [e.clientId, e.type, e.payload.slot]), [['cl_1', 'dose', 'утро']]);
+  assert.deepEqual(b.messages.filter((m) => m.pending).map((m) => m.text), ['Добрый день']);
+  assert.equal(KK.bundle.exportBundle(s, 'p_olga', NOW).events.some((e) => e.pending), false);
+  const t = mk();
+  t.reset();
+  KK.bundle.importBundle(t, JSON.stringify(b));
+  assert.equal(t.events('p_olga').some((e) => e.clientId === 'cl_1'), false);
+  assert.equal(t.messages('p_olga').some((m) => m.text === 'Добрый день'), false);
+});

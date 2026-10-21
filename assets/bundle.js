@@ -6,8 +6,12 @@
   const VERSION = 1;
   const PRIVATE_KEYS = ['inviteCode', 'channels', 'consents'];
 
-  function exportBundle(store, patientId, now = new Date()) {
+  // queued — ещё не отправленные события из очереди (KK.sync.queued): уходят в файл с пометкой pending.
+  function exportBundle(store, patientId, now = new Date(), queued = []) {
     const s = store.snapshot(patientId);
+    const mine = (queued || []).filter((q) => q && q.patientId === patientId);
+    const pendingEvents = mine.filter((q) => q.type !== 'message').map((q) => ({ id: q.clientId, type: q.type, at: (q.opts && q.opts.at) || q.queuedAt, payload: q.payload, clientId: q.clientId, channel: q.channel, pending: true }));
+    const pendingMessages = mine.filter((q) => q.type === 'message').map((q) => ({ id: q.clientId, at: q.queuedAt, from: 'patient', text: q.payload.text, clientId: q.clientId, pending: true }));
     const patient = Object.fromEntries(Object.entries(s.patient).filter(([k]) => !PRIVATE_KEYS.includes(k)));
     return {
       format: FORMAT,
@@ -17,9 +21,10 @@
       patient,
       channels: (s.patient.channels || []).filter((c) => !c.revokedAt).map((c) => ({ channel: c.channel, linkedAt: c.linkedAt })),
       consents: (s.patient.consents || []).map((c) => ({ kind: c.kind, at: c.at, version: c.version })),
-      events: s.events,
-      messages: s.messages,
-      decisions: s.audit.map((a) => ({ id: a.id, kind: a.action, at: a.at, by: a.actor, details: a.details || {} })),
+      events: s.events.concat(pendingEvents),
+      messages: s.messages.concat(pendingMessages),
+      decisions: s.audit.map((a) => Object.assign({ id: a.id, kind: a.action, at: a.at, by: a.actor, details: a.details || {} },
+        a.details && a.details.ruleVersion ? { ruleVersion: a.details.ruleVersion } : {})),
     };
   }
 
@@ -33,7 +38,10 @@
     if (!b.patient || !Array.isArray(b.events)) throw new Error('Пакет повреждён');
     const patient = Object.assign({}, b.patient, { consents: Array.isArray(b.consents) ? b.consents : [] });
     const audit = (b.decisions || []).map((d) => ({ id: d.id, at: d.at, actor: d.by, action: d.kind, details: d.details || {} }));
-    return store.restore({ patient, events: b.events, messages: b.messages || [], audit });
+    // неотправленное (pending) не восстанавливаем: оно ещё не записано у врача
+    const events = b.events.filter((e) => !(e && e.pending));
+    const messages = (b.messages || []).filter((m) => !(m && m.pending));
+    return store.restore({ patient, events, messages, audit });
   }
 
   KK.bundle = {
