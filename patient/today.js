@@ -273,5 +273,6 @@
     }
   });
   store.subscribe(render);
+  KK.sync.subscribe(render); // отметка из очереди сразу видна на экране
   render();
 })();
