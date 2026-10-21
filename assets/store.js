@@ -23,6 +23,35 @@
   const INTAKE_REQUIRED = ['form', 'cssrs', 'tipi', 'dass'];
   const INTAKE_LEVELS = ['psychiatrist_required', 'psychotherapy_desirable', 'consultation', 'observation'];
   const DRAFT_PREFIX = 'kk:intake-draft:';
+  // Клиника: сотрудники, приглашения, одноразовые коды, ссылки восстановления (спек регистрации §4).
+  const STAFF_ROLES = ['doctor', 'psychologist', 'admin'];
+  const INVITE_TTL = 72 * 3600000;
+  const OTP_TTL = 5 * 60000;
+  const OTP_ATTEMPTS = 5;
+  const RESET_TTL = 30 * 60000;
+  const TOKEN_ABC = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+  const INVITE_TEXT = {
+    expired: 'Срок приглашения истёк. Попросите администратора клиники отправить приглашение ещё раз',
+    used: 'Это приглашение уже использовано. Войдите с рабочей почтой',
+    revoked: 'Приглашение отозвано. Попросите администратора клиники отправить новое',
+    unknown: 'Приглашение не найдено. Проверьте ссылку или попросите администратора клиники отправить новое',
+  };
+  const DENIED = 'Не получилось войти. Проверьте почту или обратитесь к администратору клиники';
+  // Коды и токены — из криптостойкого генератора, если он есть.
+  function rnd(n, abc) {
+    const c = g.crypto && g.crypto.getRandomValues ? g.crypto.getRandomValues(new Uint32Array(n))
+      : Array.from({ length: n }, () => Math.floor(Math.random() * 4294967296));
+    return Array.from(c, (x) => abc[x % abc.length]).join('');
+  }
+  const seedClinic = (now) => ({
+    name: 'Клиника «Демо»',
+    staff: [
+      { id: 'adm1', email: 'admin@clinic.demo', role: 'admin', name: 'Анна Смирнова', specialty: 'администратор клиники', phone: '+79000000001', status: 'active', frmrChecked: false, createdAt: now, activatedAt: now },
+      { id: 'd1', email: 'elena.ivanova@clinic.demo', role: 'doctor', name: 'Елена Иванова', specialty: 'терапевт', phone: '+79000000002', status: 'active', frmrChecked: true, createdAt: now, activatedAt: now },
+      { id: 'psy1', email: 'maria.belova@clinic.demo', role: 'psychologist', name: 'Мария Белова', specialty: 'клинический психолог', phone: '+79000000003', status: 'active', frmrChecked: true, createdAt: now, activatedAt: now },
+    ],
+    invites: [], otps: [], resets: [],
+  });
   const levelText = (l) => (KK.data.intake && KK.data.intake.levels[l] ? KK.data.intake.levels[l].label : l);
 
   function createStore({ storage, clock }) {
@@ -66,7 +95,7 @@
       db = { version: VERSION, createdAt: now, activePatientId: 'p_anna',
         doctor: { id: 'd1', name: 'Елена Иванова', specialty: 'терапевт', mode: 'nonPsychiatrist' },
         psychologist: Object.assign({}, PSYCHOLOGIST),
-        patients: {}, events: {}, alerts: [], audit: [], messages: {}, inbox: [] };
+        patients: {}, events: {}, alerts: [], audit: [], messages: {}, inbox: [], clinic: seedClinic(now) };
       for (const s of KK.data.scenarios) addScenario(s, now);
       write();
     }
@@ -172,6 +201,18 @@
       const e = { id: KK.util.uid('ev'), type, at: nowIso(), recordedAt: nowIso(), payload };
       db.events[patientId].push(e);
       return e;
+    }
+    // Данные клиники появляются лениво: у сохранённых раньше демо их нет.
+    const clinic = () => { if (!db.clinic) db.clinic = seedClinic(nowIso()); return db.clinic; };
+    const expired = (iso) => +new Date(iso) <= +clock();
+    const inviteState = (i) => (i.usedAt ? 'used' : i.revokedAt ? 'revoked' : expired(i.expiresAt) ? 'expired' : 'pending');
+    const copy = (x) => (x ? Object.assign({}, x) : null);
+    const failWith = (reason, text) => { const e = new Error(text); e.reason = reason; throw e; };
+    const findInvite = (token) => clinic().invites.find((i) => i.token === String(token || '')) || null;
+    function newInvite(email, role, by) {
+      const inv = { token: rnd(24, TOKEN_ABC), email, role, by, createdAt: nowIso(), expiresAt: new Date(+clock() + INVITE_TTL).toISOString(), usedAt: null, revokedAt: null };
+      clinic().invites.push(inv);
+      return inv;
     }
 
     const api = {
@@ -513,6 +554,147 @@
         syncAlerts(id, nowIso());
         write();
         return id;
+      },
+      clinicInfo: () => ({ name: (need(), clinic()).name }),
+      staff: () => (need(), clinic().staff.map(copy)),
+      staffById: (id) => (need(), copy(clinic().staff.find((x) => x.id === id))),
+      staffByEmail: (email) => { need(); const e = String(email || '').trim().toLowerCase(); return copy(clinic().staff.find((x) => x.email === e)); },
+      invites: () => (need(), clinic().invites.map((i) => Object.assign({}, i, { state: inviteState(i) }))),
+      inviteText: (state) => INVITE_TEXT[state] || INVITE_TEXT.unknown,
+      inviteStaff(email, role, by = 'adm1') {
+        need();
+        const e = String(email || '').trim().toLowerCase();
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e)) throw new Error('Проверьте адрес почты');
+        if (!STAFF_ROLES.includes(role)) throw new Error(`Неизвестная роль ${role}`);
+        if (clinic().staff.some((x) => x.email === e)) throw new Error('Сотрудник с этой почтой уже есть в клинике');
+        // Новое приглашение на ту же почту отменяет прежнее, ещё не принятое.
+        clinic().invites.filter((i) => i.email === e && inviteState(i) === 'pending').forEach((i) => { i.revokedAt = nowIso(); });
+        const inv = newInvite(e, role, by);
+        write();
+        return Object.assign({}, inv, { state: 'pending' });
+      },
+      inviteInfo(token) {
+        need();
+        const inv = findInvite(token);
+        if (!inv) return { state: 'unknown' };
+        return { state: inviteState(inv), email: inv.email, role: inv.role, clinic: clinic().name, expiresAt: inv.expiresAt };
+      },
+      resendInvite(token) {
+        need();
+        const inv = findInvite(token);
+        const st = inv ? inviteState(inv) : 'unknown';
+        if (st !== 'pending' && st !== 'expired') failWith(st, INVITE_TEXT[st] || INVITE_TEXT.unknown);
+        inv.revokedAt = nowIso();
+        const next = newInvite(inv.email, inv.role, inv.by);
+        write();
+        return Object.assign({}, next, { state: 'pending' });
+      },
+      revokeInvite(token) {
+        need();
+        const inv = findInvite(token);
+        if (!inv || inviteState(inv) !== 'pending') return false;
+        inv.revokedAt = nowIso();
+        write();
+        return true;
+      },
+      acceptInvite(token, { name, specialty, phone } = {}) {
+        need();
+        const inv = findInvite(token);
+        const st = inv ? inviteState(inv) : 'unknown';
+        if (st !== 'pending') failWith(st, INVITE_TEXT[st]);
+        const nm = String(name || '').trim();
+        if (nm.length < 3) throw new Error('Укажите фамилию и имя');
+        if (!phone) throw new Error('Укажите телефон для подтверждения входа');
+        const spec = inv.role === 'psychologist' ? 'клинический психолог' : inv.role === 'admin' ? 'администратор клиники' : String(specialty || '').trim();
+        if (!spec) throw new Error('Выберите специальность');
+        const prefix = inv.role === 'doctor' ? 'd' : inv.role === 'psychologist' ? 'psy' : 'adm';
+        const s = { id: KK.util.uid(prefix), email: inv.email, role: inv.role, name: nm, specialty: spec, phone, status: 'active', frmrChecked: false, createdAt: inv.createdAt, activatedAt: nowIso() };
+        clinic().staff.push(s);
+        inv.usedAt = nowIso();
+        write();
+        return copy(s);
+      },
+      // Администратор меняет только статус и отметку ФРМР.
+      setStaff(id, patch = {}) {
+        need();
+        const s = clinic().staff.find((x) => x.id === id);
+        if (!s) throw new Error(`Нет сотрудника ${id}`);
+        const keys = Object.keys(patch);
+        if (keys.some((k) => k !== 'status' && k !== 'frmrChecked')) throw new Error('Нельзя изменить это поле');
+        if ('status' in patch && !['active', 'blocked'].includes(patch.status)) throw new Error('Неизвестный статус');
+        if ('status' in patch) s.status = patch.status;
+        if ('frmrChecked' in patch) s.frmrChecked = !!patch.frmrChecked;
+        write();
+        return copy(s);
+      },
+      // Вход специалиста: пароль в демо не хранится, проверяем только, что сотрудник активен.
+      staffLoginCheck(email) {
+        const s = api.staffByEmail(email);
+        if (!s || s.status !== 'active') failWith('denied', DENIED);
+        return s;
+      },
+      requestOtp(target, purpose) {
+        need();
+        const c = clinic();
+        c.otps = (c.otps || []).filter((o) => !o.usedAt && !expired(o.expiresAt) && !(o.target === target && o.purpose === purpose));
+        const o = { target, purpose, code: rnd(6, '0123456789'), expiresAt: new Date(+clock() + OTP_TTL).toISOString(), attempts: 0, usedAt: null };
+        c.otps.push(o);
+        write();
+        return { code: o.code, expiresAt: o.expiresAt };
+      },
+      verifyOtp(target, purpose, code) {
+        need();
+        const o = (clinic().otps || []).find((x) => x.target === target && x.purpose === purpose && !x.usedAt);
+        if (!o) failWith('missing', 'Запросите код ещё раз');
+        if (expired(o.expiresAt)) failWith('expired', 'Срок действия кода истёк. Запросите новый');
+        if (o.attempts >= OTP_ATTEMPTS) failWith('attempts', 'Слишком много попыток. Запросите новый код');
+        if (String(code || '').replace(/\D/g, '') !== o.code) {
+          o.attempts += 1;
+          write();
+          const left = OTP_ATTEMPTS - o.attempts;
+          if (left <= 0) failWith('attempts', 'Слишком много попыток. Запросите новый код');
+          failWith('wrong', `Код не подошёл. Осталось попыток: ${left}`);
+        }
+        o.usedAt = nowIso();
+        write();
+        return true;
+      },
+      findPatientByPhone: (phone) => (need(), Object.keys(db.patients).find((id) => db.patients[id].phone === phone) || null),
+      setPatientPhone(id, phone) {
+        need();
+        if (!has(id)) throw new Error(`Unknown patient ${id}`);
+        if (Object.keys(db.patients).some((k) => k !== id && db.patients[k].phone === phone)) failWith('taken', 'Этот номер уже привязан к дневнику. Войдите по номеру телефона');
+        db.patients[id].phone = phone;
+        audit(id, 'phone_verified', {}, 'patient');
+        write();
+      },
+      // Ссылка восстановления специалиста. null — почты нет или сотрудник не активен (страница об этом не говорит).
+      createReset(email) {
+        need();
+        const e = String(email || '').trim().toLowerCase();
+        const s = clinic().staff.find((x) => x.email === e && x.status === 'active');
+        if (!s) return null;
+        const c = clinic();
+        c.resets = (c.resets || []).filter((r) => !r.usedAt && !expired(r.expiresAt));
+        const r = { token: rnd(24, TOKEN_ABC), staffId: s.id, expiresAt: new Date(+clock() + RESET_TTL).toISOString(), usedAt: null };
+        c.resets.push(r);
+        write();
+        return { token: r.token };
+      },
+      resetInfo(token) {
+        need();
+        const r = (clinic().resets || []).find((x) => x.token === String(token || ''));
+        if (!r || r.usedAt || expired(r.expiresAt)) return null;
+        const s = clinic().staff.find((x) => x.id === r.staffId && x.status === 'active');
+        return s ? { staffId: s.id, email: s.email, phone: s.phone } : null;
+      },
+      completeReset(token) {
+        need();
+        const r = (clinic().resets || []).find((x) => x.token === String(token || ''));
+        if (!r || r.usedAt || expired(r.expiresAt)) throw new Error('Ссылка недействительна. Запросите восстановление ещё раз');
+        r.usedAt = nowIso();
+        write();
+        return api.staffById(r.staffId);
       },
       subscribe(fn) {
         listeners.add(fn);

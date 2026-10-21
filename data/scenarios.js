@@ -74,7 +74,7 @@
     },
     {
       id: 's5', title: 'Тревога после COVID-19', summary: 'Расстройство адаптации, положительная динамика',
-      patient: base({ id: 'p_olga', name: 'Ольга Лебедева', initials: 'ОЛ', age: 41, sex: 'f', inviteCode: 'KMP-2648', postCovid: true,
+      patient: base({ id: 'p_olga', name: 'Ольга Лебедева', initials: 'ОЛ', age: 41, sex: 'f', inviteCode: 'KMP-2648', phone: '+79000002648',postCovid: true,
         diagnoses: [{ code: 'F43.2', text: 'Расстройство адаптации' }, { code: 'U09.9', text: 'Состояние после COVID-19' }],
         plan: { drugId: 'aviandr', status: 'confirmed', confirmedAt: null, confirmedDay: -21, timesPerDay: 2 } }),
       seed: [
