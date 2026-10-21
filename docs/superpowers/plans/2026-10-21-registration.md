@@ -669,6 +669,10 @@ test('login page is wired', () => checkPage('auth/login.html', 'auth/login.js'))
 .auth-err{color:var(--crit-ink,var(--text));font-size:14px;min-height:1.2em;margin:0}
 .auth-step{font-size:13px;color:var(--text-3);margin:0}
 .pw-hint{font-size:13px;color:var(--text-2);margin:0}
+/* Сведения о приглашении — без doctor.css на страницах входа */
+.auth .kv{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:0}
+.auth .kv dt{color:var(--text-3)}
+.auth .kv dd{margin:0;overflow-wrap:anywhere}
 ```
 
 `auth/login.html`:
