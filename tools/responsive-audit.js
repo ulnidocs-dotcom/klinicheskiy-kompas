@@ -6,7 +6,7 @@
     '/patient/index.html?p=p_olga', '/patient/path.html?p=p_olga', '/patient/therapy.html?p=p_olga',
     '/patient/chat.html?p=p_olga', '/patient/materials.html?p=p_olga', '/patient/material.html?p=p_olga&id=breathing',
     '/patient/help.html?p=p_olga', '/patient/profile.html?p=p_olga', '/patient/scale.html?p=p_olga&id=gad7',
-    '/patient/intake.html?p=p_anna', '/patient/onboarding.html?p=p_anna',
+    '/patient/intake.html?p=p_anna', '/patient/onboarding.html?p=p_anna', '/patient/onboarding.html?site=1&p=p_olga',
     '/doctor/index.html', '/doctor/patient.html?id=p_dmitry', '/doctor/assess.html?id=p_dmitry',
     '/doctor/therapy.html?id=p_galina', '/doctor/routing.html?id=p_dmitry', '/doctor/alerts.html',
     '/doctor/import.html?id=p_anna', '/doctor/messages.html?id=p_anna', '/doctor/materials.html', '/doctor/profile.html',
