@@ -100,3 +100,43 @@ test('queued dose marks the slot as taken today (no duplicate)', () => {
   assert.equal(slots.find((s) => s.slot === 'утро').taken, true);
   assert.equal(slots.find((s) => s.slot === 'вечер').taken, false);
 });
+
+test('chat message goes through the outbox: queued offline, delivered once by clientId', () => {
+  const { store, sync, net } = setup({ online: false });
+  const before = store.messages('p_olga').length;
+  const r = sync.submit('p_olga', 'message', { text: 'Можно перенести визит?' });
+  assert.equal(r.pending, true);
+  assert.equal(store.messages('p_olga').length, before);
+  assert.equal(sync.queued('p_olga')[0].type, 'message');
+  net.online = true;
+  assert.equal(sync.flush().sent, 1);
+  sync.flush();
+  const mine = store.messages('p_olga').filter((m) => m.text === 'Можно перенести визит?');
+  assert.equal(mine.length, 1);
+  assert.equal(mine[0].from, 'patient');
+});
+
+test('online message is stored at once; a repeat with the same clientId adds nothing', () => {
+  const { store } = setup();
+  const local = KK.syncLocalTransport(store);
+  const item = { clientId: 'cl_fixed', patientId: 'p_olga', type: 'message', payload: { text: 'Привет' }, opts: {}, channel: 'web' };
+  const n = store.messages('p_olga').length;
+  local.send([item]); local.send([item]);
+  assert.equal(store.messages('p_olga').length, n + 1);
+});
+
+test('a queued item can be removed from the outbox', () => {
+  const { sync } = setup({ online: false });
+  sync.submit('p_olga', 'dose', { slot: 'утро', taken: true });
+  const id = sync.queued('p_olga')[0].clientId;
+  assert.equal(sync.remove(id), true);
+  assert.equal(sync.pending('p_olga'), 0);
+  assert.equal(sync.remove(id), false);
+});
+
+test('queued check-in marks its day in the week strip', () => {
+  const { sync } = setup({ online: false });
+  sync.submit('p_olga', 'checkin', { mood: 4, anxiety: 2, sleep: 3 });
+  const days = KK.patientApp.markedDays([], sync.queued('p_olga'));
+  assert.ok(days.has(KK.util.dayKey(sync.queued('p_olga')[0].queuedAt)));
+});

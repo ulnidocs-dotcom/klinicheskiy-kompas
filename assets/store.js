@@ -269,7 +269,7 @@
           a.ackAt = at; a.ackAction = act;
           if (!a.deliveredAt) a.deliveredAt = at;
         }
-        audit(a.patientId, 'ack_alert', { alertId, ruleId: a.ruleId, action: act, role }, actor);
+        audit(a.patientId, 'ack_alert', { alertId, ruleId: a.ruleId, action: act, role, ruleVersion: a.ruleVersion || null }, actor);
         write();
       },
       confirm(patientId, action, details = {}) {
@@ -383,10 +383,16 @@
       },
       audit: (patientId) => (need(), db.audit.filter((a) => !patientId || a.patientId === patientId)),
       messages: (id) => (need(), has(id) ? (db.messages[id] || []).slice() : []),
-      sendMessage(patientId, from, text) {
+      // opts.clientId — ключ идемпотентности из очереди отправки: повтор не создаёт второе сообщение.
+      sendMessage(patientId, from, text, opts = {}) {
         need();
         if (!has(patientId)) throw new Error(`Unknown patient ${patientId}`);
+        if (opts && opts.clientId) {
+          const dup = (db.messages[patientId] || []).find((x) => x.clientId === String(opts.clientId));
+          if (dup) return dup;
+        }
         const m = { id: KK.util.uid('msg'), at: nowIso(), from, text: String(text).slice(0, 2000) };
+        if (opts && opts.clientId) m.clientId = String(opts.clientId);
         (db.messages[patientId] = db.messages[patientId] || []).push(m);
         write();
         return m;

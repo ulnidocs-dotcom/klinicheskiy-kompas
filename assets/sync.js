@@ -22,6 +22,7 @@
       send(items) {
         return items.map((it) => {
           try {
+            if (it.type === 'message') return { clientId: it.clientId, status: 'accepted', event: store.sendMessage(it.patientId, 'patient', it.payload.text, { clientId: it.clientId }) };
             const event = store.addEvent(it.patientId, it.type, it.payload, Object.assign({}, it.opts, { clientId: it.clientId, channel: it.channel }));
             return { clientId: it.clientId, status: 'accepted', event };
           } catch (err) {
@@ -87,6 +88,15 @@
       submit,
       flush,
       pending: (patientId) => read().filter((it) => !patientId || it.patientId === patientId).length,
+      // Снять ещё не отправленную отметку (пациент передумал). true — была в очереди.
+      remove(clientId) {
+        const q = read();
+        const rest = q.filter((it) => it.clientId !== clientId);
+        if (rest.length === q.length) return false;
+        write(rest);
+        notify();
+        return true;
+      },
       queued: (patientId) => read().filter((it) => !patientId || it.patientId === patientId),
       rejected: (patientId) => rejectedList.filter((r) => !patientId || r.patientId === patientId).slice(),
       clearRejected(patientId) { for (let i = rejectedList.length - 1; i >= 0; i--) if (!patientId || rejectedList[i].patientId === patientId) rejectedList.splice(i, 1); },

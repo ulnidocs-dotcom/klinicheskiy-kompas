@@ -7,12 +7,15 @@
   let draft = '';
   function render() {
     const doc = store.doctor();
-    const msgs = store.messages(ctx.pid).filter((m) => m.from !== 'system');
+    const sent = store.messages(ctx.pid).filter((m) => m.from !== 'system');
+    // ещё не отправленные сообщения стоят в очереди: показываем их внизу с тихой пометкой
+    const waiting = KK.sync.queued(ctx.pid).filter((q) => q.type === 'message').map((q) => ({ from: 'patient', text: q.payload.text, at: q.queuedAt, pending: true }));
+    const msgs = sent.concat(waiting);
     ui.preserveFocus(() => ui.mount('#app', `
       <header class="p-head"><h1>Ваш врач</h1><p class="muted">${ui.esc(doc.name)} · ${ui.esc(doc.specialty)}</p>
         <p class="hint">Врач отвечает в рабочее время. В экстренной ситуации звоните 112.</p></header>
       <section class="stack" id="msgs" aria-live="polite">
-        ${msgs.length ? msgs.map((m) => `<div class="bubble ${m.from === 'patient' ? 'me' : ''}"><div>${ui.esc(m.text)}</div><div class="t">${ui.fmtDateTime(m.at)}</div></div>`).join('')
+        ${msgs.length ? msgs.map((m) => `<div class="bubble ${m.from === 'patient' ? 'me' : ''}"><div>${ui.esc(m.text)}</div><div class="t">${m.pending ? 'Ждёт отправки' : ui.fmtDateTime(m.at)}</div></div>`).join('')
           : '<p class="hint">Здесь будет ваша переписка с врачом.</p>'}
       </section>
       <div class="chips" style="margin-top:16px">${CHIPS.map((c) => `<button class="chip" data-chip="${ui.esc(c)}">${ui.esc(c)}</button>`).join('')}</div>
@@ -31,9 +34,12 @@
     const text = t.value.trim();
     if (!text) return;
     draft = ''; t.value = '';
-    store.sendMessage(ctx.pid, 'patient', text);
+    let r;
+    try { r = KK.sync.submit(ctx.pid, 'message', { text: text.slice(0, 2000) }); } catch (err) { draft = text; t.value = text; app.toast('Не получилось отправить. Попробуйте ещё раз'); return; }
+    if (r && r.pending) app.toast(app.SYNC_PENDING);
     render();
   });
   store.subscribe(render);
+  KK.sync.subscribe(render);
   render();
 })();
