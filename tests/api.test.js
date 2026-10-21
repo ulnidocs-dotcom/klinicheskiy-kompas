@@ -23,3 +23,12 @@ test('OpenAPI contract lists every endpoint from the spec', () => {
     assert.ok(y.includes(`  ${p}`), p);
   }
 });
+
+test('OpenAPI contract has sign-in, invitations and recovery', () => {
+  const y = fs.readFileSync(path.join(__dirname, '..', 'docs', 'api', 'openapi.yaml'), 'utf8');
+  for (const p of ['/v1/auth/otp:', '/v1/auth/otp:verify:', '/v1/auth/login:', '/v1/auth/mfa:verify:', '/v1/auth/recover:', '/v1/auth/recover:complete:',
+    '/v1/staff-invites:', '/v1/staff-invites/{token}:', '/v1/staff-invites/{token}:accept:', '/v1/staff-invites/{token}:resend:', '/v1/staff/{id}:']) {
+    // Путь целиком на своей строке: '/v1/auth/otp:' не должен засчитываться за счёт '/v1/auth/otp:verify:'; файл может быть с CRLF.
+    assert.match(y, new RegExp(`^  ${p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\r?$`, 'm'), p);
+  }
+});

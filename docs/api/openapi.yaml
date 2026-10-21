@@ -133,6 +133,140 @@ paths:
             schema: { type: object, additionalProperties: true }
       responses:
         '200': { description: Принято }
+  /v1/auth/otp:
+    post:
+      summary: Запросить одноразовый код (6 цифр, 5 минут) на телефон — вход и регистрация пациента
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [phone, purpose], properties: { phone: { type: string, pattern: '^\+7\d{10}$' }, purpose: { type: string, enum: [patient_login, patient_register] } } }
+      responses:
+        '202': { description: Код отправлен (ответ одинаковый для любого номера) }
+        '429': { description: Слишком много запросов с номера или адреса }
+  /v1/auth/otp:verify:
+    post:
+      summary: Проверить код; не больше 5 попыток, после успеха код сгорает
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [phone, purpose, code], properties: { phone: { type: string }, purpose: { type: string }, code: { type: string, pattern: '^\d{6}$' } } }
+      responses:
+        '200': { description: Сессия пациента или подтверждение телефона, content: { application/json: { schema: { $ref: '#/components/schemas/Session' } } } }
+        '400': { description: 'Код неверный (с числом оставшихся попыток), истёк или попытки исчерпаны' }
+  /v1/auth/login:
+    post:
+      summary: Вход специалиста — почта и пароль; ответ требует второй фактор
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [email, password], properties: { email: { type: string, format: email }, password: { type: string } } }
+      responses:
+        '200': { description: 'Нужен второй фактор', content: { application/json: { schema: { type: object, properties: { mfaToken: { type: string } } } } } }
+        '401': { description: 'Одинаковый ответ для неверной пары, неизвестной почты и заблокированного сотрудника' }
+  /v1/auth/mfa:verify:
+    post:
+      summary: Второй фактор специалиста
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [mfaToken, code], properties: { mfaToken: { type: string }, code: { type: string, pattern: '^\d{6}$' } } }
+      responses:
+        '200': { description: Сессия специалиста, content: { application/json: { schema: { $ref: '#/components/schemas/Session' } } } }
+        '400': { description: Код неверный или истёк }
+  /v1/auth/recover:
+    post:
+      summary: Ссылка восстановления на рабочую почту (30 минут, одно использование)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [email], properties: { email: { type: string, format: email } } }
+      responses:
+        '202': { description: Ответ одинаковый, есть такая почта или нет }
+  /v1/auth/recover:complete:
+    post:
+      summary: Новый пароль по ссылке после второго фактора
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [token, code, password], properties: { token: { type: string }, code: { type: string }, password: { type: string, minLength: 10 } } }
+      responses:
+        '204': { description: Пароль обновлён, остальные сессии сотрудника завершены }
+        '410': { description: Ссылка недействительна }
+  /v1/staff-invites:
+    post:
+      summary: Пригласить сотрудника (только администратор клиники)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [email, role], properties: { email: { type: string, format: email }, role: { type: string, enum: [doctor, psychologist, admin] } } }
+      responses:
+        '201': { description: Приглашение создано, письмо отправлено (72 часа, одно использование) }
+        '409': { description: Сотрудник с этой почтой уже есть }
+  /v1/staff-invites/{token}:
+    get:
+      summary: Сведения о приглашении (клиника, роль, почта, срок, состояние)
+      security: []
+      parameters: [{ name: token, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200': { description: 'Состояние: pending, expired, used, revoked' }
+        '404': { description: Не найдено }
+    delete:
+      summary: Отозвать приглашение
+      parameters: [{ name: token, in: path, required: true, schema: { type: string } }]
+      responses:
+        '204': { description: Отозвано }
+  /v1/staff-invites/{token}:accept:
+    post:
+      summary: Принять приглашение — профиль, пароль (хранится только хэш Argon2id), подтверждённый телефон, обязательство
+      security: []
+      parameters: [{ name: token, in: path, required: true, schema: { type: string } }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, phone, password, otp, pledge]
+              properties:
+                name: { type: string }
+                specialty: { type: string }
+                phone: { type: string }
+                password: { type: string, minLength: 10 }
+                otp: { type: string }
+                pledge: { const: true }
+      responses:
+        '200': { description: Сессия нового сотрудника, content: { application/json: { schema: { $ref: '#/components/schemas/Session' } } } }
+        '410': { description: Приглашение истекло, использовано или отозвано }
+  /v1/staff-invites/{token}:resend:
+    post:
+      summary: Отправить ещё раз — новый токен и срок, старый перестаёт работать
+      parameters: [{ name: token, in: path, required: true, schema: { type: string } }]
+      responses:
+        '201': { description: Новое приглашение }
+  /v1/staff/{id}:
+    patch:
+      summary: Администратор меняет статус (active/blocked) и отметку проверки по ФРМР
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, properties: { status: { type: string, enum: [active, blocked] }, frmrChecked: { type: boolean } }, additionalProperties: false }
+      responses:
+        '200': { description: Обновлено }
 components:
   securitySchemes:
     session: { type: http, scheme: bearer }
