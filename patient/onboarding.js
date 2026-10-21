@@ -6,7 +6,7 @@
   let step = 0;
   // Экран помощи открывается и до подключения (help.js: requireLink: false).
   const helpLink = `<a class="hint" href="help.html?p=${encodeURIComponent(ctx.pid)}">${ui.icon('heart', 16)} Нужна помощь сейчас</a>`;
-  const state = { code: '', consents: { pd: false, doctor: false, notEmergency: false } };
+  const state = { phone: (p.phone || ''), phoneSent: false, demo: '', code: '', consents: { pd: false, doctor: false, notEmergency: false } };
   const fromLink = patientApp.inviteFromStart(KK.host.startParam());
   if (fromLink) state.code = fromLink;
   const C = patientApp.MOVE_COPY;
@@ -44,6 +44,19 @@
         <button class="btn btn--ghost btn--block" data-site>${ui.esc(C[3])}</button>
         ${helpLink}
       </section>`;
+    if (step === 'phone') return `
+      <section class="stack-l" style="padding-top:6vh">
+        <h1>Ваш телефон</h1>
+        <p class="muted">По нему вы будете входить в дневник на сайте. Номер увидят только ваши лечащие специалисты.</p>
+        ${KK.host.platform === 'max' ? '<button class="btn btn--block" data-contact>Поделиться номером из MAX</button>' : ''}
+        <label class="field"><span class="hint">Мобильный телефон</span>
+          <input id="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+7 900 000-00-00" value="${ui.esc(state.phone)}"></label>
+        ${state.phoneSent ? `${KK.authPage.demoNote(`код ${state.demo}. В настоящей версии он придёт по SMS`)}
+          <label class="field"><span class="hint">Код из SMS</span><input id="otp" inputmode="numeric" autocomplete="one-time-code" placeholder="000000"></label>` : ''}
+        <p class="hint" id="err" role="alert"></p>
+        <button class="btn btn--pill btn--block" ${state.phoneSent ? 'data-phone-verify>Подтвердить' : 'data-phone-send>Получить код'}</button>
+        ${helpLink}
+      </section>`;
     const c = state.consents;
     return `
       <section class="stack-l" style="padding-top:6vh">
@@ -58,7 +71,11 @@
         ${helpLink}
       </section>`;
   }
-  function render() { ui.mount('#app', view()); }
+  // В браузере онбординг показан в раскладке сайта (о сервисе слева), в мессенджере — полноэкранно.
+  function render() {
+    if (KK.host.platform === 'web' && KK.authPage) KK.authPage.mount(view());
+    else ui.mount('#app', view());
+  }
   document.addEventListener('click', (e) => {
     if (e.target.closest('[data-site]')) { step = 'site'; render(); return; }
     if (e.target.closest('[data-redeem]')) {
@@ -74,7 +91,30 @@
     if (e.target.closest('[data-check]')) {
       state.code = document.getElementById('code').value.trim().toUpperCase();
       if (state.code !== p.inviteCode) { document.getElementById('err').textContent = 'Код не подошёл. Проверьте буквы и цифры или спросите у врача.'; return; }
+      step = 'phone'; render();
+    }
+    if (e.target.closest('[data-contact]')) {
+      KK.host.requestPhone().then((raw) => {
+        const n = KK.auth.normalizePhone(raw);
+        if (n) { state.phone = n; render(); } else document.getElementById('err').textContent = 'Номер не получен. Введите его вручную.';
+      });
+      return;
+    }
+    if (e.target.closest('[data-phone-send]')) {
+      const n = KK.auth.normalizePhone(document.getElementById('phone').value);
+      if (!n) { document.getElementById('err').textContent = 'Проверьте номер: нужен российский мобильный, например +7 900 000-00-00'; return; }
+      const owner = store.findPatientByPhone(n);
+      if (owner && owner !== ctx.pid) { document.getElementById('err').textContent = 'Этот номер уже привязан к дневнику. Войдите по номеру телефона'; return; }
+      state.phone = n; state.demo = store.requestOtp(n, 'patient_register').code; state.phoneSent = true; render();
+      return;
+    }
+    if (e.target.closest('[data-phone-verify]')) {
+      try {
+        store.verifyOtp(state.phone, 'patient_register', document.getElementById('otp').value);
+        store.setPatientPhone(ctx.pid, state.phone);
+      } catch (err) { document.getElementById('err').textContent = err.message; return; }
       step = 2; render();
+      return;
     }
     if (e.target.closest('[data-done]')) {
       if (!Object.values(state.consents).every(Boolean)) { document.getElementById('err').textContent = 'Отметьте все пункты, чтобы продолжить.'; return; }
@@ -83,6 +123,17 @@
       store.sendMessage(ctx.pid, 'system', 'Пациент подключился к дневнику');
       location.href = `index.html?p=${ctx.pid}`;
     }
+  });
+  // Номер изменили после отправки кода — код нужен заново. Без перерисовки, чтобы не терять фокус.
+  document.addEventListener('input', (e) => {
+    if (e.target.id !== 'phone' || !state.phoneSent) return;
+    state.phoneSent = false;
+    const o = document.getElementById('otp');
+    if (o) o.closest('label').remove();
+    const note = document.querySelector('.demo-note');
+    if (note) note.remove();
+    const b = document.querySelector('[data-phone-verify]');
+    if (b) { b.removeAttribute('data-phone-verify'); b.setAttribute('data-phone-send', ''); b.textContent = 'Получить код'; }
   });
   document.addEventListener('change', (e) => {
     const k = e.target.dataset.c;

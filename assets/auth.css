@@ -25,3 +25,5 @@
 .auth .kv{display:grid;grid-template-columns:auto 1fr;gap:6px 16px;margin:0}
 .auth .kv dt{color:var(--text-3)}
 .auth .kv dd{margin:0;overflow-wrap:anywhere}
+.auth .check{display:flex;gap:12px;align-items:flex-start;padding:10px 0}
+.auth .check input{flex:none;width:20px;height:20px;margin-top:2px;accent-color:var(--accent)}
