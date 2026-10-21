@@ -14,6 +14,13 @@
     return 'web';
   }
 
+  // Ответ requestContact в документации MAX не описан: ищем номер в строке или в типичных полях объекта.
+  function pickPhone(v) {
+    if (typeof v === 'string') return /\d{10}/.test(v.replace(/\D/g, '')) ? v : null;
+    if (!v || typeof v !== 'object') return null;
+    return pickPhone(v.phone) || pickPhone(v.phone_number) || pickPhone(v.contact) || null;
+  }
+
   function createHost(win) {
     const platform = detect(win);
     const api = platform === 'max' ? win.WebApp : platform === 'telegram' ? win.Telegram.WebApp : null;
@@ -69,6 +76,20 @@
         return safe(() => new URLSearchParams(win.location.search).get('startapp')) || null;
       },
       initData: () => (api && typeof api.initData === 'string' ? api.initData : ''),
+      // Номер телефона из мессенджера по согласию пользователя. Нет API, отказ или нет ответа 15 с — null:
+      // тогда пациент вводит номер вручную.
+      requestPhone() {
+        if (!api || typeof api.requestContact !== 'function') return Promise.resolve(null);
+        return new Promise((resolve) => {
+          let settled = false;
+          const finish = (v) => { if (!settled) { settled = true; clearTimeout(timer); resolve(pickPhone(v)); } };
+          const timer = setTimeout(() => finish(null), 15000);
+          try {
+            const r = api.requestContact((v) => finish(v));
+            if (r && typeof r.then === 'function') r.then(finish, () => finish(null));
+          } catch (e) { finish(null); }
+        });
+      },
       // Подтверждение закрытия мини-приложения на время анкеты. В браузере не включаем: окно «Покинуть сайт?»
       // мешало бы переходу на экран помощи, а ответы и так сохраняются в черновике.
       guardClose(on) {

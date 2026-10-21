@@ -93,3 +93,13 @@ test('download returns false in a sandboxed iframe or one we cannot inspect', ()
   assert.equal(KK.createHost(webWin(sb)).download('a.json', '{}'), false);
   assert.equal(KK.createHost(webWin('throw')).download('a.json', '{}'), false);
 });
+
+test('requestPhone: MAX contact via callback or promise, otherwise null', async () => {
+  const viaCb = KK.createHost({ WebApp: { initData: 'a=1', requestContact: (cb) => cb({ phone: '+7 912 345-67-89' }) } });
+  assert.equal(await viaCb.requestPhone(), '+7 912 345-67-89');
+  const viaPromise = KK.createHost({ WebApp: { initData: 'a=1', requestContact: () => Promise.resolve({ contact: { phone_number: '79123456789' } }) } });
+  assert.equal(await viaPromise.requestPhone(), '79123456789');
+  const refused = KK.createHost({ WebApp: { initData: 'a=1', requestContact: () => Promise.reject(new Error('no')) } });
+  assert.equal(await refused.requestPhone(), null);
+  assert.equal(await KK.createHost({ location: { search: '' } }).requestPhone(), null);
+});
