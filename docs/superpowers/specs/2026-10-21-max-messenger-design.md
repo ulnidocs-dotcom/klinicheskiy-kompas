@@ -59,15 +59,15 @@
 | `openLink(url)` | `openLink` | `openLink` | `window.open` |
 | `startParam()` | `initDataUnsafe.start_param` | `initDataUnsafe.start_param` | `?startapp=` из URL (для демо) |
 | `initData()` | `WebApp.initData` | `Telegram.WebApp.initData` | `''` |
-| `guardClose(on)` | `enable/disableClosingConfirmation` | `enable/disableClosingConfirmation` | `beforeunload` |
-| `draft` (черновики) | `DeviceStorage`, при недоступности — `localStorage` | `localStorage` | `localStorage` |
+| `guardClose(on)` | `enable/disableClosingConfirmation` | `enable/disableClosingConfirmation` | ничего (см. ниже) |
+| `download(name, text)` | `false` — показать текст с кнопкой «Скопировать» | скачивание файла | скачивание файла |
 | `setTheme(t)` | сохранить в `kk:theme:patient` | то же | то же |
 
 Решения:
 - **Главной кнопки у MAX нет в документации** — оставляем кнопки на странице во всех каналах (`mainButton` из `tg.js` не переносим, она нигде не вызывается).
 - **Темы у MAX нет в документации** — тема берётся из выбора пациента, иначе из `prefers-color-scheme`, как в браузере.
-- `KK.tg` остаётся псевдонимом `KK.host` на переходный период, чтобы не править все вызовы одним коммитом; вызовы в `patient.js`, `today.js`, `scale.js`, `intake.js`, `theme.js` переводятся на `KK.host`, затем псевдоним удаляется.
-- `guardClose` включается на время анкеты первичного приёма и шкал, чтобы случайный свайп не терял ответы.
+- Все вызовы `KK.tg` (`patient.js`, `today.js`, `scale.js`, `intake.js`, `theme.js`) переводятся на `KK.host` одним шагом, `assets/tg.js` удаляется. Черновики анкет остаются в `localStorage`, как сейчас: асинхронный `DeviceStorage` MAX подключим после проверки на реальном клиенте.
+- `guardClose` включается на время анкеты первичного приёма и шкал, чтобы случайный свайп не закрыл мини-приложение. В браузере не включается: окно «Покинуть сайт?» помешало бы переходу на экран помощи, а ответы и так сохраняются в черновике.
 - Скрипты платформ подключаются в `patient/*.html` оба; каждый безопасен вне своей платформы. Сборка ссылки-демо (`tools/build-artifact.js`) вырезает и скрипт Telegram, и скрипт MAX.
 
 ### 3.2 Пациент, каналы и привязка
