@@ -14,7 +14,7 @@
     {
       id: 's1', title: 'ГТР у терапевта', summary: 'Первичное назначение, противопоказаний нет',
       patient: base({ id: 'p_anna', name: 'Анна Соколова', initials: 'АС', age: 34, sex: 'f',
-        phone: '+79000000001', inviteCode: 'KMP-4821',
+        phone: '+79000000001', inviteCode: 'KMP-4821', registered: false, // на Анне показан онбординг: согласий ещё нет
         diagnoses: [{ code: 'F41.1', text: 'Генерализованное тревожное расстройство' }],
         plan: { drugId: 'aviandr', status: 'proposed', timesPerDay: 2 },
         // Первичный приём психолога назначен, батарея не начата — демонстрация потока пациента.

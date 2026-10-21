@@ -162,3 +162,9 @@ test('regression: a new reset link voids the earlier one of the same person', ()
   assert.equal(s.resetInfo(r1.token), null);
   assert.equal(s.resetInfo(r2.token).staffId, 'psy1');
 });
+
+test('demo patients are already registered except Anna, whose onboarding is the demo', () => {
+  const { s } = mk();
+  assert.equal(s.patient('p_olga').consents.length, 3);
+  assert.equal((s.patient('p_anna').consents || []).length, 0);
+});

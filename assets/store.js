@@ -70,9 +70,16 @@
       });
     }
 
+    // Демо-пациенты уже подключены к дневнику — у них есть согласия (вход по номеру ведёт сразу в дневник).
+    // Исключение — сценарии с registered: false (онбординг ещё впереди).
+    function seedConsents(p, s, now) {
+      if (s.patient.registered === false || (p.consents && p.consents.length)) return;
+      p.consents = ['data_processing', 'doctor_access', 'not_emergency'].map((kind) => ({ kind, at: now, version: CONSENT_VERSION }));
+    }
     function addScenario(s, now) {
       const p = KK.data.materializePatient(s.patient, now);
       p.scenarioId = s.id; p.doctorId = 'd1';
+      seedConsents(p, s, now);
       db.patients[p.id] = p;
       db.events[p.id] = KK.data.expandSeed(s.seed, now).map((e) => Object.assign({ id: KK.util.uid('ev') }, e));
       db.messages[p.id] = [];
@@ -112,6 +119,7 @@
         if (s.patient.intake && !p.intake) p.intake = KK.data.materializePatient(s.patient, now).intake;
         // v3: телефоны сценарных пациентов (вход по номеру); ненормализованный номер заменяем.
         if (s.patient.phone && !/^\+7\d{10}$/.test(p.phone || '')) p.phone = s.patient.phone;
+        seedConsents(p, s, now);
       }
       db.version = VERSION;
       // Без уведомления подписчиков: миграция идёт внутри need(), часто посреди отрисовки.
