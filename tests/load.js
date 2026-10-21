@@ -20,6 +20,7 @@ const FILES = [
   'assets/ui.js',
   'assets/host.js',
   'assets/sync.js',
+  'assets/bundle.js',
   'assets/tiles.js',
   'assets/patient.js',
   'assets/doctor.js',
