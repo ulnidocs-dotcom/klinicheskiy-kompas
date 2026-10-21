@@ -154,7 +154,7 @@
 
   function header(p, now) {
     const d = new Date(now);
-    const marked = new Set(KK.util.latestPerDay(store.events(p.id, 'checkin')).map((e) => KK.util.dayKey(e.at)));
+    const marked = app.markedDays(store.events(p.id, 'checkin'), KK.sync.queued(p.id));
     const days = app.recentDays(now, marked, app.BACKDATE_DAYS);
     return `
       <header class="p-head">
@@ -257,7 +257,9 @@
       const slot = st.undo; st.undo = null;
       const t = todayKey();
       const mine = store.events(ctx.pid, 'dose').filter((x) => x.payload.slot === slot && x.payload.taken && KK.util.dayKey(x.at) === t);
-      try { mine.forEach((x) => store.removeEvent(ctx.pid, x.id)); app.toast('Отметка снята'); } catch (err) { app.toast('Не получилось снять отметку'); }
+      // ещё не отправленная отметка — снимаем из очереди
+      const waiting = KK.sync.queued(ctx.pid).filter((q) => q.type === 'dose' && q.payload && q.payload.slot === slot && q.payload.taken && KK.util.dayKey(q.queuedAt) === t);
+      try { waiting.forEach((q) => KK.sync.remove(q.clientId)); mine.forEach((x) => store.removeEvent(ctx.pid, x.id)); app.toast('Отметка снята'); } catch (err) { app.toast('Не получилось снять отметку'); }
       st.focus = `[data-dose="${slot}"]`;
       render(); return;
     }

@@ -231,3 +231,22 @@ test('patient pages: source checks for review fixes', () => {
   assert.ok(read('patient/help.js').includes('заполните опросник ещё раз'));
   assert.ok(read('index.html').includes("'kk:outbox'"));
 });
+
+test('unlinking this browser\'s channel clears the demo link flag; another channel keeps it', () => {
+  const mem = new Map();
+  globalThis.localStorage = { getItem: (k) => (mem.has(k) ? mem.get(k) : null), setItem: (k, v) => mem.set(k, String(v)), removeItem: (k) => mem.delete(k) };
+  const had = KK.store;
+  KK.store = KK.createStore({ storage: { getItem: () => null, setItem() {}, removeItem() {} }, clock: () => new Date() });
+  KK.store.reset();
+  try {
+    const A = KK.patientApp;
+    A.link('p_olga');
+    KK.store.linkChannel('p_olga', 'telegram');
+    assert.equal(A.linked('p_olga'), true);
+    assert.equal(A.unlink('p_olga', 'telegram'), true);
+    assert.equal(A.linked('p_olga'), true);
+    assert.equal(A.unlink('p_olga', KK.host.platform), true);
+    assert.equal(A.linked('p_olga'), false);
+    assert.equal(mem.has('kk:linked:p_olga'), false);
+  } finally { delete globalThis.localStorage; KK.store = had; }
+});

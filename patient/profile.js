@@ -21,7 +21,7 @@
             `<button data-every="${v}" aria-pressed="${prefs.scaleEveryDays === v}">${l}</button>`).join('')}</div></section>
         <section class="card"><label class="check"><input type="checkbox" data-rem ${prefs.reminders ? 'checked' : ''}><span>Напоминать о приёме лекарства</span></label></section>
         <section class="card stack"><p class="q-title">Где открыт дневник</p>
-          ${chans.map((c) => `<div class="row-between"><span>${ui.esc(KK.host.LABELS[c.channel] || c.channel)}${c.channel === KK.host.platform ? ' <span class="hint">· здесь</span>' : ''}</span>${c.channel !== KK.host.platform ? `<button class="btn btn--ghost" data-unlink="${ui.esc(c.channel)}">Отключить</button>` : ''}</div>`).join('') || '<p class="hint">Пока нигде</p>'}
+          ${chans.map((c) => `<div class="row-between"><span>${ui.esc(KK.host.LABELS[c.channel] || c.channel)}${c.channel === KK.host.platform ? ' <span class="hint">· здесь</span>' : ''}</span><button class="btn btn--ghost" data-unlink="${ui.esc(c.channel)}">Отключить</button></div>`).join('') || '<p class="hint">Пока нигде</p>'}
           <button class="btn btn--block" data-move>${ui.esc(C[0])}</button>
           ${linkCode ? `<div class="move-code stack" role="status"><p>${ui.esc(C[1])}</p><p class="hint">${ui.esc(siteUrl())}</p>
             <p class="link-code" aria-label="Код ${linkCode.code.split('').join(' ')}">${linkCode.code}</p><p class="hint">${ui.esc(C[2])}</p>
@@ -37,9 +37,13 @@
     if (e.target.closest('[data-move]')) { linkCode = store.createLinkCode(ctx.pid); render(); return; }
     if (e.target.closest('[data-open-site]')) { KK.host.openLink(siteUrl()); return; }
     const un = e.target.closest('[data-unlink]');
-    if (un) { store.unlinkChannel(ctx.pid, un.dataset.unlink); render(); return; }
+    if (un) {
+      app.unlink(ctx.pid, un.dataset.unlink);
+      if (un.dataset.unlink === KK.host.platform) { location.replace(`onboarding.html?p=${ctx.pid}`); return; } // это устройство больше не подключено
+      render(); return;
+    }
     if (e.target.closest('[data-export]')) {
-      const text = JSON.stringify(KK.bundle.exportBundle(store, ctx.pid), null, 2);
+      const text = JSON.stringify(KK.bundle.exportBundle(store, ctx.pid, new Date(), KK.sync.queued(ctx.pid)), null, 2);
       if (KK.host.download(KK.bundle.fileName(ctx.pid), text)) app.toast('Файл сохранён'); else { exported = text; render(); }
       return;
     }

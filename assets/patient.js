@@ -3,6 +3,7 @@
   const LS = {
     get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
     set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* приватный режим */ } },
+    remove(k) { try { localStorage.removeItem(k); } catch (e) { /* приватный режим */ } },
   };
   const TABS = [
     { id: 'today', href: 'index.html', label: 'Сегодня', icon: 'home' },
@@ -24,6 +25,18 @@
     link(pid) {
       LS.set(`kk:linked:${pid}`, true);
       try { KK.store.linkChannel(pid, KK.host.platform); } catch (e) { /* канал уже есть или стор недоступен */ }
+    },
+    // Отключить канал. Если это канал этого устройства — гасим и флаг демо, иначе start() подключит его заново.
+    unlink(pid, channel) {
+      const done = KK.store.unlinkChannel(pid, channel);
+      if (done && channel === KK.host.platform) LS.remove(`kk:linked:${pid}`);
+      return done;
+    },
+    // Дни с отметкой самочувствия: записанные и ещё не отправленные.
+    markedDays(events, queued = []) {
+      const keys = KK.util.latestPerDay(events.filter((e) => e.type === 'checkin')).map((e) => KK.util.dayKey(e.at));
+      queued.filter((q) => q.type === 'checkin').forEach((q) => keys.push(KK.util.dayKey((q.opts && q.opts.at) || q.queuedAt)));
+      return new Set(keys);
     },
     // Ссылка врача в MAX: max.ru/<бот>?startapp=inv_KMP-7302 → код приглашения KMP-7302 (в демо код = токен).
     inviteFromStart: (sp) => { const m = /^inv_([A-Za-z]{3}-\d{4})$/.exec(sp || ''); return m ? m[1].toUpperCase() : null; },
