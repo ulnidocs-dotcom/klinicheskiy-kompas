@@ -18,6 +18,7 @@ const FILES = [
   'assets/battery.js',
   'assets/parser.js',
   'assets/store.js',
+  'assets/auth.js',
   'assets/ui.js',
   'assets/host.js',
   'assets/sync.js',
