@@ -18,3 +18,4 @@ function checkPage(html, js) {
 test('login page is wired', () => checkPage('auth/login.html', 'auth/login.js'));
 
 test('invite page is wired', () => checkPage('auth/invite.html', 'auth/invite.js'));
+test('recover page is wired', () => checkPage('auth/recover.html', 'auth/recover.js'));
