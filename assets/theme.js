@@ -65,7 +65,7 @@
     },
     set(v) {
       if (!doc) return;
-      if (valid(v) && KK.tg && typeof KK.tg.setTheme === 'function') KK.tg.setTheme(v);
+      if (valid(v) && KK.host && typeof KK.host.setTheme === 'function') KK.host.setTheme(v);
       else if (valid(v)) put(theme.key(), v);
       else if (group() === 'staff') put(theme.key(), 'auto'); // у персонала «нет выбора» = «Дневная», поэтому «как в системе» хранится явно
       else del(theme.key());

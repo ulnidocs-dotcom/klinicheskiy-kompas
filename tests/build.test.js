@@ -14,6 +14,8 @@ test('build-artifact: copies pages without templates/telegram, patches confirm, 
     assert.ok(['psych/index.html', 'psych/patient.js', 'patient/intake.html', 'assets/battery.js', 'data/cto.js'].every((f) => list.includes(f)));
     assert.ok(!list.some((f) => f.includes('_template')));
     for (const f of list.filter((x) => x.endsWith('.html'))) assert.doesNotMatch(fs.readFileSync(path.join(out, f), 'utf8'), /telegram\.org/, f);
+    for (const f of list.filter((x) => x.endsWith('.html'))) assert.doesNotMatch(fs.readFileSync(path.join(out, f), 'utf8'), /st\.max\.ru/, f);
+    assert.ok(!list.includes('assets/tg.js') && list.includes('assets/host.js'));
     assert.doesNotMatch(fs.readFileSync(path.join(out, 'doctor/profile.js'), 'utf8'), /confirm\(/);
     const k = fs.readFileSync(path.join(out, 'kompas.html'), 'utf8');
     assert.doesNotMatch(k, /<!doctype|<html|<head|<body/i);
@@ -22,4 +24,16 @@ test('build-artifact: copies pages without templates/telegram, patches confirm, 
     assert.match(k, /assets\/theme\.js/);
     assert.ok(k.indexOf('dataset.role') < k.indexOf('class="launch"'));
   } finally { fs.rmSync(out, { recursive: true, force: true }); }
+});
+
+test('every page loads host.js, patient pages also load the MAX bridge, nobody loads tg.js', () => {
+  const root = path.join(__dirname, '..');
+  const pages = ['index.html', 'ui-kit.html', ...['patient', 'doctor', 'psych'].flatMap((d) =>
+    fs.readdirSync(path.join(root, d)).filter((f) => f.endsWith('.html')).map((f) => `${d}/${f}`))];
+  for (const p of pages) {
+    const html = fs.readFileSync(path.join(root, p), 'utf8');
+    assert.doesNotMatch(html, /assets\/tg\.js/, p);
+    assert.match(html, /assets\/host\.js/, p);
+    if (p.startsWith('patient/')) assert.match(html, /<script src="https:\/\/st\.max\.ru\/js\/max-web-app\.js"><\/script>/, p);
+  }
 });

@@ -67,7 +67,7 @@
     const q = Q[st.qi];
     if (st.answer[q.key] === v) return;
     st.answer[q.key] = v;
-    KK.tg.haptic();
+    KK.host.haptic();
     const card = document.querySelector('.q');
     if (!card) return;
     card.querySelectorAll('.dot').forEach((d) => d.setAttribute('aria-pressed', String(Number(d.dataset.v) === v)));

@@ -288,9 +288,9 @@ test('theme.migrate: legacy kk:theme is copied to both role keys and removed', (
   }
 });
 
-test('tg.js and pages use role-specific theme keys, not the shared legacy key', () => {
+test('host.js and pages use role-specific theme keys, not the shared legacy key', () => {
   const root = path.join(__dirname, '..');
-  const tg = fs.readFileSync(path.join(root, 'assets', 'tg.js'), 'utf8');
+  const tg = fs.readFileSync(path.join(root, 'assets', 'host.js'), 'utf8');
   assert.doesNotMatch(tg, /'kk:theme'/);
   assert.match(tg, /KK\.theme\.key\(\)/);
   for (const f of ['doctor/profile.js', 'psych/profile.js', 'patient/profile.js']) {

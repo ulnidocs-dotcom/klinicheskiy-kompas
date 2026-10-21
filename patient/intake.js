@@ -123,6 +123,7 @@
   }
 
   function render() {
+    KK.host.guardClose(!['intro', 'done'].includes(st.step));
     const html = st.step === 'intro' ? intro() : st.step === 'form' ? formStep() : st.step === 'cssrs' ? cssrsStep()
       : st.step === 'tipi10' ? scaleStep('tipi10', D.steps[2].label) : st.step === 'dass21' ? scaleStep('dass21', D.steps[3].label)
         : st.step === 'cto_intro' ? ctoIntro() : st.step === 'cto' ? ctoStep() : done();
@@ -159,7 +160,7 @@
       const e = store.addEvent(ctx.pid, 'scale', { scaleId: 'cssrs', answers: full, context: 'intake' });
       st.step = 'tipi10'; st.i = 0; save();
       // Риск: сразу экран помощи; беседу можно продолжить позже с TIPI-RU.
-      if (e.payload.band && (e.payload.band.code === 'moderate' || e.payload.band.code === 'high')) { location.replace('help.html?from=intake'); return; }
+      if (e.payload.band && (e.payload.band.code === 'moderate' || e.payload.band.code === 'high')) { KK.host.guardClose(false); location.replace('help.html?from=intake'); return; }
       return render();
     }
     const sid = st.step;
@@ -181,7 +182,7 @@
       const raw = c.dataset.v;
       const v = raw === 'true' ? true : raw === 'false' ? false : Number(raw);
       document.querySelectorAll('.choice').forEach((b) => b.setAttribute('aria-pressed', String(b === c)));
-      KK.tg.haptic();
+      KK.host.haptic();
       // busy снимается только после перерисовки, иначе быстрый второй тап ответит на следующий вопрос дважды.
       setTimeout(() => { try { answered(v); } finally { busy = false; } }, 220);
       return;
@@ -204,7 +205,7 @@
     if (chip) {
       if (st.cto.cur.includes(chip.dataset.color)) return;
       st.cto.cur.push(chip.dataset.color);
-      KK.tg.haptic();
+      KK.host.haptic();
       save(); focusQ = false; render();
       const next = document.querySelector(st.cto.cur.length === C.colors.length ? '[data-cto-next]' : '.cchip[aria-pressed="false"]');
       if (next) next.focus();

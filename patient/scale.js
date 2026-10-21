@@ -2,6 +2,7 @@
   const { ui, store, patientApp: app } = KK;
   const ctx = app.start({ tab: null, back: 'index.html' });
   if (!ctx) return;
+  KK.host.guardClose(true);
   const id = ui.param('id');
   const def = app.patientScale(id);
   if (!def) { location.replace('index.html'); return; }
@@ -42,6 +43,7 @@
   }
 
   function finish() {
+    KK.host.guardClose(false);
     const e = store.addEvent(ctx.pid, 'scale', { scaleId: id, answers });
     try { sessionStorage.removeItem(DRAFT); } catch (err) { /* */ }
     if (e.payload.flags && e.payload.flags.item9 > 0) { location.replace('help.html?from=phq9'); return; }
@@ -54,7 +56,7 @@
       if (busy) return;
       busy = true;
       answers[i] = Number(c.dataset.v);
-      KK.tg.haptic();
+      KK.host.haptic();
       ui.mount('#app', question());
       setTimeout(() => {
         busy = false;

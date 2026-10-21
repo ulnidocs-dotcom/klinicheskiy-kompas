@@ -26,7 +26,7 @@
     setPrefs(pid, patch) { LS.set(`kk:prefs:${pid}`, Object.assign(app.prefs(pid), patch)); },
 
     start({ tab = document.body.dataset.tab, requireLink = true, help = true, back = null } = {}) {
-      KK.tg.init();
+      KK.host.init();
       const pid = app.pid();
       if (!KK.store.patient(pid)) { location.href = '../index.html'; return null; }
       if (requireLink && !app.linked(pid)) { location.replace(`onboarding.html?p=${pid}`); return null; }
@@ -42,7 +42,7 @@
       const main = document.getElementById('app');
       if (main && main.parentNode) main.parentNode.insertBefore(top, main);
       if (shell) shell.innerHTML = nav;
-      if (back) KK.tg.backButton(() => { location.href = back; });
+      if (back) KK.host.backButton(() => { location.href = back; });
       return { pid, patient: () => KK.store.patient(pid) };
     },
 

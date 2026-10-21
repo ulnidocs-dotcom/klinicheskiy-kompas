@@ -1,6 +1,6 @@
 // Собирает копию демо, готовую к публикации как артефакт: node tools/build-artifact.js <папка>
 // - копирует index.html, ui-kit.html, assets/**, data/**, patient/**, doctor/**, psych/** (без *_template*);
-// - вырезает из HTML подключение telegram-web-app.js (внешний скрипт вне разрешённых CDN);
+// - вырезает из HTML подключение telegram-web-app.js и max-web-app.js (внешний скрипт вне разрешённых CDN);
 // - в doctor/profile.js заменяет confirm('Сбросить демо-данные?') на true (диалоги в песочнице заблокированы);
 // - пишет kompas.html — содержимое index.html без обёртки doctype/html/head/body;
 // - печатает в stdout JSON-список скопированных файлов (кроме index.html и kompas.html).
@@ -9,6 +9,7 @@ const path = require('node:path');
 
 const ROOT = path.join(__dirname, '..');
 const TG_SCRIPT = /[ \t]*<script src="https:\/\/telegram\.org\/js\/telegram-web-app\.js"><\/script>\r?\n?/g;
+const MAX_SCRIPT = /[ \t]*<script src="https:\/\/st\.max\.ru\/js\/max-web-app\.js"><\/script>\r?\n?/g;
 const CONFIRM = "confirm('Сбросить демо-данные?')";
 
 function walk(dir) {
@@ -19,7 +20,7 @@ function walk(dir) {
 }
 
 function transform(rel, text) {
-  if (rel.endsWith('.html')) text = text.replace(TG_SCRIPT, '');
+  if (rel.endsWith('.html')) text = text.replace(TG_SCRIPT, '').replace(MAX_SCRIPT, '');
   if (rel === 'doctor/profile.js') {
     if (!text.includes(CONFIRM)) throw new Error('doctor/profile.js: не найден confirm сброса демо');
     text = text.split(CONFIRM).join('true');
