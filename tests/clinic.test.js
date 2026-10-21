@@ -116,3 +116,49 @@ test('an old store without clinic data gets the demo clinic lazily', () => {
   const s2 = KK.createStore({ storage, clock: () => NOW });
   assert.equal(s2.staff().length, 3);
 });
+
+test('regression: no duplicate staff via stale invites', () => {
+  const { s, later } = mk();
+  const a = s.inviteStaff('dup@clinic.demo', 'doctor');
+  later(72 * 3600000 + 1);
+  const b = s.inviteStaff('dup@clinic.demo', 'doctor');
+  s.acceptInvite(b.token, { name: 'Пётр Орлов', specialty: 'психиатр', phone: '+79123456789' });
+  assert.throws(() => s.resendInvite(a.token), /уже есть/);
+  assert.equal(s.staff().filter((x) => x.email === 'dup@clinic.demo').length, 1);
+  // resend revokes other pending invites for the same email
+  const c = s.inviteStaff('two@clinic.demo', 'psychologist');
+  const d = s.resendInvite(c.token);
+  assert.equal(s.invites().filter((i) => i.email === 'two@clinic.demo' && i.state === 'pending').length, 1);
+  assert.equal(s.inviteInfo(d.token).state, 'pending');
+});
+
+test('regression: the last active admin cannot be blocked', () => {
+  const { s } = mk();
+  assert.throws(() => s.setStaff('adm1', { status: 'blocked' }), /последнего администратора/);
+  assert.equal(s.staffById('adm1').status, 'active');
+});
+
+test('regression: completeReset refuses a blocked staff member and keeps the token unused', () => {
+  const { s } = mk();
+  const r = s.createReset('maria.belova@clinic.demo');
+  s.setStaff('psy1', { status: 'blocked' });
+  assert.throws(() => s.completeReset(r.token), /недействительна/);
+  s.setStaff('psy1', { status: 'active' });
+  assert.equal(s.completeReset(r.token).id, 'psy1');
+});
+
+test('regression: falsy phone never matches or saves', () => {
+  const { s } = mk();
+  assert.equal(s.findPatientByPhone(null), null);
+  assert.equal(s.findPatientByPhone(''), null);
+  assert.equal(s.findPatientByPhone(undefined), null);
+  assert.throws(() => s.setPatientPhone('p_anna', ''), /Укажите телефон/);
+});
+
+test('regression: a new reset link voids the earlier one of the same person', () => {
+  const { s } = mk();
+  const r1 = s.createReset('maria.belova@clinic.demo');
+  const r2 = s.createReset('maria.belova@clinic.demo');
+  assert.equal(s.resetInfo(r1.token), null);
+  assert.equal(s.resetInfo(r2.token).staffId, 'psy1');
+});

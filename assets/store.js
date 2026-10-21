@@ -584,6 +584,8 @@
         const inv = findInvite(token);
         const st = inv ? inviteState(inv) : 'unknown';
         if (st !== 'pending' && st !== 'expired') failWith(st, INVITE_TEXT[st] || INVITE_TEXT.unknown);
+        if (clinic().staff.some((x) => x.email === inv.email)) throw new Error('Сотрудник с этой почтой уже есть в клинике');
+        clinic().invites.filter((i) => i.email === inv.email && inviteState(i) === 'pending').forEach((i) => { i.revokedAt = nowIso(); });
         inv.revokedAt = nowIso();
         const next = newInvite(inv.email, inv.role, inv.by);
         write();
@@ -602,6 +604,7 @@
         const inv = findInvite(token);
         const st = inv ? inviteState(inv) : 'unknown';
         if (st !== 'pending') failWith(st, INVITE_TEXT[st]);
+        if (clinic().staff.some((x) => x.email === inv.email)) throw new Error('Сотрудник с этой почтой уже есть в клинике');
         const nm = String(name || '').trim();
         if (nm.length < 3) throw new Error('Укажите фамилию и имя');
         if (!phone) throw new Error('Укажите телефон для подтверждения входа');
@@ -622,6 +625,8 @@
         const keys = Object.keys(patch);
         if (keys.some((k) => k !== 'status' && k !== 'frmrChecked')) throw new Error('Нельзя изменить это поле');
         if ('status' in patch && !['active', 'blocked'].includes(patch.status)) throw new Error('Неизвестный статус');
+        if (patch.status === 'blocked' && s.role === 'admin' && s.status === 'active'
+          && !clinic().staff.some((x) => x.id !== id && x.role === 'admin' && x.status === 'active')) throw new Error('Нельзя заблокировать последнего администратора клиники');
         if ('status' in patch) s.status = patch.status;
         if ('frmrChecked' in patch) s.frmrChecked = !!patch.frmrChecked;
         write();
@@ -659,9 +664,10 @@
         write();
         return true;
       },
-      findPatientByPhone: (phone) => (need(), Object.keys(db.patients).find((id) => db.patients[id].phone === phone) || null),
+      findPatientByPhone: (phone) => (need(), phone ? Object.keys(db.patients).find((id) => db.patients[id].phone === phone) || null : null),
       setPatientPhone(id, phone) {
         need();
+        if (!phone) throw new Error('Укажите телефон');
         if (!has(id)) throw new Error(`Unknown patient ${id}`);
         if (Object.keys(db.patients).some((k) => k !== id && db.patients[k].phone === phone)) failWith('taken', 'Этот номер уже привязан к дневнику. Войдите по номеру телефона');
         db.patients[id].phone = phone;
@@ -675,6 +681,8 @@
         const s = clinic().staff.find((x) => x.email === e && x.status === 'active');
         if (!s) return null;
         const c = clinic();
+        // Прежние неиспользованные ссылки этого сотрудника гасим.
+        (c.resets || []).forEach((r) => { if (r.staffId === s.id && !r.usedAt) r.usedAt = nowIso(); });
         c.resets = (c.resets || []).filter((r) => !r.usedAt && !expired(r.expiresAt));
         const r = { token: rnd(24, TOKEN_ABC), staffId: s.id, expiresAt: new Date(+clock() + RESET_TTL).toISOString(), usedAt: null };
         c.resets.push(r);
@@ -692,6 +700,8 @@
         need();
         const r = (clinic().resets || []).find((x) => x.token === String(token || ''));
         if (!r || r.usedAt || expired(r.expiresAt)) throw new Error('Ссылка недействительна. Запросите восстановление ещё раз');
+        const s = clinic().staff.find((x) => x.id === r.staffId && x.status === 'active');
+        if (!s) throw new Error('Ссылка недействительна. Запросите восстановление ещё раз');
         r.usedAt = nowIso();
         write();
         return api.staffById(r.staffId);

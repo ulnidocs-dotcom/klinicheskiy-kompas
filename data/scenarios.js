@@ -14,7 +14,7 @@
     {
       id: 's1', title: 'ГТР у терапевта', summary: 'Первичное назначение, противопоказаний нет',
       patient: base({ id: 'p_anna', name: 'Анна Соколова', initials: 'АС', age: 34, sex: 'f',
-        phone: '+7 900 000-00-01', inviteCode: 'KMP-4821',
+        phone: '+79000000001', inviteCode: 'KMP-4821',
         diagnoses: [{ code: 'F41.1', text: 'Генерализованное тревожное расстройство' }],
         plan: { drugId: 'aviandr', status: 'proposed', timesPerDay: 2 },
         // Первичный приём психолога назначен, батарея не начата — демонстрация потока пациента.
@@ -74,7 +74,7 @@
     },
     {
       id: 's5', title: 'Тревога после COVID-19', summary: 'Расстройство адаптации, положительная динамика',
-      patient: base({ id: 'p_olga', name: 'Ольга Лебедева', initials: 'ОЛ', age: 41, sex: 'f', inviteCode: 'KMP-2648', phone: '+79000002648',postCovid: true,
+      patient: base({ id: 'p_olga', name: 'Ольга Лебедева', initials: 'ОЛ', age: 41, sex: 'f', inviteCode: 'KMP-2648', phone: '+79000002648', postCovid: true,
         diagnoses: [{ code: 'F43.2', text: 'Расстройство адаптации' }, { code: 'U09.9', text: 'Состояние после COVID-19' }],
         plan: { drugId: 'aviandr', status: 'confirmed', confirmedAt: null, confirmedDay: -21, timesPerDay: 2 } }),
       seed: [
