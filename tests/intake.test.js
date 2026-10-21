@@ -148,7 +148,7 @@ test('migration v1 → v2: keeps data, adds psychologist, Ilya and intake for sc
   assert.ok(s2.patient('p_ilya'));
   assert.equal(s2.intakeOf('p_anna').status, 'assigned');
   assert.equal(s2.messages('p_anna').at(-1).text, 'старое сообщение');
-  assert.equal(JSON.parse(storage.getItem('kk:v1')).version, 2);
+  assert.equal(JSON.parse(storage.getItem('kk:v1')).version, 3);
   assert.ok(s1);
 });
 

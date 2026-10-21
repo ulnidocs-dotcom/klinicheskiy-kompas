@@ -2,7 +2,7 @@
   const { ui, store, auth } = KK;
   const ROLE = { doctor: 'Врач', psychologist: 'Клинический психолог', admin: 'Администратор' };
   const STATE = { pending: ['badge--info', 'приглашён'], expired: ['badge--warn', 'приглашение истекло'], revoked: ['badge--info', 'отозвано'] };
-  const me = () => auth.staff('admin') || store.staffById('adm1');
+  const me = () => auth.staff('admin') || store.staff().find((s) => s.role === 'admin' && s.status === 'active');
   let flash = '';
   const inviteLink = (token) => new URL(`../auth/invite.html?token=${encodeURIComponent(token)}`, location.href).href;
 
@@ -63,7 +63,11 @@
     const rv = e.target.closest('[data-revoke]');
     if (rv) { store.revokeInvite(rv.dataset.revoke); render(); return; }
     const bl = e.target.closest('[data-block]');
-    if (bl) { const s = store.staffById(bl.dataset.block); store.setStaff(s.id, { status: s.status === 'active' ? 'blocked' : 'active' }); render(); }
+    if (bl) {
+      const s = store.staffById(bl.dataset.block);
+      try { store.setStaff(s.id, { status: s.status === 'active' ? 'blocked' : 'active' }); } catch (err) { document.getElementById('err').textContent = err.message; return; }
+      render();
+    }
   });
   document.addEventListener('change', (e) => {
     const f = e.target.closest('[data-frmr]');

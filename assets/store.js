@@ -16,7 +16,7 @@
   const LINK_CODE_TTL = 10 * 60000; // код переезда на сайт: 10 минут, одно гашение
   const CONSENT_VERSION = '1';
   const PLAN_LOCKED = ['status', 'confirmedAt', 'cancelledAt', 'offLabel'];
-  const VERSION = 2;
+  const VERSION = 3;
   const PSYCHOLOGIST = { id: 'psy1', name: 'Мария Белова', specialty: 'клинический психолог' };
   // Первичный приём психолога: части батареи (C-SSRS, TIPI-10, DASS-21 — события scale с context 'intake').
   const INTAKE_SCALES = { cssrs: 'cssrs', tipi: 'tipi10', dass: 'dass21' };
@@ -110,6 +110,8 @@
         if (!Object.hasOwn(db.patients, s.patient.id)) { addScenario(s, now); continue; }
         const p = db.patients[s.patient.id];
         if (s.patient.intake && !p.intake) p.intake = KK.data.materializePatient(s.patient, now).intake;
+        // v3: телефоны сценарных пациентов (вход по номеру); ненормализованный номер заменяем.
+        if (s.patient.phone && !/^\+7\d{10}$/.test(p.phone || '')) p.phone = s.patient.phone;
       }
       db.version = VERSION;
       // Без уведомления подписчиков: миграция идёт внутри need(), часто посреди отрисовки.

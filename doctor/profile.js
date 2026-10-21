@@ -3,14 +3,14 @@
   D.start({ nav: 'profile' });
   const SPECS = ['терапевт', 'врач общей практики', 'невролог', 'кардиолог', 'эндокринолог', 'психиатр', 'психотерапевт'];
   function render() {
-    const d = store.doctor();
+    const d = D.me();
     ui.preserveFocus(() => ui.mount('#app', `
       <div class="page-head"><h1>Профиль</h1></div>
       <section class="card stack" style="max-width:560px">
-        <label class="field"><span class="hint">ФИО</span><input id="name" value="${ui.esc(d.name)}"></label>
-        <label class="field"><span class="hint">Специальность</span><select id="spec">${SPECS.map((s) => `<option ${s === d.specialty ? 'selected' : ''}>${s}</option>`).join('')}</select></label>
+        ${d.signedIn ? `<p><span class="hint">ФИО</span><br><b>${ui.esc(d.name)}</b></p><p><span class="hint">Специальность</span><br><b>${ui.esc(d.specialty)}</b></p><p class="hint">Профиль ведёт администратор клиники</p>` : `<label class="field"><span class="hint">ФИО</span><input id="name" value="${ui.esc(d.name)}"></label>
+        <label class="field"><span class="hint">Специальность</span><select id="spec">${SPECS.map((s) => `<option ${s === d.specialty ? 'selected' : ''}>${s}</option>`).join('')}</select></label>`}
         <p class="hint">Режим: <b>${d.mode === 'psychiatrist' ? 'специалист — компактно, без пояснений' : 'с подсказками — пояснения к шкалам и шагам маршрутизации'}</b>. Определяется специальностью.</p>
-        <label class="row"><input type="checkbox" id="sound" ${d.sound === false ? '' : 'checked'}> Звук критических алертов</label>
+        <label class="row"><input type="checkbox" id="sound" ${store.doctor().sound === false ? '' : 'checked'}> Звук критических алертов</label>
         <div class="row"><button class="btn btn--primary" data-save>Сохранить</button><span class="hint" id="msg" role="status"></span></div>
       </section>
       <section class="card stack" style="max-width:560px;margin-top:16px"><h2>Оформление</h2>
@@ -27,6 +27,7 @@
     const th = e.target.closest('[data-theme-set]');
     if (th) { KK.theme.set(th.dataset.themeSet); return; }
     if (e.target.closest('[data-save]')) {
+      if (!document.getElementById('spec')) { store.setDoctor({ sound: document.getElementById('sound').checked }); render(); document.getElementById('msg').textContent = 'Сохранено'; return; }
       const spec = document.getElementById('spec').value;
       store.setDoctor({ name: document.getElementById('name').value.trim() || 'Врач', specialty: spec, mode: D.modeFor(spec), sound: document.getElementById('sound').checked });
       render(); document.getElementById('msg').textContent = 'Сохранено';

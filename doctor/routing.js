@@ -9,7 +9,7 @@
     const p = store.patient(id);
     const mode = D.mode();
     const sig = p.signals.filter((s) => s.routing);
-    if (text == null) text = D.referralText(p, store.doctor());
+    if (text == null) text = D.referralText(p, D.me());
     ui.preserveFocus(() => ui.mount('#app', `
       ${D.patientHeader(p)}${D.patientTabs(id, 'routing')}
       <div class="grid2">

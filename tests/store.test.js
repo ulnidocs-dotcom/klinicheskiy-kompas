@@ -371,3 +371,14 @@ test('restore rejects a malformed bundle without writing anything', () => {
   assert.equal(s.patient('p_bad'), null);
   assert.throws(() => s.restore({ patient: { id: 'p_bad', name: 'Х' }, events: null }), /Пакет повреждён/);
 });
+
+test('v2 data without patient phones is backfilled on load', () => {
+  const st = memStorage();
+  const s1 = KK.createStore({ storage: st, clock: () => NOW }); s1.reset();
+  const raw = JSON.parse(st.getItem('kk:v1'));
+  delete raw.patients.p_olga.phone; raw.patients.p_anna.phone = '8 900 000'; raw.version = 2;
+  st.setItem('kk:v1', JSON.stringify(raw));
+  const s2 = KK.createStore({ storage: st, clock: () => NOW });
+  assert.equal(s2.findPatientByPhone('+79000002648'), 'p_olga');
+  assert.match(s2.patient('p_anna').phone, /^\+7\d{10}$/);
+});

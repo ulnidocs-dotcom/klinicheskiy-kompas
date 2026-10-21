@@ -259,3 +259,16 @@ test('signed-in doctor: side panel and hint mode follow the session', () => {
     assert.equal(D().me().name, 'Елена Иванова');
   } finally { KK.store = hadStore; KK.auth.session = hadSession; }
 });
+
+test('referral for a signed-in psychiatrist (D.me) has his name and no preliminary note', () => {
+  const store = KK.createStore({ storage: memStorage(), clock: () => new Date('2026-10-19T12:00:00Z') });
+  store.reset();
+  KK.store = store;
+  const prev = KK.auth;
+  KK.auth = { staff: () => ({ name: 'Пётр Сидоров', specialty: 'психиатр' }) };
+  try {
+    const t = D().referralText(store.patient('p_dmitry'), D().me());
+    assert.match(t, /Пётр Сидоров, психиатр/);
+    assert.doesNotMatch(t, /предварительный характер/);
+  } finally { KK.auth = prev; }
+});

@@ -67,6 +67,8 @@
       const pid = store.findPatientByPhone(st.phone);
       if (!pid) { A.showErr('Этот номер не привязан к дневнику. Подключитесь по коду приглашения врача'); return; }
       auth.session.set({ kind: 'patient', patientId: pid });
+      // Регистрация не завершена (нет согласий): продолжаем её, дневник пока не открываем.
+      if (!(store.patient(pid).consents || []).length) { location.href = `../patient/onboarding.html?p=${encodeURIComponent(pid)}`; return; }
       try { localStorage.setItem(`kk:linked:${pid}`, 'true'); } catch (err) { /* приватный режим */ }
       location.href = `../patient/index.html?p=${encodeURIComponent(pid)}`;
       return;

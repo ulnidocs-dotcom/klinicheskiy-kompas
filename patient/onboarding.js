@@ -101,7 +101,7 @@
     if (e.target.closest('[data-contact]')) {
       KK.host.requestPhone().then((raw) => {
         const n = KK.auth.normalizePhone(raw);
-        if (n) { state.phone = n; render(); } else document.getElementById('err').textContent = 'Номер не получен. Введите его вручную.';
+        if (n) { state.phone = n; state.phoneSent = false; render(); } else document.getElementById('err').textContent = 'Номер не получен. Введите его вручную.';
       });
       return;
     }
