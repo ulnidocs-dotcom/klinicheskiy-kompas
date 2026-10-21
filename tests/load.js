@@ -10,6 +10,7 @@ const FILES = [
   'data/materials.js',
   'data/intake.js',
   'data/cto.js',
+  'data/bot-messages.js',
   'assets/scales.js',
   'assets/therapy.js',
   'assets/adherence.js',

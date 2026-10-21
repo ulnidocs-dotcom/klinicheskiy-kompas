@@ -1,0 +1,184 @@
+openapi: 3.1.0
+info:
+  title: Клинический компас — API платформы
+  version: 0.1.0
+  description: |
+    Контракт сервера для мини-приложений MAX и Telegram и веб-кабинетов. Сервер — источник истины.
+    Пациент видит только свои данные; врач и психолог — пациентов по связи care_relations.
+    Спек: docs/superpowers/specs/2026-10-21-max-messenger-design.md.
+servers:
+  - url: https://api.example.ru
+security:
+  - session: []
+paths:
+  /v1/auth/max:
+    post:
+      summary: Вход из мини-приложения MAX
+      description: |
+        Сервер проверяет initData: secret = HMAC-SHA256(key "WebAppData", msg BOT_TOKEN);
+        подпись = hex(HMAC-SHA256(secret, пары без hash, отсортированные по ключу, через \n)); auth_date не старше 3600 с.
+        initDataUnsafe не используется. Эталон: tools/max-initdata.js.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [initData], properties: { initData: { type: string } } }
+      responses:
+        '200': { description: Сессия, content: { application/json: { schema: { $ref: '#/components/schemas/Session' } } } }
+        '401': { description: Неверная подпись или устаревшая auth_date }
+  /v1/auth/telegram:
+    post:
+      summary: Вход из Telegram Mini App (та же схема, ключ по правилам Telegram)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [initData], properties: { initData: { type: string } } }
+      responses:
+        '200': { description: Сессия, content: { application/json: { schema: { $ref: '#/components/schemas/Session' } } } }
+        '401': { description: Неверная подпись }
+  /v1/invites/{token}:redeem:
+    post:
+      summary: Погасить приглашение врача (startapp=inv_<token>), привязать канал
+      parameters:
+        - { name: token, in: path, required: true, schema: { type: string, pattern: '^[A-Za-z0-9_-]{8,64}$' } }
+      responses:
+        '200': { description: Канал привязан, content: { application/json: { schema: { $ref: '#/components/schemas/Channel' } } } }
+        '410': { description: Приглашение использовано или истекло (72 часа) }
+  /v1/link-codes:
+    post:
+      summary: Создать код переезда на сайт (6 цифр, 10 минут, одно гашение)
+      responses:
+        '201':
+          description: Код
+          content:
+            application/json:
+              schema: { type: object, properties: { code: { type: string, pattern: '^\d{6}$' }, expiresAt: { type: string, format: date-time } } }
+  /v1/link-codes:redeem:
+    post:
+      summary: Погасить код на сайте — привязать веб-канал к тому же пациенту
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [code], properties: { code: { type: string, pattern: '^\d{6}$' } } }
+      responses:
+        '200': { description: Сессия веб-кабинета, content: { application/json: { schema: { $ref: '#/components/schemas/Session' } } } }
+        '404': { description: Код не найден }
+        '410': { description: Код использован или истёк }
+        '429': { description: Слишком много попыток с одного адреса }
+  /v1/patients/{id}/channels:
+    get:
+      summary: Подключённые каналы пациента
+      parameters: [{ $ref: '#/components/parameters/PatientId' }]
+      responses:
+        '200': { description: Каналы, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Channel' } } } } }
+  /v1/patients/{id}/channels/{channel}:
+    delete:
+      summary: Отключить канал (история остаётся)
+      parameters:
+        - { $ref: '#/components/parameters/PatientId' }
+        - { name: channel, in: path, required: true, schema: { $ref: '#/components/schemas/ChannelName' } }
+      responses:
+        '204': { description: Отключён }
+  /v1/patients/{id}/events:batch:
+    post:
+      summary: Пакет событий из очереди клиента; повтор с тем же clientId не создаёт дубль
+      parameters: [{ $ref: '#/components/parameters/PatientId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [events], properties: { events: { type: array, maxItems: 100, items: { $ref: '#/components/schemas/EventIn' } } } }
+      responses:
+        '200':
+          description: Результат по каждому событию
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    clientId: { type: string }
+                    status: { type: string, enum: [accepted, duplicate, rejected] }
+                    reason: { type: string }
+                    event: { $ref: '#/components/schemas/Event' }
+  /v1/patients/{id}/events:
+    get:
+      summary: События после отметки времени (кабинеты, второй канал пациента)
+      parameters:
+        - { $ref: '#/components/parameters/PatientId' }
+        - { name: since, in: query, schema: { type: string, format: date-time } }
+      responses:
+        '200': { description: События, content: { application/json: { schema: { type: array, items: { $ref: '#/components/schemas/Event' } } } } }
+  /v1/patients/{id}/export:
+    get:
+      summary: Пакет kompas-bundle v1 (переезд, право пациента на свои данные)
+      parameters: [{ $ref: '#/components/parameters/PatientId' }]
+      responses:
+        '200': { description: Пакет, content: { application/json: { schema: { $ref: '#/components/schemas/Bundle' } } } }
+  /v1/max/webhook:
+    post:
+      summary: Обновления бота MAX (message_callback от кнопки «Принял», bot_started)
+      description: Подписка через POST /subscriptions Bot API MAX. Типы обновлений сверить с dev.max.ru/docs-api.
+      security: [{ webhookSecret: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, additionalProperties: true }
+      responses:
+        '200': { description: Принято }
+components:
+  securitySchemes:
+    session: { type: http, scheme: bearer }
+    webhookSecret: { type: apiKey, in: header, name: X-Webhook-Secret }
+  parameters:
+    PatientId: { name: id, in: path, required: true, schema: { type: string } }
+  schemas:
+    ChannelName: { type: string, enum: [max, telegram, web] }
+    Channel:
+      type: object
+      properties:
+        channel: { $ref: '#/components/schemas/ChannelName' }
+        linkedAt: { type: string, format: date-time }
+    Session:
+      type: object
+      properties:
+        token: { type: string }
+        patientId: { type: [string, 'null'], description: null — пациент ещё не привязан, нужен код приглашения }
+        expiresAt: { type: string, format: date-time }
+    EventIn:
+      type: object
+      required: [clientId, type, payload]
+      properties:
+        clientId: { type: string, maxLength: 64 }
+        type: { type: string, enum: [checkin, dose, scale, ae, sos, intake_form, cto] }
+        at: { type: string, format: date-time, description: только для checkin, не раньше 7 дней }
+        channel: { type: string, enum: [max, max-chat, telegram, web] }
+        payload: { type: object, additionalProperties: true }
+    Event:
+      allOf:
+        - $ref: '#/components/schemas/EventIn'
+        - type: object
+          properties:
+            id: { type: string }
+            recordedAt: { type: string, format: date-time }
+    Bundle:
+      type: object
+      required: [format, version, patient, events]
+      properties:
+        format: { const: kompas-bundle }
+        version: { const: 1 }
+        exportedAt: { type: string, format: date-time }
+        rulesVersion: { type: string }
+        patient: { type: object, additionalProperties: true }
+        channels: { type: array, items: { $ref: '#/components/schemas/Channel' } }
+        consents: { type: array, items: { type: object, properties: { kind: { type: string }, at: { type: string }, version: { type: string } } } }
+        events: { type: array, items: { $ref: '#/components/schemas/Event' } }
+        messages: { type: array, items: { type: object } }
+        decisions: { type: array, items: { type: object } }
