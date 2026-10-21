@@ -28,7 +28,7 @@
       </section>`;
   }
 
-  function result(r) {
+  function result(r, pending) {
     const text = (KK.scales.interpret(id, r.total, 'patient') || {}).label || 'Ответы отправлены вашему врачу.';
     const nextHref = next.length ? `scale.html?id=${next[0]}${next.length > 1 ? `&next=${next.slice(1).join(',')}` : ''}` : null;
     return `
@@ -36,7 +36,7 @@
         <div class="hello-orb" aria-hidden="true"></div>
         <h1>Спасибо</h1>
         <p>${ui.esc(text)}</p>
-        <p class="hint">Ответы отправлены вашему врачу.</p>
+        <p class="hint">${ui.esc(pending ? app.SYNC_PENDING : 'Ответы отправлены вашему врачу.')}</p>
         ${nextHref ? `<a class="btn btn--pill btn--block" href="${nextHref}">Ещё один короткий опросник</a><a class="btn btn--ghost btn--block" href="index.html">Позже</a>`
           : '<a class="btn btn--pill btn--block" href="index.html">На главную</a>'}
       </section>`;
@@ -46,13 +46,13 @@
     KK.host.guardClose(false);
     let e;
     try { e = KK.sync.submit(ctx.pid, 'scale', { scaleId: id, answers }); } catch (err) {
-      if (!err.offline) throw err;
+      if (!err.offline) { KK.host.guardClose(true); app.toast('Не получилось сохранить. Попробуйте ещё раз'); return; } // ответы остаются на экране
       location.replace('help.html?from=offline'); // экран помощи с 112 — без обещания, что ответы дошли
       return;
     }
     try { sessionStorage.removeItem(DRAFT); } catch (err) { /* */ }
     if (e.payload.flags && e.payload.flags.item9 > 0) { location.replace('help.html?from=phq9'); return; }
-    ui.mount('#app', result(e.payload));
+    ui.mount('#app', result(e.payload, !!e.pending));
   }
 
   document.addEventListener('click', (e) => {

@@ -235,7 +235,7 @@
     },
     ROUTING_PATIENT_MSG: 'Я оформил(а) направление на консультацию к врачу-психиатру. Подробности обсудим по телефону.',
     // Ключи пациентского приложения на этом устройстве, которые сбрасываются вместе с демо-данными (как на index.html).
-    demoDeviceKeys: (keys) => keys.filter((k) => k.startsWith('kk:linked:') || k.startsWith('kk:prefs:') || k.startsWith('kk:intake-draft:')),
+    demoDeviceKeys: (keys) => keys.filter((k) => k.startsWith('kk:linked:') || k.startsWith('kk:prefs:') || k.startsWith('kk:intake-draft:') || k === 'kk:outbox'),
     alertStats(alerts) {
       const delivered = alerts.filter((a) => a.deliveredAt).map((a) => (new Date(a.deliveredAt) - new Date(a.dataAt)) / 1000);
       const acked = alerts.filter((a) => a.ackAt).map((a) => (new Date(a.ackAt) - new Date(a.dataAt)) / 60000);

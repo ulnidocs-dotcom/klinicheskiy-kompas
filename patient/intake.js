@@ -148,7 +148,7 @@
       st.form[q.id] = v;
       if (q.id === 'meds' && v === false) delete st.form.medsText;
       if (st.i < formQs().length - 1) { st.i++; save(); return render(); }
-      KK.sync.submit(ctx.pid, 'intake_form', Object.assign({ complaint: '', reason: '' }, st.form));
+      try { KK.sync.submit(ctx.pid, 'intake_form', Object.assign({ complaint: '', reason: '' }, st.form)); } catch (err) { app.toast('Не получилось сохранить. Попробуйте ещё раз'); return; }
       return go('cssrs');
     }
     if (st.step === 'cssrs') {
@@ -159,7 +159,7 @@
       const full = [0, 1, 2, 3, 4, 5].map((k) => (now.includes(k) && st.cssrs[k] != null ? st.cssrs[k] : null));
       let e;
       try { e = KK.sync.submit(ctx.pid, 'scale', { scaleId: 'cssrs', answers: full, context: 'intake' }); } catch (err) {
-        if (!err.offline) throw err;
+        if (!err.offline) { app.toast('Не получилось сохранить. Попробуйте ещё раз'); return; }
         KK.host.guardClose(false);
         location.replace('help.html?from=offline');
         return;
@@ -172,7 +172,7 @@
     const sid = st.step;
     st[sid][st.i] = v;
     if (st.i < S[sid].items.length - 1) { st.i++; save(); return render(); }
-    KK.sync.submit(ctx.pid, 'scale', { scaleId: sid, answers: st[sid], context: 'intake' });
+    try { KK.sync.submit(ctx.pid, 'scale', { scaleId: sid, answers: st[sid], context: 'intake' }); } catch (err) { app.toast('Не получилось сохранить. Попробуйте ещё раз'); return; }
     return go(sid === 'tipi10' ? 'dass21' : 'cto_intro');
   }
 

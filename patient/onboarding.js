@@ -18,9 +18,10 @@
         <h1>${ui.esc(C[3])}</h1>
         <p class="muted">${ui.esc(C[4])}</p>
         <label class="field"><span class="hint">Код</span>
-          <input id="site-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000"></label>
+          <input id="site-code" inputmode="numeric" autocomplete="one-time-code" placeholder="000000"></label>
         <p class="hint" id="err" role="alert"></p>
         <button class="btn btn--pill btn--block" data-redeem>Продолжить</button>
+        <p class="hint">Нет кода? Откройте приложение → Профиль → «Открыть дневник на сайте» — там появится новый код.</p>
         ${helpLink}
       </section>`;
     if (step === 0) return `

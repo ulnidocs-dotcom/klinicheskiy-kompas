@@ -9,7 +9,7 @@
   // Ничего не сохраняется до «Готово»: ошибочное касание можно поправить, вернуться «Назад» или отменить.
   const st = { day: todayKey(), editing: false, qi: 0, answer: {}, undo: null, focus: null };
 
-  const checkinOn = (p, key) => app.checkinOn(store.events(p.id, 'checkin'), key);
+  const checkinOn = (p, key) => app.checkinOn(store.events(p.id, 'checkin'), key, KK.sync.queued(p.id));
 
   function openDay(p, key) {
     const prev = checkinOn(p, key);
@@ -265,7 +265,8 @@
     if (slot) {
       if (slot.getAttribute('aria-pressed') === 'true') { st.undo = slot.dataset.dose; st.focus = '[data-undo-no]'; render(); return; }
       st.focus = `[data-dose="${slot.dataset.dose}"]`;
-      const r = KK.sync.submit(ctx.pid, 'dose', { slot: slot.dataset.dose, taken: true });
+      let r;
+      try { r = KK.sync.submit(ctx.pid, 'dose', { slot: slot.dataset.dose, taken: true }); } catch (err) { app.toast('Не получилось сохранить. Попробуйте ещё раз'); return; }
       app.toast(r && r.pending ? app.SYNC_PENDING : 'Приём отмечен');
     }
   });

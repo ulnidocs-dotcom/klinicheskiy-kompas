@@ -46,7 +46,7 @@
     const b = e.target.closest('[data-ae]');
     if (b) { note = document.getElementById('note').value; marks[b.dataset.ae] = b.dataset.sev; render(); return; }
     const d = e.target.closest('[data-dose]');
-    if (d && d.getAttribute('aria-pressed') !== 'true') { const r = KK.sync.submit(ctx.pid, 'dose', { slot: d.dataset.dose, taken: true }); app.toast(r && r.pending ? app.SYNC_PENDING : 'Приём отмечен'); render(); return; }
+    if (d && d.getAttribute('aria-pressed') !== 'true') { let r; try { r = KK.sync.submit(ctx.pid, 'dose', { slot: d.dataset.dose, taken: true }); } catch (err) { app.toast('Не получилось сохранить. Попробуйте ещё раз'); return; } app.toast(r && r.pending ? app.SYNC_PENDING : 'Приём отмечен'); render(); return; }
     if (e.target.closest('[data-send]')) {
       note = document.getElementById('note').value.trim();
       const drug = data.drugs[ctx.patient().plan.drugId];
@@ -55,7 +55,7 @@
       if (!items.length && !note) { app.toast('Отметьте хотя бы один пункт или напишите пару слов'); return; }
       let r;
       try { r = KK.sync.submit(ctx.pid, 'ae', { items, note }); } catch (err) {
-        if (!err.offline) throw err;
+        if (!err.offline) { app.toast('Не получилось сохранить. Попробуйте ещё раз'); return; }
         sentSevere = 'failed'; // отметки остаются на экране
         render();
         return;

@@ -209,3 +209,25 @@ test('site move copy is calm and does not mention scores', () => {
     assert.doesNotMatch(t, /балл|тяж|!/i, t);
   }
 });
+
+test('checkinOn: a queued check-in counts for its day (opts.at or queuedAt)', () => {
+  const app = KK.patientApp;
+  const q = [
+    { type: 'checkin', payload: { mood: 5 }, opts: {}, queuedAt: '2026-10-19T10:00:00Z' },
+    { type: 'checkin', payload: { mood: 2 }, opts: { at: '2026-10-17T12:00:00Z' }, queuedAt: '2026-10-19T10:05:00Z' },
+  ];
+  const d = (iso) => KK.util.dayKey(iso);
+  assert.equal(app.checkinOn([], d('2026-10-19T10:00:00Z'), q).payload.mood, 5);
+  assert.equal(app.checkinOn([], d('2026-10-17T12:00:00Z'), q).payload.mood, 2);
+  assert.equal(app.checkinOn([], '2026-10-01', q), null);
+});
+
+test('patient pages: source checks for review fixes', () => {
+  const fs = require('node:fs');
+  const read = (f) => fs.readFileSync(require('node:path').join(__dirname, '..', f), 'utf8');
+  const onb = read('patient/onboarding.js');
+  assert.ok(onb.includes('.replace(/\D/g, \'\')') && !onb.includes('maxlength="6"'));
+  assert.ok(read('patient/scale.js').includes('app.SYNC_PENDING'));
+  assert.ok(read('patient/help.js').includes('заполните опросник ещё раз'));
+  assert.ok(read('index.html').includes("'kk:outbox'"));
+});

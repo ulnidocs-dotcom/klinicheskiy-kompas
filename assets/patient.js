@@ -219,7 +219,10 @@
       return `${['вс', 'пн', 'вт', 'ср', 'чт', 'пт', 'сб'][new Date(iso).getDay()]}, ${KK.ui.fmtDate(iso)}`;
     },
     // Действующая отметка самочувствия за день (последняя записанная) или null.
-    checkinOn(events, key) {
+    checkinOn(events, key, queued = []) {
+      // неотправленная отметка за этот день новее записанной — считается действующей
+      const q = queued.filter((x) => x.type === 'checkin' && x.payload && KK.util.dayKey((x.opts && x.opts.at) || x.queuedAt) === key).pop();
+      if (q) return { type: 'checkin', payload: q.payload, at: (q.opts && q.opts.at) || q.queuedAt, pending: true };
       return KK.util.latestPerDay(events.filter((e) => e.type === 'checkin')).find((e) => KK.util.dayKey(e.at) === key) || null;
     },
     // queued — ещё не отправленные отметки: слот считается отмеченным, чтобы не ставить дубль
