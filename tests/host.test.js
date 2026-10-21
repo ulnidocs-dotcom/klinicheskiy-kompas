@@ -69,3 +69,27 @@ test('patient start() resets the closing guard; scale.js enables it only after t
   const s = read('patient/scale.js');
   assert.ok(s.indexOf("if (!def) {") < s.indexOf('KK.host.guardClose(true);'));
 });
+
+function webWin(frameElement) {
+  const doc = { createElement: () => ({ click() {}, remove() {} }), body: { appendChild() {} } };
+  const win = { document: doc, Blob: function () {}, URL: { createObjectURL: () => 'blob:x', revokeObjectURL() {} }, location: { search: '' } };
+  win.top = win;
+  if (frameElement !== undefined) {
+    win.top = {};
+    Object.defineProperty(win, 'frameElement', { get() { if (frameElement === 'throw') throw new Error('cross-origin'); return frameElement; } });
+  }
+  return win;
+}
+
+test('download works in a plain page and in an iframe that allows downloads', () => {
+  assert.equal(KK.createHost(webWin()).download('a.json', '{}'), true);
+  const ok = { getAttribute: (n) => (n === 'sandbox' ? 'allow-scripts allow-downloads' : null) };
+  assert.equal(KK.createHost(webWin(ok)).download('a.json', '{}'), true);
+  assert.equal(KK.createHost(webWin({ getAttribute: () => null })).download('a.json', '{}'), true);
+});
+
+test('download returns false in a sandboxed iframe or one we cannot inspect', () => {
+  const sb = { getAttribute: (n) => (n === 'sandbox' ? 'allow-scripts allow-same-origin' : null) };
+  assert.equal(KK.createHost(webWin(sb)).download('a.json', '{}'), false);
+  assert.equal(KK.createHost(webWin('throw')).download('a.json', '{}'), false);
+});

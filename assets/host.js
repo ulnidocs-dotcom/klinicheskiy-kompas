@@ -20,6 +20,15 @@
     const doc = win && win.document;
     const ls = () => safe(() => win.localStorage) || null;
     const themeKey = () => (KK.theme && typeof KK.theme.key === 'function' ? KK.theme.key() : 'kk:theme:patient');
+    // В iframe без allow-downloads (или если рамку не разглядеть: другой источник) клик по ссылке молча ничего не скачает.
+    const sandboxed = () => {
+      if (!win.top || win.top === win) return false;
+      let fe;
+      try { fe = win.frameElement; } catch (e) { return true; }
+      if (!fe) return true;
+      const sb = safe(() => fe.getAttribute('sandbox'));
+      return sb != null && !sb.split(/\s+/).includes('allow-downloads');
+    };
     return {
       platform,
       inside: platform !== 'web',
@@ -68,7 +77,7 @@
       },
       // Скачать текстовый файл. false — платформа не умеет (MAX принимает только ссылку с сервера): покажите текст.
       download(name, text) {
-        if (platform === 'max' || !doc || typeof win.Blob !== 'function' || !win.URL) return false;
+        if (platform === 'max' || !doc || typeof win.Blob !== 'function' || !win.URL || sandboxed()) return false;
         return safe(() => {
           const url = win.URL.createObjectURL(new win.Blob([text], { type: 'application/json' }));
           const a = doc.createElement('a');
