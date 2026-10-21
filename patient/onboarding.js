@@ -73,8 +73,13 @@
   }
   // В браузере онбординг показан в раскладке сайта (о сервисе слева), в мессенджере — полноэкранно.
   function render() {
-    if (KK.host.platform === 'web' && KK.authPage) KK.authPage.mount(view());
-    else ui.mount('#app', view());
+    if (KK.host.platform === 'web' && KK.authPage) {
+      // На сайте онбординг выходит из узкой колонки мини-приложения: раскладка входа на всю ширину.
+      document.getElementById('app').classList.add('p-app--site');
+      const top = document.querySelector('.p-top');
+      if (top) top.classList.add('p-top--site');
+      KK.authPage.mount(view());
+    } else ui.mount('#app', view());
   }
   document.addEventListener('click', (e) => {
     if (e.target.closest('[data-site]')) { step = 'site'; render(); return; }

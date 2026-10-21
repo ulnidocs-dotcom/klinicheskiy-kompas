@@ -27,3 +27,7 @@
 .auth .kv dd{margin:0;overflow-wrap:anywhere}
 .auth .check{display:flex;gap:12px;align-items:flex-start;padding:10px 0}
 .auth .check input{flex:none;width:20px;height:20px;margin-top:2px;accent-color:var(--accent)}
+/* Онбординг пациента в браузере: раскладка входа вместо узкой колонки мини-приложения */
+.p-app.p-app--site{max-width:none;padding:0}
+.p-top.p-top--site{max-width:none;position:absolute;right:0;left:auto;background:none}
+.p-top.p-top--site .brand{display:none}
