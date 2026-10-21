@@ -31,3 +31,5 @@
 .p-app.p-app--site{max-width:none;padding:0}
 .p-top.p-top--site{max-width:none;position:absolute;right:0;left:auto;background:none}
 .p-top.p-top--site .brand{display:none}
+.admin-table td,.admin-table th{overflow-wrap:normal;word-break:normal}
+.admin-table .badge,.admin-table label.row{white-space:nowrap}

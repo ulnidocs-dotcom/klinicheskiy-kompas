@@ -44,7 +44,7 @@
         ${flash ? `<p class="demo-note" role="status"><b>Демо:</b> письмо не отправляется. Ссылка приглашения: <a href="${ui.esc(flash)}">${ui.esc(flash)}</a></p>` : ''}
         <p class="hint">Ссылка действует 72 часа и подходит один раз. Перед приглашением врача проверьте его в Федеральном регистре медицинских работников (ФРМР).</p></section>
       <section class="card stack" style="margin-top:16px"><h2>Команда</h2>
-        <table class="table"><thead><tr><th>Сотрудник</th><th>Роль</th><th>Статус</th><th>ФРМР</th><th></th></tr></thead>
+        <table class="table admin-table"><thead><tr><th>Сотрудник</th><th>Роль</th><th>Статус</th><th>ФРМР</th><th></th></tr></thead>
           <tbody>${staff.map(staffRow).join('')}${invites.map(inviteRow).join('')}</tbody></table></section>`));
   }
 

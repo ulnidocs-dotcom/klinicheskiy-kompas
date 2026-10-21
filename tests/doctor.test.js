@@ -241,3 +241,21 @@ test('channel label for the event feed', () => {
   assert.equal(D().channelLabel({ channel: 'max-chat' }), ' · чат MAX');
   assert.equal(D().channelLabel({}), '');
 });
+
+test('signed-in doctor: side panel and hint mode follow the session', () => {
+  const mem = new Map();
+  const ss = { getItem: (k) => (mem.has(k) ? mem.get(k) : null), setItem: (k, v) => mem.set(k, String(v)), removeItem: (k) => mem.delete(k) };
+  const hadStore = KK.store; const hadSession = KK.auth.session;
+  KK.store = KK.createStore({ storage: memStorage(), clock: () => new Date('2026-10-21T12:00:00Z') });
+  KK.store.reset();
+  KK.auth.session = KK.auth.createSession(ss);
+  try {
+    assert.equal(D().mode(), 'nonPsychiatrist');
+    const s = KK.store.acceptInvite(KK.store.inviteStaff('psy.doc@clinic.demo', 'doctor').token, { name: 'Пётр Орлов', specialty: 'психиатр', phone: '+79123456789' });
+    KK.auth.session.set({ kind: 'staff', staffId: s.id, role: 'doctor' });
+    assert.equal(D().mode(), 'psychiatrist');
+    assert.equal(D().me().name, 'Пётр Орлов');
+    KK.store.setStaff(s.id, { status: 'blocked' });
+    assert.equal(D().me().name, 'Елена Иванова');
+  } finally { KK.store = hadStore; KK.auth.session = hadSession; }
+});

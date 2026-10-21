@@ -49,7 +49,13 @@
   const app = {
     HINTS,
     modeFor: (spec) => (/психиатр|психотерап/i.test(spec || '') ? 'psychiatrist' : 'nonPsychiatrist'),
-    mode: () => KK.store.doctor().mode,
+    // Кто сейчас в кабинете: вошедший через сайт врач (активный) или демо-врач стора.
+    me() {
+      const d = KK.store.doctor();
+      const s = KK.auth && typeof KK.auth.staff === 'function' ? KK.auth.staff('doctor') : null;
+      return s ? { id: d.id, name: s.name, specialty: s.specialty, mode: app.modeFor(s.specialty), signedIn: true } : Object.assign({}, d, { signedIn: false });
+    },
+    mode: () => app.me().mode,
 
     signalBadge(s) {
       if (s.level === 'critical') return `<span class="badge badge--critical">${ui().icon('alert', 14)}Критично</span>`;
@@ -268,13 +274,13 @@
     renderSide() {
       const open = KK.store.alerts({ open: true });
       const crit = open.filter((a) => a.level === 'critical').length;
-      const doc = KK.store.doctor();
+      const doc = app.me();
       const nav = document.body.dataset.nav;
       const inbox = KK.store.inbox ? KK.store.inbox({ to: doc.id, unread: true }).length : 0;
       ui().mount('#side', `
         <div class="d-brand">${ui().icon('route', 20)}<b>Компас</b><span class="dotrow" aria-hidden="true">· · ·· ····</span></div>
         ${NAV.map((n) => `<a href="${n.href}" ${n.id === nav ? 'aria-current="page"' : ''}>${ui().icon(n.icon, 18)}<span>${n.label}</span>${n.id === 'alerts' && open.length ? `<span class="count ${crit ? 'count--crit' : ''}">${open.length}</span>` : ''}${n.id === 'messages' && inbox ? `<span class="count" title="Непрочитанные сообщения от психолога">${inbox}</span>` : ''}</a>`).join('')}
-        <div class="d-me"><div class="d-me__who"><b>${ui().esc(doc.name)}</b><span class="hint">${ui().esc(doc.specialty)} · ${doc.mode === 'psychiatrist' ? 'режим специалиста' : 'режим с подсказками'}</span></div>
+        <div class="d-me"><div class="d-me__who"><b>${ui().esc(doc.name)}</b><span class="hint">${ui().esc(doc.specialty)} · ${doc.mode === 'psychiatrist' ? 'режим специалиста' : 'режим с подсказками'}</span>${doc.signedIn ? '<a class="hint" href="../auth/login.html?as=staff" data-logout>Выйти</a>' : ''}</div>
           ${KK.theme ? KK.theme.toggleHtml() : ''}</div>`);
     },
     patientTabs(id, active) {
@@ -350,6 +356,7 @@
       document.addEventListener('click', unlock, true);
       document.addEventListener('keydown', unlock, true);
       document.addEventListener('click', (ev) => {
+        if (ev.target.closest('[data-logout]') && KK.auth && KK.auth.session) KK.auth.session.clear();
         const root = document.getElementById('modal-root');
         const ack = ev.target.closest('[data-ack]');
         if (ack) {

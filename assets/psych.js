@@ -121,13 +121,14 @@
     },
 
     renderSide() {
-      const psy = KK.store.psychologist();
+      const signed = KK.auth && typeof KK.auth.staff === 'function' ? KK.auth.staff('psychologist') : null;
+      const psy = signed || KK.store.psychologist();
       const nav = document.body.dataset.nav;
       const waiting = app.queue(KK.store.patients()).filter((p) => p.intakeStatus === 'completed').length;
       ui().mount('#side', `
         <div class="d-brand">${ui().icon('route', 20)}<b>Компас</b><span class="dotrow" aria-hidden="true">· · ·· ····</span></div>
         ${NAV.map((n) => `<a href="${n.href}" ${n.id === nav ? 'aria-current="page"' : ''}>${ui().icon(n.icon, 18)}<span>${n.label}</span>${n.id === 'queue' && waiting ? `<span class="count">${waiting}</span>` : ''}</a>`).join('')}
-        <div class="d-me"><div class="d-me__who"><b>${esc(psy.name)}</b><span class="hint">${esc(psy.specialty)}</span></div>
+        <div class="d-me"><div class="d-me__who"><b>${esc(psy.name)}</b><span class="hint">${esc(psy.specialty)}</span>${signed ? '<a class="hint" href="../auth/login.html?as=staff" data-logout>Выйти</a>' : ''}</div>
           ${KK.theme ? KK.theme.toggleHtml() : ''}</div>`);
     },
     // Критическое окно психолога: только C-SSRS из самоотчёта первичного приёма (origin 'intake'), не si_phq9
