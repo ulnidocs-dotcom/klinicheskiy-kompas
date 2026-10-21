@@ -335,3 +335,39 @@ test('snapshot and restore round-trip into a clean store without duplicates', ()
   assert.equal(other.patient('p_moved').name, 'Ольга Лебедева');
   assert.throws(() => other.restore({ patient: { id: '__proto__' } }), /без пациента/);
 });
+
+test('redeem with a bad channel does not burn the code', () => {
+  const s = mk();
+  const { code } = s.createLinkCode('p_olga');
+  assert.throws(() => s.redeemLinkCode(code, 'icq'), /Неизвестный канал/);
+  assert.equal(s.redeemLinkCode(code, 'web'), 'p_olga');
+});
+
+test('restore rejects inherited-property ids', () => {
+  const s = mk();
+  for (const id of ['toString', 'hasOwnProperty', '__proto__']) {
+    assert.throws(() => s.restore({ patient: { id } }), /Пакет без пациента/);
+  }
+});
+
+test('restore into an existing patient with a different name is rejected', () => {
+  const s = mk();
+  const before = s.events('p_olga').length;
+  assert.throws(() => s.restore({ patient: { id: 'p_olga', name: 'Другой' }, events: [] }), /другому пациенту/);
+  assert.equal(s.events('p_olga').length, before);
+});
+
+test('restore adds duplicate event ids from one input once', () => {
+  const s = mk();
+  const ev = { id: 'ev_dup', type: 'checkin', at: NOW.toISOString(), payload: { mood: 3, anxiety: 3, sleep: 3 } };
+  s.restore({ patient: { id: 'p_new', name: 'Новый' }, events: [ev, Object.assign({}, ev)] });
+  assert.equal(s.events('p_new').length, 1);
+});
+
+test('restore rejects a malformed bundle without writing anything', () => {
+  const s = mk();
+  const bad = { patient: { id: 'p_bad', name: 'Х' }, events: [{ id: 'e1', type: 'checkin', at: NOW.toISOString() }] };
+  assert.throws(() => s.restore(bad), /Пакет повреждён/);
+  assert.equal(s.patient('p_bad'), null);
+  assert.throws(() => s.restore({ patient: { id: 'p_bad', name: 'Х' }, events: null }), /Пакет повреждён/);
+});

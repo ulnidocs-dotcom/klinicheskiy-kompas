@@ -449,9 +449,12 @@
         if (!rec) fail('unknown', 'Код не найден. Проверьте цифры или получите новый код');
         if (rec.usedAt) fail('used', 'Этот код уже использован. Получите новый код в приложении');
         if (+new Date(rec.expiresAt) <= +clock()) fail('expired', 'Срок действия кода истёк. Получите новый код в приложении');
-        rec.usedAt = nowIso();
-        write();
-        api.linkChannel(rec.patientId, channel);
+        // Сначала проверки, потом гашение: ошибка канала не должна сжигать код.
+        if (!CHANNELS.includes(channel)) throw new Error(`Неизвестный канал ${channel}`);
+        if (!has(rec.patientId)) fail('unknown', 'Пациент для этого кода не найден');
+        api.linkChannel(rec.patientId, channel); // need() внутри перечитывает db, поэтому код гасим после
+        const fresh = (db.linkCodes || []).find((c) => c.code === rec.code);
+        if (fresh) { fresh.usedAt = nowIso(); write(); }
         return rec.patientId;
       },
       recordConsents(id, kinds) {
@@ -474,17 +477,33 @@
       restore({ patient, events = [], messages = [], audit: au = [] } = {}) {
         need();
         const id = patient && patient.id;
-        if (typeof id !== 'string' || !id || id === '__proto__' || id === 'constructor' || id === 'prototype') throw new Error('Пакет без пациента');
+        if (typeof id !== 'string' || !/^[A-Za-z0-9_-]{1,64}$/.test(id) || ['__proto__', 'constructor', 'prototype'].includes(id) || id in Object.prototype) throw new Error('Пакет без пациента');
+        // Форма проверяется целиком до первой записи: битый пакет не должен менять хранилище.
+        const bad = () => { throw new Error('Пакет повреждён'); };
+        if (!Array.isArray(events) || !Array.isArray(messages) || !Array.isArray(au)) bad();
+        for (const e of events) {
+          if (!e || typeof e.id !== 'string' || !e.id || typeof e.type !== 'string' || typeof e.at !== 'string' || Number.isNaN(+new Date(e.at)) ||
+            !e.payload || typeof e.payload !== 'object') bad();
+        }
+        for (const m of messages) if (!m || typeof m.id !== 'string' || !m.id) bad();
+        for (const a of au) if (!a || typeof a.id !== 'string' || !a.id) bad();
+        if (has(id) && db.patients[id].name !== patient.name) throw new Error('Пакет принадлежит другому пациенту');
         if (!has(id)) { db.patients[id] = Object.assign({}, patient); db.events[id] = []; }
-        db.messages[id] = db.messages[id] || [];
+        if (!Object.hasOwn(db.events, id)) db.events[id] = [];
+        if (!Object.hasOwn(db.messages, id)) db.messages[id] = [];
         const list = db.events[id];
+        // clientId уникален в пределах пациента; принятые id и clientId сразу попадают в seen (дубли внутри пакета).
         const seen = new Set(list.flatMap((e) => [e.id, e.clientId].filter(Boolean)));
-        for (const e of events) if (!seen.has(e.id) && !(e.clientId && seen.has(e.clientId))) list.push(Object.assign({}, e));
+        for (const e of events) {
+          if (seen.has(e.id) || (e.clientId && seen.has(e.clientId))) continue;
+          seen.add(e.id); if (e.clientId) seen.add(e.clientId);
+          list.push(Object.assign({}, e));
+        }
         list.sort((a, b) => new Date(a.at) - new Date(b.at));
         const msgIds = new Set(db.messages[id].map((m) => m.id));
-        for (const m of messages) if (!msgIds.has(m.id)) db.messages[id].push(Object.assign({}, m));
+        for (const m of messages) if (!msgIds.has(m.id)) { msgIds.add(m.id); db.messages[id].push(Object.assign({}, m)); }
         const auIds = new Set(db.audit.map((a) => a.id));
-        for (const a of au) if (!auIds.has(a.id)) db.audit.push(Object.assign({}, a, { patientId: id }));
+        for (const a of au) if (!auIds.has(a.id)) { auIds.add(a.id); db.audit.push(Object.assign({}, a, { patientId: id })); }
         syncAlerts(id, nowIso());
         write();
         return id;
