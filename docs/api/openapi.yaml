@@ -150,7 +150,7 @@ components:
       type: object
       properties:
         token: { type: string }
-        patientId: { type: [string, 'null'], description: null — пациент ещё не привязан, нужен код приглашения }
+        patientId: { type: [string, 'null'], description: 'null — пациент ещё не привязан, нужен код приглашения' }
         expiresAt: { type: string, format: date-time }
     EventIn:
       type: object
