@@ -39,12 +39,22 @@
       const fab = help && !tab ? `<a class="help-fab" href="help.html">${KK.ui.icon('heart', 16)}<span>Мне тяжело</span></a>` : '';
       const top = document.createElement('div');
       top.className = 'p-top';
-      top.innerHTML = `<span class="brand" aria-hidden="true">Компас</span><div class="tools">${fab}${KK.theme ? KK.theme.toggleHtml() : ''}</div>`;
+      top.innerHTML = `<span class="brand" aria-hidden="true">Компас</span><span class="sync-note" role="status" hidden></span><div class="tools">${fab}${KK.theme ? KK.theme.toggleHtml() : ''}</div>`;
       const main = document.getElementById('app');
       if (main && main.parentNode) main.parentNode.insertBefore(top, main);
       if (shell) shell.innerHTML = nav;
       if (back) KK.host.backButton(() => { location.href = back; });
+      if (KK.sync) { KK.sync.subscribe(() => app.syncNote(pid)); KK.sync.flush(); app.syncNote(pid); }
       return { pid, patient: () => KK.store.patient(pid) };
+    },
+
+    SYNC_PENDING: 'Сохранено на телефоне, отправится при появлении связи',
+    syncNote(pid) {
+      const el = document.querySelector('.sync-note');
+      if (!el || !KK.sync) return;
+      const n = KK.sync.pending(pid);
+      el.hidden = n === 0;
+      el.textContent = n ? app.SYNC_PENDING : '';
     },
 
     // Опросник, доступный пациенту: только собственные ключи KK.data.scales (без __proto__ и т.п.) и без audience

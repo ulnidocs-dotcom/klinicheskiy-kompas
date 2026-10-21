@@ -85,7 +85,7 @@
     const replaced = !!checkinOn(p, key);
     const payload = { mood: st.answer.mood, anxiety: st.answer.anxiety, sleep: st.answer.sleep };
     try {
-      store.addEvent(ctx.pid, 'checkin', payload, isToday ? {} : { at: app.noonOf(key) });
+      KK.sync.submit(ctx.pid, 'checkin', payload, isToday ? {} : { at: app.noonOf(key) });
     } catch (err) {
       app.toast('Не получилось сохранить. Попробуйте ещё раз'); // ответы остаются на экране
       return;
@@ -264,7 +264,7 @@
     if (slot) {
       if (slot.getAttribute('aria-pressed') === 'true') { st.undo = slot.dataset.dose; st.focus = '[data-undo-no]'; render(); return; }
       st.focus = `[data-dose="${slot.dataset.dose}"]`;
-      store.addEvent(ctx.pid, 'dose', { slot: slot.dataset.dose, taken: true });
+      KK.sync.submit(ctx.pid, 'dose', { slot: slot.dataset.dose, taken: true });
       app.toast('Приём отмечен');
     }
   });

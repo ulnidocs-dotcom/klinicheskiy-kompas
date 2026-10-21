@@ -44,7 +44,12 @@
 
   function finish() {
     KK.host.guardClose(false);
-    const e = store.addEvent(ctx.pid, 'scale', { scaleId: id, answers });
+    let e;
+    try { e = KK.sync.submit(ctx.pid, 'scale', { scaleId: id, answers }); } catch (err) {
+      if (!err.offline) throw err;
+      location.replace('help.html'); // экран помощи с 112 — без обещания, что ответы дошли
+      return;
+    }
     try { sessionStorage.removeItem(DRAFT); } catch (err) { /* */ }
     if (e.payload.flags && e.payload.flags.item9 > 0) { location.replace('help.html?from=phq9'); return; }
     ui.mount('#app', result(e.payload));

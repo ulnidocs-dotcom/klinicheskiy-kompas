@@ -148,7 +148,7 @@
       st.form[q.id] = v;
       if (q.id === 'meds' && v === false) delete st.form.medsText;
       if (st.i < formQs().length - 1) { st.i++; save(); return render(); }
-      store.addEvent(ctx.pid, 'intake_form', Object.assign({ complaint: '', reason: '' }, st.form));
+      KK.sync.submit(ctx.pid, 'intake_form', Object.assign({ complaint: '', reason: '' }, st.form));
       return go('cssrs');
     }
     if (st.step === 'cssrs') {
@@ -157,7 +157,13 @@
       const now = app.cssrsShown(st.cssrs);
       if (st.i < now.length - 1) { st.i++; save(); return render(); }
       const full = [0, 1, 2, 3, 4, 5].map((k) => (now.includes(k) && st.cssrs[k] != null ? st.cssrs[k] : null));
-      const e = store.addEvent(ctx.pid, 'scale', { scaleId: 'cssrs', answers: full, context: 'intake' });
+      let e;
+      try { e = KK.sync.submit(ctx.pid, 'scale', { scaleId: 'cssrs', answers: full, context: 'intake' }); } catch (err) {
+        if (!err.offline) throw err;
+        KK.host.guardClose(false);
+        location.replace('help.html');
+        return;
+      }
       st.step = 'tipi10'; st.i = 0; save();
       // Риск: сразу экран помощи; беседу можно продолжить позже с TIPI-RU.
       if (e.payload.band && (e.payload.band.code === 'moderate' || e.payload.band.code === 'high')) { KK.host.guardClose(false); location.replace('help.html?from=intake'); return; }
@@ -166,7 +172,7 @@
     const sid = st.step;
     st[sid][st.i] = v;
     if (st.i < S[sid].items.length - 1) { st.i++; save(); return render(); }
-    store.addEvent(ctx.pid, 'scale', { scaleId: sid, answers: st[sid], context: 'intake' });
+    KK.sync.submit(ctx.pid, 'scale', { scaleId: sid, answers: st[sid], context: 'intake' });
     return go(sid === 'tipi10' ? 'dass21' : 'cto_intro');
   }
 

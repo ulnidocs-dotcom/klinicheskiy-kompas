@@ -7,6 +7,7 @@
   // После скрининга безопасности в первичной беседе: «уведомлены» — только при открытом алерте C-SSRS.
   const fromIntake = ui.param('from') === 'intake' && store.alerts({ patientId: ctx.pid, open: true }).some((a) => a.ruleId === 'cssrs_risk');
   let sent = fromPhq || fromIntake;
+  let failed = false;
   let g = -1;
   const GROUND = ['5 вещей, которые вы видите', '4 вещи, которых можете коснуться', '3 звука, которые слышите', '2 запаха вокруг', '1 вкус, который чувствуете'];
 
@@ -25,7 +26,7 @@
         </div>
         <section class="tile aura aura--sand stack">
           ${sent ? `<p class="row">${ui.icon('check', 20)}<span>Сообщение отправлено врачу</span></p><p class="hint">Врач ответит в рабочее время. Это не экстренная служба: если станет хуже — звоните 112.</p><a class="btn btn--block" href="chat.html">Написать врачу</a>`
-            : `<p>Можно сообщить врачу, что вам сейчас плохо. Врач увидит сообщение в рабочее время — это не экстренная служба. Если опасно сейчас, звоните 112.</p><button class="btn btn--pill btn--block" data-sos>Сообщить врачу</button>`}
+            : `${failed ? '<p role="alert"><b>Сообщение не отправлено.</b> Нет связи. Если опасно сейчас — звоните 112.</p>' : ''}<p>Можно сообщить врачу, что вам сейчас плохо. Врач увидит сообщение в рабочее время — это не экстренная служба. Если опасно сейчас, звоните 112.</p><button class="btn btn--pill btn--block" data-sos>Сообщить врачу</button>`}
         </section>
         <section class="card stack">
           <h3>Вернуться в «здесь и сейчас»</h3>
@@ -37,7 +38,10 @@
       </section>`);
   }
   document.addEventListener('click', (e) => {
-    if (e.target.closest('[data-sos]')) { store.addEvent(ctx.pid, 'sos', { source: 'patient_button' }); sent = true; render(); }
+    if (e.target.closest('[data-sos]')) {
+      try { KK.sync.submit(ctx.pid, 'sos', { source: 'patient_button' }); sent = true; failed = false; } catch (err) { failed = true; }
+      render();
+    }
     if (e.target.closest('[data-g]')) { g++; render(); }
   });
   render();

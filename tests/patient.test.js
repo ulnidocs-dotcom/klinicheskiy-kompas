@@ -179,3 +179,20 @@ test('today.js check-in: real range slider 1–5 with labels, no auto-advance, b
   assert.match(css, /::-moz-range-thumb\{[^}]*width:44px;height:44px/);
   assert.match(css, /\.ruler input:focus-visible\{outline/);
 });
+test('patient pages write events only through KK.sync', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const dir = path.join(__dirname, '..', 'patient');
+  for (const f of fs.readdirSync(dir).filter((x) => x.endsWith('.js'))) {
+    assert.doesNotMatch(fs.readFileSync(path.join(dir, f), 'utf8'), /store\.addEvent\(/, f);
+  }
+  for (const f of fs.readdirSync(dir).filter((x) => x.endsWith('.html'))) {
+    assert.match(fs.readFileSync(path.join(dir, f), 'utf8'), /assets\/sync\.js/, f);
+  }
+});
+
+test('sync note text never promises delivery', () => {
+  const t = KK.patientApp.SYNC_PENDING;
+  assert.match(t, /отправится/);
+  assert.doesNotMatch(t, /сразу|мгновенно/);
+});
