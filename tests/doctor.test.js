@@ -234,3 +234,9 @@ test('referral by a non-psychiatrist is marked preliminary (Law 3185-1)', () => 
   assert.match(D().referralText(p, { name: 'Врач', specialty: 'терапевт' }), /предварительный характер.*3185-1/);
   assert.doesNotMatch(D().referralText(p, { name: 'Врач', specialty: 'психиатр' }), /предварительный характер/);
 });
+
+test('channel label for the event feed', () => {
+  assert.equal(D().channelLabel({ channel: 'max' }), ' · MAX');
+  assert.equal(D().channelLabel({ channel: 'max-chat' }), ' · чат MAX');
+  assert.equal(D().channelLabel({}), '');
+});

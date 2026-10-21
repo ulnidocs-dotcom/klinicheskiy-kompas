@@ -215,6 +215,11 @@
           ${m.readAt ? `<span class="hint">Прочитано ${ui().fmtDateTime(m.readAt)}</span>` : `<button class="btn" data-inbox-read="${e(m.id)}">Прочитано</button>`}
         </article>`).join('')}</section>`;
     },
+    // Откуда пришла отметка — для ленты событий; события без канала (демо-история) без подписи.
+    channelLabel: (e) => {
+      const L = { max: 'MAX', 'max-chat': 'чат MAX', telegram: 'Telegram', web: 'сайт' };
+      return e && L[e.channel] ? ` · ${L[e.channel]}` : '';
+    },
     // Подписи журнала действий для врача.
     auditLabel(a) {
       const lv = (l) => (KK.battery ? KK.battery.levelLabel(l) : l);

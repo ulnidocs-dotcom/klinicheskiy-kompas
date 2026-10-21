@@ -50,6 +50,7 @@
         ${p.routing && !p.routingConfirmed ? `<a class="btn ${p.routing === 'required' ? 'btn--primary' : ''}" href="routing.html?id=${id}">Оформить направление к психиатру</a>` : ''}
         <a class="btn" href="assess.html?id=${id}">Оценка на приёме</a>
         <a class="btn btn--ghost" href="messages.html?id=${id}">Написать пациенту</a>
+        <button class="btn btn--ghost" data-export>Экспорт данных</button>
       </div>
       <div class="grid2">
         <div class="stack">
@@ -60,7 +61,7 @@
             ${ui.scaleChart([series('phq9', 'var(--chart)'), series('gad7', 'var(--chart-2)')], { max: 27, bands, ariaLabel: 'Динамика PHQ-9 и GAD-7' })}</section>
           ${urgent ? '' : signalsHtml}
           <section class="card stack"><h2>Лента событий</h2>
-            <ul class="feed">${feed.map((e) => `<li><time>${ui.fmtDateTime(e.at)}</time><span><b>${ui.esc(TYPE[e.type] || e.type)}:</b> ${ui.esc(describe(e))}</span></li>`).join('') || '<li><span class="hint">Нет событий</span></li>'}</ul></section>
+            <ul class="feed">${feed.map((e) => `<li><time>${ui.fmtDateTime(e.at)}${ui.esc(D.channelLabel(e))}</time><span><b>${ui.esc(TYPE[e.type] || e.type)}:</b> ${ui.esc(describe(e))}</span></li>`).join('') || '<li><span class="hint">Нет событий</span></li>'}</ul></section>
         </div>
         <div class="stack">
           ${D.inboxHtml(store.inbox({ to: store.doctor().id, patientId: id, unread: true }), { title: "Новое от психолога" })}
@@ -80,6 +81,13 @@
       </div>`);
   }
   document.addEventListener('click', (e) => { const b = e.target.closest('[data-inbox-read]'); if (b) store.markInboxRead(b.dataset.inboxRead); });
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-export]');
+    if (!b) return;
+    const text = JSON.stringify(KK.bundle.exportBundle(store, id), null, 2);
+    // Диалоги в песочнице ссылки-демо заблокированы — сообщаем на самой кнопке.
+    if (!KK.host.download(KK.bundle.fileName(id), text)) b.textContent = 'Скачивание недоступно в этом окне';
+  });
   store.subscribe(render);
   render();
 })();
