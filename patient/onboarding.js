@@ -62,7 +62,7 @@
   document.addEventListener('click', (e) => {
     if (e.target.closest('[data-site]')) { step = 'site'; render(); return; }
     if (e.target.closest('[data-redeem]')) {
-      const code = document.getElementById('site-code').value.replace(/D/g, '');
+      const code = document.getElementById('site-code').value.replace(/\D/g, '');
       try {
         const pid = store.redeemLinkCode(code, 'web');
         try { localStorage.setItem(`kk:linked:${pid}`, 'true'); } catch (err) { /* приватный режим */ }
