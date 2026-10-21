@@ -7,8 +7,22 @@
   // Экран помощи открывается и до подключения (help.js: requireLink: false).
   const helpLink = `<a class="hint" href="help.html?p=${encodeURIComponent(ctx.pid)}">${ui.icon('heart', 16)} Нужна помощь сейчас</a>`;
   const state = { code: '', consents: { pd: false, doctor: false, notEmergency: false } };
+  const fromLink = patientApp.inviteFromStart(KK.host.startParam());
+  if (fromLink) state.code = fromLink;
+  const C = patientApp.MOVE_COPY;
+  if (ui.param('site') === '1') step = 'site';
 
   function view() {
+    if (step === 'site') return `
+      <section class="stack-l" style="padding-top:8vh">
+        <h1>${ui.esc(C[3])}</h1>
+        <p class="muted">${ui.esc(C[4])}</p>
+        <label class="field"><span class="hint">Код</span>
+          <input id="site-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000"></label>
+        <p class="hint" id="err" role="alert"></p>
+        <button class="btn btn--pill btn--block" data-redeem>Продолжить</button>
+        ${helpLink}
+      </section>`;
     if (step === 0) return `
       <section class="stack-l" style="padding-top:12vh">
         <div class="hello-orb" aria-hidden="true"></div>
@@ -26,6 +40,7 @@
         <p class="hint">Для демо: ${ui.esc(p.inviteCode)}</p>
         <p class="hint" id="err" role="alert"></p>
         <button class="btn btn--pill btn--block" data-check>Продолжить</button>
+        <button class="btn btn--ghost btn--block" data-site>${ui.esc(C[3])}</button>
         ${helpLink}
       </section>`;
     const c = state.consents;
@@ -44,6 +59,16 @@
   }
   function render() { ui.mount('#app', view()); }
   document.addEventListener('click', (e) => {
+    if (e.target.closest('[data-site]')) { step = 'site'; render(); return; }
+    if (e.target.closest('[data-redeem]')) {
+      const code = document.getElementById('site-code').value.replace(/D/g, '');
+      try {
+        const pid = store.redeemLinkCode(code, 'web');
+        try { localStorage.setItem(`kk:linked:${pid}`, 'true'); } catch (err) { /* приватный режим */ }
+        location.href = `index.html?p=${encodeURIComponent(pid)}`;
+      } catch (err) { document.getElementById('err').textContent = err.message; }
+      return;
+    }
     if (e.target.closest('[data-next]')) { step = 1; render(); }
     if (e.target.closest('[data-check]')) {
       state.code = document.getElementById('code').value.trim().toUpperCase();
@@ -52,6 +77,7 @@
     }
     if (e.target.closest('[data-done]')) {
       if (!Object.values(state.consents).every(Boolean)) { document.getElementById('err').textContent = 'Отметьте все пункты, чтобы продолжить.'; return; }
+      store.recordConsents(ctx.pid, ['data_processing', 'doctor_access', 'not_emergency']);
       patientApp.link(ctx.pid);
       store.sendMessage(ctx.pid, 'system', 'Пациент подключился к дневнику');
       location.href = `index.html?p=${ctx.pid}`;

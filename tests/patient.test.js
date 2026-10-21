@@ -196,3 +196,16 @@ test('sync note text never promises delivery', () => {
   assert.match(t, /отправится/);
   assert.doesNotMatch(t, /сразу|мгновенно/);
 });
+
+test('invite code is read from the MAX start parameter', () => {
+  assert.equal(KK.patientApp.inviteFromStart('inv_KMP-7302'), 'KMP-7302');
+  assert.equal(KK.patientApp.inviteFromStart('inv_kmp-7302'), 'KMP-7302');
+  assert.equal(KK.patientApp.inviteFromStart('other'), null);
+  assert.equal(KK.patientApp.inviteFromStart(null), null);
+});
+
+test('site move copy is calm and does not mention scores', () => {
+  for (const t of KK.patientApp.MOVE_COPY) {
+    assert.doesNotMatch(t, /балл|тяж|!/i, t);
+  }
+});

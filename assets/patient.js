@@ -21,7 +21,19 @@
       return KK.store.activePatientId();
     },
     linked: (pid) => LS.get(`kk:linked:${pid}`, false) === true,
-    link(pid) { LS.set(`kk:linked:${pid}`, true); },
+    link(pid) {
+      LS.set(`kk:linked:${pid}`, true);
+      try { KK.store.linkChannel(pid, KK.host.platform); } catch (e) { /* канал уже есть или стор недоступен */ }
+    },
+    // Ссылка врача в MAX: max.ru/<бот>?startapp=inv_KMP-7302 → код приглашения KMP-7302 (в демо код = токен).
+    inviteFromStart: (sp) => { const m = /^inv_([A-Za-z]{3}-\d{4})$/.exec(sp || ''); return m ? m[1].toUpperCase() : null; },
+    MOVE_COPY: [
+      'Открыть дневник на сайте',
+      'Откройте на компьютере адрес ниже и введите код. Код действует 10 минут и подходит один раз.',
+      'История отметок останется прежней.',
+      'У меня есть код из приложения',
+      'Введите шесть цифр, которые показаны в приложении в разделе «Профиль».',
+    ],
     prefs: (pid) => Object.assign({}, DEFAULT_PREFS, LS.get(`kk:prefs:${pid}`, {})),
     setPrefs(pid, patch) { LS.set(`kk:prefs:${pid}`, Object.assign(app.prefs(pid), patch)); },
 
@@ -31,6 +43,7 @@
       const pid = app.pid();
       if (!KK.store.patient(pid)) { location.href = '../index.html'; return null; }
       if (requireLink && !app.linked(pid)) { location.replace(`onboarding.html?p=${pid}`); return null; }
+      if (app.linked(pid) && KK.store.channels(pid).length === 0) { try { KK.store.linkChannel(pid, KK.host.platform); } catch (e) { /* */ } }
       const shell = document.getElementById('shell');
       const nav = tab ? `<div class="tabbar"><nav aria-label="Разделы">${TABS.map((t) =>
         `<a href="${t.href}" ${t.id === tab ? 'aria-current="page"' : ''}>${KK.ui.icon(t.icon)}<span>${t.label}</span></a>`).join('')}${help ? `<a class="tab-help" href="help.html">${KK.ui.icon('heart')}<span>Помощь</span></a>` : ''}</nav></div>` : '';
