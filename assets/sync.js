@@ -9,6 +9,7 @@
 
   function isUrgent(type, payload) {
     if (type === 'sos') return true;
+    if (type === 'ae') return !!(payload && Array.isArray(payload.items) && payload.items.some((i) => i && i.severity === 'severe'));
     if (type !== 'scale' || !KK.scales || !payload) return false;
     const r = KK.scales.score(payload.scaleId, payload.answers);
     if (r.flags && r.flags.item9 > 0) return true;
@@ -37,6 +38,7 @@
     const write = (q) => { try { storage.setItem(KEY, JSON.stringify(q)); } catch (e) { /* приватный режим */ } };
     const listeners = new Set();
     const notify = () => listeners.forEach((fn) => { try { fn(); } catch (e) { /* подписчик не должен ломать очередь */ } });
+    const rejectedList = []; // отклонённые хранилищем отметки: страница скажет пациенту
     let delay = FIRST_DELAY;
     let timer = null;
 
@@ -55,6 +57,10 @@
       if (!res) { retryLater(); notify(); return { sent: 0, pending: q.length }; }
       const done = new Set(res.map((r) => r.clientId));
       const rest = q.filter((it) => !done.has(it.clientId));
+      res.filter((r) => r.status === 'rejected').forEach((r) => {
+        const it = q.find((x) => x.clientId === r.clientId);
+        if (it) rejectedList.push({ clientId: it.clientId, patientId: it.patientId, type: it.type, reason: r.reason });
+      });
       write(rest);
       delay = FIRST_DELAY;
       notify();
@@ -81,6 +87,9 @@
       submit,
       flush,
       pending: (patientId) => read().filter((it) => !patientId || it.patientId === patientId).length,
+      queued: (patientId) => read().filter((it) => !patientId || it.patientId === patientId),
+      rejected: (patientId) => rejectedList.filter((r) => !patientId || r.patientId === patientId).slice(),
+      clearRejected(patientId) { for (let i = rejectedList.length - 1; i >= 0; i--) if (!patientId || rejectedList[i].patientId === patientId) rejectedList.splice(i, 1); },
       subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); },
     };
   }

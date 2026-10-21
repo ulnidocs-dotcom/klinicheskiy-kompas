@@ -70,3 +70,33 @@ test('validation errors from the store reach the caller and are not queued', () 
   assert.throws(() => sync.submit('p_olga', 'dose', { slot: 'утро', taken: true }, { at: '2026-10-18T12:00:00.000Z' }), /Задним числом/);
   assert.equal(sync.pending(), 0);
 });
+
+test('a queued item rejected by the store is kept in rejected() and can be cleared', () => {
+  const { sync, net } = setup({ online: false });
+  sync.submit('p_olga', 'dose', { slot: 'утро', taken: true }, { at: '2026-10-18T12:00:00.000Z' });
+  assert.equal(sync.pending(), 1);
+  net.online = true;
+  sync.flush();
+  assert.equal(sync.pending(), 0);
+  const r = sync.rejected('p_olga');
+  assert.equal(r.length, 1);
+  assert.equal(r[0].type, 'dose');
+  assert.match(r[0].reason, /Задним числом/);
+  sync.clearRejected('p_olga');
+  assert.equal(sync.rejected().length, 0);
+});
+
+test('a severe adverse event is urgent, a mild one is not', () => {
+  assert.equal(KK.syncIsUrgent('ae', { items: [{ id: 'x', severity: 'severe' }] }), true);
+  assert.equal(KK.syncIsUrgent('ae', { items: [{ id: 'x', severity: 'mild' }], note: '' }), false);
+  const { sync } = setup({ online: false });
+  assert.throws(() => sync.submit('p_olga', 'ae', { items: [{ id: 'x', severity: 'severe' }], note: '' }), (e) => e.offline === true);
+});
+
+test('queued dose marks the slot as taken today (no duplicate)', () => {
+  const { sync } = setup({ online: false });
+  sync.submit('p_olga', 'dose', { slot: 'утро', taken: true });
+  const slots = KK.patientApp.doseSlots([], new Date().toISOString(), sync.queued('p_olga').map((q) => Object.assign({}, q, { queuedAt: new Date().toISOString() })));
+  assert.equal(slots.find((s) => s.slot === 'утро').taken, true);
+  assert.equal(slots.find((s) => s.slot === 'вечер').taken, false);
+});

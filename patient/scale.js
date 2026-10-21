@@ -47,7 +47,7 @@
     let e;
     try { e = KK.sync.submit(ctx.pid, 'scale', { scaleId: id, answers }); } catch (err) {
       if (!err.offline) throw err;
-      location.replace('help.html'); // экран помощи с 112 — без обещания, что ответы дошли
+      location.replace('help.html?from=offline'); // экран помощи с 112 — без обещания, что ответы дошли
       return;
     }
     try { sessionStorage.removeItem(DRAFT); } catch (err) { /* */ }

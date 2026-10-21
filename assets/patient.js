@@ -44,7 +44,10 @@
       if (main && main.parentNode) main.parentNode.insertBefore(top, main);
       if (shell) shell.innerHTML = nav;
       if (back) KK.host.backButton(() => { location.href = back; });
-      if (KK.sync) { KK.sync.subscribe(() => app.syncNote(pid)); KK.sync.flush(); app.syncNote(pid); }
+      if (KK.sync) { KK.sync.subscribe(() => {
+          app.syncNote(pid);
+          if (KK.sync.rejected(pid).length) { KK.sync.clearRejected(pid); app.toast('Одна из отметок не сохранилась. Попробуйте отметить ещё раз'); }
+        }); KK.sync.flush(); app.syncNote(pid); }
       return { pid, patient: () => KK.store.patient(pid) };
     },
 
@@ -206,9 +209,11 @@
     checkinOn(events, key) {
       return KK.util.latestPerDay(events.filter((e) => e.type === 'checkin')).find((e) => KK.util.dayKey(e.at) === key) || null;
     },
-    doseSlots(events, nowIso) {
+    // queued — ещё не отправленные отметки: слот считается отмеченным, чтобы не ставить дубль
+    doseSlots(events, nowIso, queued = []) {
       const today = KK.util.dayKey(nowIso);
       const taken = new Set(events.filter((e) => e.type === 'dose' && e.payload.taken && KK.util.dayKey(e.at) === today).map((e) => e.payload.slot));
+      queued.filter((q) => q.type === 'dose' && q.payload && q.payload.taken && KK.util.dayKey(q.queuedAt) === today).forEach((q) => taken.add(q.payload.slot));
       return ['утро', 'вечер'].map((slot) => ({ slot, taken: taken.has(slot) }));
     },
     toast(text) {

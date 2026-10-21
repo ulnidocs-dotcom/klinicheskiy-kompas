@@ -161,7 +161,7 @@
       try { e = KK.sync.submit(ctx.pid, 'scale', { scaleId: 'cssrs', answers: full, context: 'intake' }); } catch (err) {
         if (!err.offline) throw err;
         KK.host.guardClose(false);
-        location.replace('help.html');
+        location.replace('help.html?from=offline');
         return;
       }
       st.step = 'tipi10'; st.i = 0; save();

@@ -84,8 +84,9 @@
     const isToday = key === todayKey();
     const replaced = !!checkinOn(p, key);
     const payload = { mood: st.answer.mood, anxiety: st.answer.anxiety, sleep: st.answer.sleep };
+    let r;
     try {
-      KK.sync.submit(ctx.pid, 'checkin', payload, isToday ? {} : { at: app.noonOf(key) });
+      r = KK.sync.submit(ctx.pid, 'checkin', payload, isToday ? {} : { at: app.noonOf(key) });
     } catch (err) {
       app.toast('Не получилось сохранить. Попробуйте ещё раз'); // ответы остаются на экране
       return;
@@ -93,7 +94,7 @@
     closeFlow();
     st.focus = isToday ? '[data-edit]' : `[data-day="${key}"]`;
     render();
-    app.toast(replaced ? 'Отметка обновлена' : 'Отмечено. Спасибо');
+    app.toast(r && r.pending ? app.SYNC_PENDING : replaced ? 'Отметка обновлена' : 'Отмечено. Спасибо');
   }
 
   function medsCard(p) {
@@ -101,7 +102,7 @@
       <a class="tile aura aura--teal" href="therapy.html"><span class="label">Лечение</span>
         <div class="tile-row"><p class="tile-title">Врач обсуждает с вами план лечения</p><span class="chev">${ui.icon('pill', 22)}</span></div></a>`;
     const drug = data.drugs[p.plan.drugId];
-    const slots = app.doseSlots(store.events(p.id, 'dose'), new Date().toISOString());
+    const slots = app.doseSlots(store.events(p.id, 'dose'), new Date().toISOString(), KK.sync.queued(p.id));
     const undo = st.undo && slots.find((s) => s.slot === st.undo && s.taken);
     const body = undo
       ? `<div class="undo" role="group" aria-labelledby="undo-q"><p id="undo-q">Отменить отметку «${undo.slot === 'утро' ? 'Утро' : 'Вечер'} · принято»?</p>
@@ -264,8 +265,8 @@
     if (slot) {
       if (slot.getAttribute('aria-pressed') === 'true') { st.undo = slot.dataset.dose; st.focus = '[data-undo-no]'; render(); return; }
       st.focus = `[data-dose="${slot.dataset.dose}"]`;
-      KK.sync.submit(ctx.pid, 'dose', { slot: slot.dataset.dose, taken: true });
-      app.toast('Приём отмечен');
+      const r = KK.sync.submit(ctx.pid, 'dose', { slot: slot.dataset.dose, taken: true });
+      app.toast(r && r.pending ? app.SYNC_PENDING : 'Приём отмечен');
     }
   });
   store.subscribe(render);

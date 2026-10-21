@@ -18,7 +18,7 @@
         <a class="btn btn--pill btn--block" href="chat.html">Задать вопрос врачу</a></section>`);
       return;
     }
-    const slots = app.doseSlots(store.events(p.id, 'dose'), new Date().toISOString());
+    const slots = app.doseSlots(store.events(p.id, 'dose'), new Date().toISOString(), KK.sync.queued(p.id));
     ui.mount('#app', `
       <a class="p-back" href="index.html">${ui.icon('back', 18)}Назад</a>
       <section class="stack-l">
@@ -35,6 +35,8 @@
               <div class="seg" role="group" aria-label="${ui.esc(a.label)}">${SEV.map((s) => `<button data-ae="${a.id}" data-sev="${s.v}" aria-pressed="${(marks[a.id] || 'none') === s.v}">${s.l}</button>`).join('')}</div></div>`).join('')}
           <label class="field"><span class="hint">Что-то ещё?</span><textarea id="note" placeholder="Например: тяжело засыпать после вечернего приёма">${ui.esc(note)}</textarea></label>
           <button class="btn btn--pill btn--block" data-send>Отправить врачу</button>
+          ${sentSevere === 'failed' ? '<p role="alert"><b>Сообщение не отправлено.</b> Нет связи. Если опасно сейчас — звоните 112.</p>' : ''}
+          ${sentSevere === 'pending' ? `<p class="hint" role="status">${app.SYNC_PENDING}</p>` : ''}
           ${sentSevere === true ? '<div class="card card--help"><p>Сигнал отправлен врачу, он свяжется с вами в рабочее время. Если состояние резко ухудшилось — звоните 112, не ждите ответа.</p></div>' : ''}
           ${sentSevere === false ? '<p class="hint" role="status">Отправлено. Врач увидит ваши отметки.</p>' : ''}
         </section>
@@ -44,15 +46,21 @@
     const b = e.target.closest('[data-ae]');
     if (b) { note = document.getElementById('note').value; marks[b.dataset.ae] = b.dataset.sev; render(); return; }
     const d = e.target.closest('[data-dose]');
-    if (d && d.getAttribute('aria-pressed') !== 'true') { KK.sync.submit(ctx.pid, 'dose', { slot: d.dataset.dose, taken: true }); app.toast('Приём отмечен'); render(); return; }
+    if (d && d.getAttribute('aria-pressed') !== 'true') { const r = KK.sync.submit(ctx.pid, 'dose', { slot: d.dataset.dose, taken: true }); app.toast(r && r.pending ? app.SYNC_PENDING : 'Приём отмечен'); render(); return; }
     if (e.target.closest('[data-send]')) {
       note = document.getElementById('note').value.trim();
       const drug = data.drugs[ctx.patient().plan.drugId];
       const items = Object.entries(marks).filter(([, s]) => s !== 'none')
         .map(([id, severity]) => ({ id, severity, label: drug.adverseEvents.find((a) => a.id === id).label }));
       if (!items.length && !note) { app.toast('Отметьте хотя бы один пункт или напишите пару слов'); return; }
-      KK.sync.submit(ctx.pid, 'ae', { items, note });
-      sentSevere = items.some((i) => i.severity === 'severe');
+      let r;
+      try { r = KK.sync.submit(ctx.pid, 'ae', { items, note }); } catch (err) {
+        if (!err.offline) throw err;
+        sentSevere = 'failed'; // отметки остаются на экране
+        render();
+        return;
+      }
+      sentSevere = r && r.pending ? 'pending' : items.some((i) => i.severity === 'severe');
       Object.keys(marks).forEach((k) => delete marks[k]); note = '';
       render();
     }
