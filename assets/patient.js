@@ -27,6 +27,7 @@
 
     start({ tab = document.body.dataset.tab, requireLink = true, help = true, back = null } = {}) {
       KK.host.init();
+      KK.host.guardClose(false); // каждая страница начинает без подтверждения закрытия; анкеты включают его сами
       const pid = app.pid();
       if (!KK.store.patient(pid)) { location.href = '../index.html'; return null; }
       if (requireLink && !app.linked(pid)) { location.replace(`onboarding.html?p=${pid}`); return null; }

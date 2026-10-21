@@ -2,10 +2,10 @@
   const { ui, store, patientApp: app } = KK;
   const ctx = app.start({ tab: null, back: 'index.html' });
   if (!ctx) return;
-  KK.host.guardClose(true);
   const id = ui.param('id');
   const def = app.patientScale(id);
   if (!def) { location.replace('index.html'); return; }
+  KK.host.guardClose(true);
   const next = app.nextScales(ui.param('next'));
   const DRAFT = `kk:draft:${ctx.pid}:${id}`;
   let answers = []; let i = 0; let busy = false;
