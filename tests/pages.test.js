@@ -30,3 +30,5 @@ test('patient onboarding confirms the phone and uses the site layout in a browse
   assert.match(js, /authPage\.mount\(/);
   assert.doesNotThrow(() => new Function(js));
 });
+
+test('admin page is wired', () => checkPage('admin/index.html', 'admin/index.js'));
