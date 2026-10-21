@@ -12,6 +12,9 @@
   const profileHash = (p) => hash(JSON.stringify(PROFILE_KEYS.map((k) => p[k] ?? null)));
   const BACKDATE_TYPES = ['checkin'];
   const BACKDATE_DAYS = 7;
+  const CHANNELS = ['max', 'telegram', 'web'];
+  const LINK_CODE_TTL = 10 * 60000; // код переезда на сайт: 10 минут, одно гашение
+  const CONSENT_VERSION = '1';
   const PLAN_LOCKED = ['status', 'confirmedAt', 'cancelledAt', 'offLabel'];
   const VERSION = 2;
   const PSYCHOLOGIST = { id: 'psy1', name: 'Мария Белова', specialty: 'клинический психолог' };
@@ -195,6 +198,11 @@
       addEvent(patientId, type, payload, opts = {}) {
         need();
         if (!has(patientId)) throw new Error(`Unknown patient ${patientId}`);
+        // Повтор из очереди синхронизации с тем же clientId не создаёт второе событие.
+        if (opts && opts.clientId) {
+          const dup = (db.events[patientId] || []).find((x) => x.clientId === String(opts.clientId));
+          if (dup) return dup;
+        }
         const now = nowIso();
         let at = now;
         if (opts && opts.at != null) {
@@ -209,6 +217,8 @@
         const p = type === 'scale' ? KK.scales.score(payload.scaleId, payload.answers) : payload;
         if (type === 'scale' && payload.context) p.context = String(payload.context);
         const e = { id: KK.util.uid('ev'), type, at, recordedAt: now, payload: p };
+        if (opts && opts.clientId) e.clientId = String(opts.clientId);
+        if (opts && opts.channel) e.channel = String(opts.channel);
         const list = db.events[patientId];
         let k = list.length;
         while (k > 0 && new Date(list[k - 1].at) > new Date(at)) k--;
@@ -394,6 +404,90 @@
         audit(patientId, 'import_history', { fields: Object.keys(parsed).filter((k) => k !== 'spans') });
         syncAlerts(patientId, nowIso());
         write();
+      },
+      // Каналы, через которые пациент ведёт дневник. История хранится по пациенту, а не по каналу.
+      channels: (id) => (need(), has(id) ? (db.patients[id].channels || []).filter((c) => !c.revokedAt).map((c) => Object.assign({}, c)) : []),
+      linkChannel(id, channel) {
+        need();
+        if (!has(id)) throw new Error(`Unknown patient ${id}`);
+        if (!CHANNELS.includes(channel)) throw new Error(`Неизвестный канал ${channel}`);
+        const p = db.patients[id];
+        p.channels = p.channels || [];
+        const cur = p.channels.find((c) => c.channel === channel && !c.revokedAt);
+        if (cur) return Object.assign({}, cur);
+        const c = { channel, linkedAt: nowIso(), revokedAt: null };
+        p.channels.push(c);
+        audit(id, 'channel_linked', { channel }, 'patient');
+        write();
+        return Object.assign({}, c);
+      },
+      unlinkChannel(id, channel) {
+        need();
+        const cur = has(id) && (db.patients[id].channels || []).find((c) => c.channel === channel && !c.revokedAt);
+        if (!cur) return false;
+        cur.revokedAt = nowIso();
+        audit(id, 'channel_unlinked', { channel }, 'patient');
+        write();
+        return true;
+      },
+      createLinkCode(id) {
+        need();
+        if (!has(id)) throw new Error(`Unknown patient ${id}`);
+        const now = +clock();
+        db.linkCodes = (db.linkCodes || []).filter((c) => !c.usedAt && +new Date(c.expiresAt) > now);
+        let code;
+        do { code = String(Math.floor(100000 + Math.random() * 900000)); } while (db.linkCodes.some((c) => c.code === code));
+        const rec = { code, patientId: id, createdAt: nowIso(), expiresAt: new Date(now + LINK_CODE_TTL).toISOString(), usedAt: null };
+        db.linkCodes.push(rec);
+        write();
+        return { code, expiresAt: rec.expiresAt };
+      },
+      redeemLinkCode(code, channel = 'web') {
+        need();
+        const fail = (reason, text) => { const e = new Error(text); e.reason = reason; throw e; };
+        const rec = (db.linkCodes || []).find((c) => c.code === String(code).trim());
+        if (!rec) fail('unknown', 'Код не найден. Проверьте цифры или получите новый код');
+        if (rec.usedAt) fail('used', 'Этот код уже использован. Получите новый код в приложении');
+        if (+new Date(rec.expiresAt) <= +clock()) fail('expired', 'Срок действия кода истёк. Получите новый код в приложении');
+        rec.usedAt = nowIso();
+        write();
+        api.linkChannel(rec.patientId, channel);
+        return rec.patientId;
+      },
+      recordConsents(id, kinds) {
+        need();
+        if (!has(id)) throw new Error(`Unknown patient ${id}`);
+        const at = nowIso();
+        db.patients[id].consents = kinds.map((kind) => ({ kind, at, version: CONSENT_VERSION }));
+        audit(id, 'consents_recorded', { kinds }, 'patient');
+        write();
+      },
+      // Снимок пациента для пакета переноса (assets/bundle.js): копия, без общих алертов и кодов.
+      snapshot(id) {
+        need();
+        if (!has(id)) throw new Error(`Unknown patient ${id}`);
+        const copy = (x) => JSON.parse(JSON.stringify(x));
+        return { patient: copy(db.patients[id]), events: copy(db.events[id] || []), messages: copy(db.messages[id] || []),
+          audit: copy(db.audit.filter((a) => a.patientId === id)) };
+      },
+      // Восстановить пациента из снимка: новый пациент создаётся, у существующего добавляются только новые записи.
+      restore({ patient, events = [], messages = [], audit: au = [] } = {}) {
+        need();
+        const id = patient && patient.id;
+        if (typeof id !== 'string' || !id || id === '__proto__' || id === 'constructor' || id === 'prototype') throw new Error('Пакет без пациента');
+        if (!has(id)) { db.patients[id] = Object.assign({}, patient); db.events[id] = []; }
+        db.messages[id] = db.messages[id] || [];
+        const list = db.events[id];
+        const seen = new Set(list.flatMap((e) => [e.id, e.clientId].filter(Boolean)));
+        for (const e of events) if (!seen.has(e.id) && !(e.clientId && seen.has(e.clientId))) list.push(Object.assign({}, e));
+        list.sort((a, b) => new Date(a.at) - new Date(b.at));
+        const msgIds = new Set(db.messages[id].map((m) => m.id));
+        for (const m of messages) if (!msgIds.has(m.id)) db.messages[id].push(Object.assign({}, m));
+        const auIds = new Set(db.audit.map((a) => a.id));
+        for (const a of au) if (!auIds.has(a.id)) db.audit.push(Object.assign({}, a, { patientId: id }));
+        syncAlerts(id, nowIso());
+        write();
+        return id;
       },
       subscribe(fn) {
         listeners.add(fn);

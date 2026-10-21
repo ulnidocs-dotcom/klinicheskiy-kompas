@@ -276,3 +276,62 @@ test('alerts store the rule version for the audit trail', () => {
   const a = s.alerts({ patientId: 'p_dmitry', open: true }).find((x) => x.ruleId === 'si_phq9');
   assert.match(a.ruleVersion, /^si_phq9@1/);
 });
+
+test('addEvent with the same clientId does not duplicate and keeps the channel', () => {
+  const s = mk();
+  const a = s.addEvent('p_olga', 'checkin', { mood: 4, anxiety: 2, sleep: 3 }, { clientId: 'cl_1', channel: 'max' });
+  const b = s.addEvent('p_olga', 'checkin', { mood: 1, anxiety: 5, sleep: 1 }, { clientId: 'cl_1', channel: 'max' });
+  assert.equal(a.id, b.id);
+  assert.equal(s.events('p_olga').filter((e) => e.clientId === 'cl_1').length, 1);
+  assert.equal(a.channel, 'max');
+});
+
+test('channels: link once, list active, unlink keeps history', () => {
+  const s = mk();
+  s.linkChannel('p_olga', 'max');
+  s.linkChannel('p_olga', 'max');
+  s.linkChannel('p_olga', 'web');
+  assert.deepEqual(s.channels('p_olga').map((c) => c.channel), ['max', 'web']);
+  const before = s.events('p_olga').length;
+  assert.equal(s.unlinkChannel('p_olga', 'max'), true);
+  assert.deepEqual(s.channels('p_olga').map((c) => c.channel), ['web']);
+  assert.equal(s.events('p_olga').length, before);
+  assert.throws(() => s.linkChannel('p_olga', 'icq'), /Неизвестный канал/);
+});
+
+test('link code: 6 digits, single use, expires in 10 minutes, links the web channel', () => {
+  let now = NOW;
+  const s = KK.createStore({ storage: memStorage(), clock: () => now });
+  s.reset();
+  const { code } = s.createLinkCode('p_olga');
+  assert.match(code, /^\d{6}$/);
+  assert.equal(s.redeemLinkCode(code, 'web'), 'p_olga');
+  assert.ok(s.channels('p_olga').some((c) => c.channel === 'web'));
+  assert.throws(() => s.redeemLinkCode(code), (e) => e.reason === 'used');
+  const late = s.createLinkCode('p_olga').code;
+  now = new Date(NOW.getTime() + 10 * 60000 + 1);
+  assert.throws(() => s.redeemLinkCode(late), (e) => e.reason === 'expired');
+  assert.throws(() => s.redeemLinkCode('000000'), (e) => e.reason === 'unknown');
+});
+
+test('consents are recorded with time and version', () => {
+  const s = mk();
+  s.recordConsents('p_olga', ['data_processing', 'doctor_access', 'not_emergency']);
+  assert.deepEqual(s.patient('p_olga').consents.map((c) => c.kind), ['data_processing', 'doctor_access', 'not_emergency']);
+  assert.equal(s.patient('p_olga').consents[0].version, '1');
+});
+
+test('snapshot and restore round-trip into a clean store without duplicates', () => {
+  const s = mk();
+  s.addEvent('p_olga', 'checkin', { mood: 4, anxiety: 2, sleep: 3 }, { clientId: 'cl_9', channel: 'max' });
+  const snap = s.snapshot('p_olga');
+  const other = mk();
+  const copy = JSON.parse(JSON.stringify(snap));
+  copy.patient.id = 'p_moved';
+  assert.equal(other.restore(copy), 'p_moved');
+  assert.equal(other.events('p_moved').length, snap.events.length);
+  other.restore(copy);
+  assert.equal(other.events('p_moved').length, snap.events.length);
+  assert.equal(other.patient('p_moved').name, 'Ольга Лебедева');
+  assert.throws(() => other.restore({ patient: { id: '__proto__' } }), /без пациента/);
+});

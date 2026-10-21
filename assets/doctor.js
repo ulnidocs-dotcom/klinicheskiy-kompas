@@ -222,6 +222,10 @@
       if (a.action === 'intake_handoff') return 'Психолог передал сводку первичного приёма';
       if (a.action === 'intake_completed') return 'Пациент завершил батарею первичного приёма';
       if (a.action === 'ack_alert' && a.actor === 'psy1') return `Психолог подтвердил сигнал: ${(a.details && a.details.action) || ''}`;
+      const CH = { max: 'MAX', telegram: 'Telegram', web: 'сайт' };
+      if (a.action === 'channel_linked') return `Пациент подключил дневник: ${CH[a.details && a.details.channel] || ''}`;
+      if (a.action === 'channel_unlinked') return `Пациент отключил дневник: ${CH[a.details && a.details.channel] || ''}`;
+      if (a.action === 'consents_recorded') return 'Пациент дал согласия при подключении';
       return a.action;
     },
     ROUTING_PATIENT_MSG: 'Я оформил(а) направление на консультацию к врачу-психиатру. Подробности обсудим по телефону.',
