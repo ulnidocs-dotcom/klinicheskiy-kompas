@@ -152,7 +152,7 @@ footer{padding:40px 0;color:var(--ink-2);font-size:13px}
 <header class="top"><div class="wrap">
   <h1>Вариации</h1>
   <p>Каждая функция дневника пациента в нескольких вариантах. Отметьте понравившиеся — выбор сохранится в этом браузере.</p>
-  <div class="legend"><span>A · Закат — светлый, по мотивам Aether</span><span>B · Виджеты — яркие карточки, по мотивам AI OS</span><span>C · Аура — текущий тёмный стиль</span></div>
+  <div class="legend"><span>A · Закат — светлый, по мотивам Aether</span><span>B · Виджеты — мягкие цветные карточки, по мотивам AI OS</span><span>C · Аура — текущий стиль приложения</span></div>
 </div></header>
 
 <main>
@@ -188,7 +188,7 @@ footer{padding:40px 0;color:var(--ink-2);font-size:13px}
   </div>
   <div class="home"></div>
 </div></div>
-<figcaption><span class="vlabel">A · Закат</span><p class="note">Огромное число даты на закатном градиенте, метрики моно-подписями, градиентная полоса прогресса дня.</p><button class="like" aria-pressed="false">Нравится</button></figcaption>
+<figcaption><span class="vlabel">A · Закат</span><p class="note">Огромное число даты на мягком тёплом градиенте, метрики моно-подписями, градиентная полоса прогресса дня.</p><button class="like" aria-pressed="false">Нравится</button></figcaption>
 </figure>
 
 <figure class="v" data-v="B">
@@ -223,7 +223,7 @@ footer{padding:40px 0;color:var(--ink-2);font-size:13px}
   <div class="bbar"><button class="cb" aria-label="Мой путь">◔</button><button class="yp">+ Отметить</button><button class="cb" aria-label="Мне тяжело">♡</button></div>
   <div class="home"></div>
 </div></div>
-<figcaption><span class="vlabel">B · Виджеты</span><p class="note">Сетка 2×2 из ярких градиентных виджетов, жёлтая пилюля действия в нижней панели.</p><button class="like" aria-pressed="false">Нравится</button></figcaption>
+<figcaption><span class="vlabel">B · Виджеты</span><p class="note">Сетка 2×2 из мягких градиентных виджетов, песочная пилюля действия в нижней панели.</p><button class="like" aria-pressed="false">Нравится</button></figcaption>
 </figure>
 
 <figure class="v" data-v="C">
@@ -288,7 +288,7 @@ footer{padding:40px 0;color:var(--ink-2);font-size:13px}
   </div>
   <div class="home"></div>
 </div></div>
-<figcaption><span class="vlabel">A · Закат</span><p class="note">Три ряда крупных точек, как в календаре Aether; выбранная — оранжевая, слово ответа справа моно-шрифтом.</p><button class="like" aria-pressed="false">Нравится</button></figcaption>
+<figcaption><span class="vlabel">A · Закат</span><p class="note">Три ряда крупных точек, как в календаре Aether; выбранная — песочная, слово ответа справа моно-шрифтом.</p><button class="like" aria-pressed="false">Нравится</button></figcaption>
 </figure>
 
 <figure class="v" data-v="B">
@@ -519,7 +519,7 @@ footer{padding:40px 0;color:var(--ink-2);font-size:13px}
   </div>
   <div class="home"></div>
 </div></div>
-<figcaption><span class="vlabel">A · Закат</span><p class="note">Точечный календарь месяца (дни с приёмом чёрные, сегодня оранжевый), тонкая линия настроения с одной точкой.</p><button class="like" aria-pressed="false">Нравится</button></figcaption>
+<figcaption><span class="vlabel">A · Закат</span><p class="note">Точечный календарь месяца (дни с приёмом тёмно-серые, сегодня песочный), тонкая линия настроения с одной точкой.</p><button class="like" aria-pressed="false">Нравится</button></figcaption>
 </figure>
 
 <figure class="v" data-v="B">
@@ -541,7 +541,7 @@ footer{padding:40px 0;color:var(--ink-2);font-size:13px}
   <div class="bbar"><button class="cb" aria-label="Неделя">7</button><button class="yp">Показать врачу</button><button class="cb" aria-label="Месяц">30</button></div>
   <div class="home"></div>
 </div></div>
-<figcaption><span class="vlabel">B · Виджеты</span><p class="note">Карточка «Ring»: волнистая кривая с жёлтым маркером; под ней колода «Приём / Сон / Беспокойство».</p><button class="like" aria-pressed="false">Нравится</button></figcaption>
+<figcaption><span class="vlabel">B · Виджеты</span><p class="note">Карточка «Ring»: волнистая кривая с песочным маркером; под ней колода «Приём / Сон / Беспокойство».</p><button class="like" aria-pressed="false">Нравится</button></figcaption>
 </figure>
 
 <figure class="v" data-v="C">
@@ -946,6 +946,44 @@ footer{padding:40px 0;color:var(--ink-2);font-size:13px}
       } else fallback();
     }catch(e){ fallback(); }
   });
+})();
+</script>
+<script>
+// Применить вариант к кабинету пациента: стиль сохраняется в браузере (kk:style:patient), кабинет открывается в нём.
+(function () {
+  const STYLE = { 'A': 'sunset', 'B': 'widgets', 'C': 'aura' };
+  const NAME = { sunset: 'Закат', widgets: 'Виджеты', aura: 'Аура' };
+  const get = () => { try { return localStorage.getItem('kk:style:patient') || 'aura'; } catch (e) { return 'aura'; } };
+  const css = document.createElement('style');
+  css.textContent = '.apply{align-self:flex-start;min-height:40px;padding:0 16px;border-radius:999px;border:0;background:var(--ink);color:var(--paper,#fff);font:inherit;font-weight:500;cursor:pointer;margin-top:6px}'
+    + '.apply[aria-pressed="true"]{opacity:.6}.style-note{font-size:13px;color:var(--ink-2)}';
+  document.head.appendChild(css);
+  function paint() {
+    const cur = get();
+    document.querySelectorAll('.apply').forEach((b) => {
+      const on = b.dataset.apply === cur;
+      b.setAttribute('aria-pressed', String(on));
+      b.textContent = on ? 'Применено в кабинете' : 'Применить в кабинете';
+    });
+    const note = document.querySelector('.style-note');
+    if (note) note.textContent = `Стиль кабинета пациента: ${NAME[cur]}`;
+  }
+  document.querySelectorAll('figcaption .vlabel').forEach((l) => {
+    const st = STYLE[l.textContent.trim().charAt(0)];
+    if (!st) return;
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'apply'; b.dataset.apply = st;
+    l.closest('figcaption').appendChild(b);
+  });
+  const bar = document.getElementById('copy');
+  if (bar) { const s = document.createElement('span'); s.className = 'style-note'; bar.parentNode.insertBefore(s, bar); }
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('.apply');
+    if (!b) return;
+    try { localStorage.setItem('kk:style:patient', b.dataset.apply); } catch (err) { /* приватный режим */ }
+    location.href = 'patient/index.html?p=p_olga';
+  });
+  paint();
 })();
 </script>
 </body>

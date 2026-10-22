@@ -15,7 +15,11 @@
       <div class="stack">
         <section class="card stack"><p class="q-title">Оформление</p>
           <div class="seg" role="group" aria-label="Тема">${[['light', 'Дневная'], ['dark', 'Ночная'], ['auto', 'Системная']].map(([v, l]) =>
-            `<button id="th-${v}" data-theme-set="${v}" aria-pressed="${theme === v}">${l}</button>`).join('')}</div></section>
+            `<button id="th-${v}" data-theme-set="${v}" aria-pressed="${theme === v}">${l}</button>`).join('')}</div>
+          <p class="hint">Стиль</p>
+          <div class="seg" role="group" aria-label="Стиль оформления">${[['aura', 'Аура'], ['sunset', 'Закат'], ['widgets', 'Виджеты']].map(([v, l]) =>
+            `<button data-style-set="${v}" aria-pressed="${KK.theme.style() === v}">${l}</button>`).join('')}</div>
+          <a class="hint" href="../variants.html">Посмотреть все вариации дизайна</a></section>
         <section class="card stack"><p class="q-title">Опросники</p><p class="hint">Предлагать короткие опросники раз в</p>
           <div class="seg" role="group" aria-label="Частота">${[[7, 'Неделя'], [14, '2 недели'], [28, 'Месяц']].map(([v, l]) =>
             `<button data-every="${v}" aria-pressed="${prefs.scaleEveryDays === v}">${l}</button>`).join('')}</div></section>
@@ -53,6 +57,8 @@
       (navigator.clipboard ? navigator.clipboard.writeText(ta.value) : Promise.reject()).then(() => app.toast('Скопировано'), () => app.toast('Выделите текст и скопируйте вручную'));
       return;
     }
+    const sb = e.target.closest('[data-style-set]');
+    if (sb) { KK.theme.setStyle(sb.dataset.styleSet); document.querySelectorAll('[data-style-set]').forEach((b) => b.setAttribute('aria-pressed', String(b === sb))); return; }
     const t = e.target.closest('[data-theme-set]');
     if (t) { KK.theme.set(t.dataset.themeSet); return; }
     const ev = e.target.closest('[data-every]');

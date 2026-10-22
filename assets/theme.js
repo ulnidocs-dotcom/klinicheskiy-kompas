@@ -15,6 +15,8 @@
     moon: SVG('<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/>'),
   };
   const valid = (v) => v === 'dark' || v === 'light';
+  const STYLE_KEY = 'kk:style:patient';
+  const STYLES = ['aura', 'sunset', 'widgets'];
   const store = () => { try { return g.localStorage || null; } catch (e) { return null; } };
   const get = (k) => { try { const s = store(); return s ? s.getItem(k) : null; } catch (e) { return null; } };
   const put = (k, v) => { try { const s = store(); if (s) s.setItem(k, v); } catch (e) { /* приватный режим */ } };
@@ -62,6 +64,18 @@
       if (valid(v)) root.dataset.theme = v;
       else if (v !== 'auto' && group() === 'staff') root.dataset.theme = 'light';
       else delete root.dataset.theme;
+      // Стиль оформления кабинета пациента (вариации дизайна): «Аура» — текущий, без атрибута.
+      const st = get(STYLE_KEY);
+      if (group() === 'patient' && STYLES.includes(st) && st !== 'aura') root.dataset.style = st;
+      else delete root.dataset.style;
+    },
+    STYLES,
+    style: () => { const st = get(STYLE_KEY); return STYLES.includes(st) ? st : 'aura'; },
+    setStyle(st) {
+      if (!STYLES.includes(st)) return;
+      put(STYLE_KEY, st);
+      theme.apply();
+      try { doc.dispatchEvent(new g.CustomEvent('kk:themechange', { detail: { style: st } })); } catch (e) { /* старый браузер */ }
     },
     set(v) {
       if (!doc) return;

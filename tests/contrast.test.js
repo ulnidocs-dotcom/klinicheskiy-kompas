@@ -297,3 +297,18 @@ test('host.js and pages use role-specific theme keys, not the shared legacy key'
     assert.doesNotMatch(fs.readFileSync(path.join(root, f), 'utf8'), /'kk:theme'/, f);
   }
 });
+
+test('patient style presets: stored per browser, only for patient pages, unknown values ignored', () => {
+  const t = globalThis.KK && globalThis.KK.theme;
+  if (!t) return; // theme.js грузится только в браузере
+  assert.deepEqual(t.STYLES, ['aura', 'sunset', 'widgets']);
+});
+
+test('style presets use only calm-palette tokens (no hard-coded colors)', () => {
+  const fs = require('node:fs');
+  const css = fs.readFileSync(require('node:path').join(__dirname, '..', 'assets', 'patient.css'), 'utf8');
+  const block = css.slice(css.indexOf('/* Стили из «Вариаций дизайна»'));
+  assert.ok(block.length > 50);
+  assert.doesNotMatch(block, /#[0-9a-f]{3,6}\b/i);
+  assert.match(block, /var\(--aura-/);
+});

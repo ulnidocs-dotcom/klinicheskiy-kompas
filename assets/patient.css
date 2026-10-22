@@ -178,3 +178,9 @@ a.tile{min-height:120px;display:flex;flex-direction:column;justify-content:space
 .move-code{background:var(--surface-2);border-radius:14px;padding:12px 14px}
 .link-code{font-size:32px;font-weight:300;letter-spacing:.18em;font-variant-numeric:tabular-nums;margin:0}
 .bundle-text{width:100%;font:12px/1.4 ui-monospace,Menlo,Consolas,monospace;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:8px}
+/* Стили из «Вариаций дизайна» (theme.js → html[data-style]). Только токены спокойной палитры — работают в дневной и ночной теме. */
+html[data-style="sunset"] body{background:linear-gradient(180deg,rgb(var(--aura-lavender) / .32) 0,rgb(var(--aura-sand) / .30) 300px,var(--bg) 620px) no-repeat,var(--bg)}
+html[data-style="sunset"] .tile.aura{background:linear-gradient(180deg,rgb(var(--aura-sand) / .30),rgb(var(--aura-lavender) / .18)),var(--surface)}
+html[data-style="sunset"] .p-app h1{font-weight:300;letter-spacing:-.02em}
+html[data-style="widgets"] .tile.aura{border-radius:26px;background:linear-gradient(155deg,rgb(var(--aura-a) / .50),rgb(var(--aura-b) / .62)),var(--surface)}
+html[data-style="widgets"] .tile-grid{gap:10px}
