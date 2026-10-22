@@ -247,3 +247,100 @@ test('crisis: phrasings with inserted words and common variants are caught', () 
     assert.notEqual(A.answer(t, {}).kind, 'crisis', t);
   }
 });
+
+// ——— Ревью безопасности (C1/C2, I1–I4): каждая формулировка — отдельный случай ———
+const CRISIS_REVIEW = [
+  'наглоталась таблеток', 'выпила все таблетки', 'выпью всю пачку', 'приму всю упаковку', 'зачем мне жить', 'для чего жить',
+  'мысли о смерти', 'думаю о смерти', 'желаю себе смерти', 'не хочу больше просыпаться', 'не хочетса жить', 'нехочу жить',
+  'нехочется жить', 'не хочу жыть', 'хочу умиреть', 'суецид', 'хочу сдохнуть', 'лучше сдохнуть', 'скорей бы сдохнуть',
+  'хочу себя убить', 'я себя порежу', 'я порезала руки', 'режу руки', 'я режусь', 'вскрою вены', 'вскрыть вены', 'бью себя',
+  'прыгну с крыши', 'спрыгну с моста', 'шагну с крыши', 'выйду в окно', 'брошусь под машину', 'хочу броситься под поезд',
+  'скорее бы умереть', 'умереть бы', 'я думала о том чтобы умереть', 'хочу покончить с этим', 'я хочу покончить', 'кончу с собой',
+  'смысла жить больше нет', 'жизнь не имеет смысла', 'хочу исчезнуть', 'хочу не быть', 'меня не станет', 'скоро меня не будет',
+  'прощайте всем', 'я больше не могу', 'сил больше нет',
+];
+test('crisis (review): stem-based, order-independent, typo-tolerant phrasings', () => {
+  for (const t of CRISIS_REVIEW) {
+    const r = A().answer(t);
+    assert.equal(r.kind, 'crisis', t);
+    assert.equal(r.entry, undefined, t);
+  }
+});
+const NOT_CRISIS_REVIEW = ['плохо сплю', 'как жить с тревогой', 'устала на работе', 'хочу пропустить визит', 'не хочу пить таблетки утром',
+  'сколько стоит парковка', 'боюсь смерти во время панической атаки', 'приняла все таблетки по схеме', 'меня не будет дома завтра',
+  'выйду на балкон подышать', 'брошу курить', 'хочу умерить тревогу', 'случайно выпила три таблетки'];
+test('crisis (review): ordinary messages are not crisis', () => {
+  for (const t of NOT_CRISIS_REVIEW) assert.notEqual(A().answer(t).kind, 'crisis', t);
+});
+
+const EMERGENCY = ['болит в груди', 'давит в груди', 'жжет в груди', 'болит сердце', 'задыхаюсь', 'не могу дышать', 'нечем дышать',
+  'был обморок', 'теряю сознание', 'отек горла', 'отекло лицо', 'опухли губы', 'отек языка', 'судороги', 'начался приступ, трясёт',
+  'сыпь по всему телу и отек', 'задыхаюсь от волнения', 'сердце болит и давит'];
+test('emergency: 112 in the reply, forwarded to the doctor, checked right after crisis', () => {
+  for (const t of EMERGENCY) {
+    const r = A().answer(t);
+    assert.equal(r.kind, 'emergency', t);
+    assert.equal(r.reply, 'Это может быть опасно. Если сейчас тяжело дышать, болит в груди, отекает лицо или горло — звоните 112. Я передал сообщение врачу.', t);
+    assert.equal(r.forward, true, t);
+  }
+  assert.equal(A().answer('не могу дышать, не хочу жить').kind, 'crisis');
+  for (const t of ['сердце колотится', 'приступ паники', 'Как успокоиться с помощью дыхания?', 'кормлю грудью', 'кружится голова'])
+    assert.notEqual(A().answer(t).kind, 'emergency', t);
+  assert.ok(!KK.data.faq.entries.find((e) => e.id === 'breathing').keywords.some((k) => /сердце|задыха/.test(k)));
+});
+
+const CHANGE_REVIEW = ['пропустил прием что делать', 'пропустила вечерний прием', 'приняла утром дважды', 'случайно выпила три таблетки',
+  'я не пью таблетки уже неделю', 'стало лучше можно не пить', 'можно принимать один раз в день', 'можно пить только вечером',
+  'не принимаю лекарство', 'что делать если не выпила таблетку вечером', 'принимаю антидепрессант', 'можно пить с антидепрессантом',
+  'после выпивки можно', 'можно вместе со снотворным', 'пью сертралин, можно вместе'];
+test('treatment change (review): skipped, extra, fewer doses, combinations and alcohol are forwarded', () => {
+  for (const t of CHANGE_REVIEW) {
+    const r = A().answer(t);
+    assert.equal(r.kind, 'treatment_change', t);
+    assert.match(r.reply, /^Не меняйте схему сами/, t);
+    assert.equal(r.forward, true, t);
+  }
+  for (const t of ['приняла утром дважды', 'случайно выпила три таблетки']) assert.match(A().answer(t).reply, /стало плохо — звоните 112/, t);
+  for (const t of ['принимаю антидепрессант', 'можно пить с антидепрессантом', 'пью сертралин, можно вместе']) {
+    const r = A().answer(t);
+    assert.equal(r.entry.id, 'combination', t);
+    assert.match(r.reply, /серотонинового синдрома/, t);
+    assert.equal(r.entry.source.title, KK.data.drugs.aviandr.source);
+  }
+  assert.equal(A().answer('после выпивки можно').entry.id, 'alcohol');
+  for (const t of ['Как отменить приём у врача?', 'сколько раз в день принимать', 'как успокоиться']) assert.notEqual(A().answer(t).kind, 'treatment_change', t);
+});
+
+test('pregnancy: answer from the instruction, «не меняйте лечение сами», forwarded', () => {
+  for (const t of ['я беременна', 'беременность и лечение', 'кормлю грудью', 'планирую беременность', 'можно ли кормить, у меня грудное вскармливание']) {
+    const r = A().answer(t);
+    assert.equal(r.kind, 'pregnancy', t);
+    assert.equal(r.entry.id, 'pregnancy', t);
+    assert.match(r.reply, /не применяют при беременности/, t);
+    assert.match(r.reply, /Не прекращайте и не меняйте лечение сами/, t);
+    assert.equal(r.forward, true, t);
+  }
+});
+
+test('unknown reply mentions 112; unsent() drops «Передал…» when the forward failed', () => {
+  assert.match(A().TEXT.unknown, /если опасно сейчас — звоните 112/i);
+  for (const r of [A().answer('Какая погода завтра?'), A().answer('Можно удвоить дозу?'), A().answer('болит в груди'), A().answer('я беременна')]) {
+    const u = A().unsent(r.reply);
+    assert.doesNotMatch(u, /Передал|передал/, r.kind);
+    assert.match(u, /пока не передан/, r.kind);
+  }
+});
+
+test('FAQ tie-breaks: the more specific entry wins', () => {
+  assert.equal(A().answer('не помогает лекарство').entry.id, 'when_works');
+  assert.equal(A().answer('тревога').entry.id, 'anxiety');
+  assert.equal(A().answer('ты врач?').entry.id, 'who_answers');
+});
+
+test('doctor: kind and reason labels are own properties only', () => {
+  const D = KK.doctorApp;
+  assert.equal(D.viaLabel({ via: 'assistant', reason: 'constructor' }).includes('function'), false);
+  const html = D.assistantLog([{ id: 'x', at: '2026-10-22T10:00:00.000Z', type: 'assistant', payload: { q: 'q', kind: 'toString', entryId: null } }]);
+  assert.doesNotMatch(html, /function/);
+  assert.match(D.assistantLog([{ id: 'y', at: '2026-10-22T10:00:00.000Z', type: 'assistant', payload: { q: 'болит в груди', kind: 'emergency' } }]), /badge--critical/);
+});

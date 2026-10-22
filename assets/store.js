@@ -13,7 +13,7 @@
   const BACKDATE_TYPES = ['checkin'];
   const BACKDATE_DAYS = 7;
   const CHANNELS = ['max', 'telegram', 'web'];
-  const MSG_REASONS = ['treatment_change', 'unknown', 'not_helped']; // почему ассистент передал вопрос врачу
+  const MSG_REASONS = ['treatment_change', 'unknown', 'not_helped', 'emergency', 'pregnancy']; // почему ассистент передал вопрос врачу
   const LINK_CODE_TTL = 10 * 60000; // код переезда на сайт: 10 минут, одно гашение
   const CONSENT_VERSION = '1';
   const PLAN_LOCKED = ['status', 'confirmedAt', 'cancelledAt', 'offLabel'];
@@ -499,6 +499,8 @@
         if (opts && opts.via === 'assistant') {
           m.via = 'assistant';
           if (MSG_REASONS.includes(opts.reason)) m.reason = opts.reason;
+          // ref — метка реплики ассистента: страница пациента по ней видит, что вопрос этой реплики уже у врача.
+          if (typeof opts.ref === 'string' && /^[A-Za-z0-9_-]{1,64}$/.test(opts.ref)) m.ref = opts.ref;
         }
         (db.messages[patientId] = db.messages[patientId] || []).push(m);
         write();

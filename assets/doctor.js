@@ -281,14 +281,16 @@
         </article>`).join('')}</section>`;
     },
     // ——— Ассистент с частыми вопросами (спек 2026-10-22 §C) ———
-    VIA_REASON: { treatment_change: 'вопрос об изменении лечения', unknown: 'нет ответа в материалах', not_helped: 'ответ ассистента не помог' },
+    VIA_REASON: { treatment_change: 'вопрос об изменении лечения', unknown: 'нет ответа в материалах', not_helped: 'ответ ассистента не помог',
+      emergency: 'возможно неотложное состояние', pregnancy: 'беременность или кормление грудью' },
     // Метка сообщения, которое передал ассистент; пусто для обычных сообщений.
     viaLabel(m) {
       if (!m || m.via !== 'assistant') return '';
-      const r = app.VIA_REASON[m.reason];
+      const r = Object.hasOwn(app.VIA_REASON, m.reason) ? app.VIA_REASON[m.reason] : '';
       return `<span class="badge badge--info">передано ассистентом${r ? ` · ${ui().esc(r)}` : ''}</span>`;
     },
-    ASSISTANT_KIND: { faq: 'ответ из базы', treatment_change: 'изменение лечения — передано врачу', unknown: 'не нашёл — передано врачу', crisis: 'кризис — экран помощи и сигнал врачу' },
+    ASSISTANT_KIND: { faq: 'ответ из базы', treatment_change: 'изменение лечения — передано врачу', unknown: 'не нашёл — передано врачу', crisis: 'кризис — экран помощи и сигнал врачу',
+      emergency: 'возможно неотложное — 112 и сообщение врачу', pregnancy: 'беременность — передано врачу' },
     // Переписка пациента с ассистентом (события 'assistant'), свёрнута; новые сверху.
     assistantLog(events, { open = false } = {}) {
       const u = ui(), e = u.esc;
@@ -297,7 +299,7 @@
         const p = ev.payload || {};
         const entry = p.entryId && KK.assistant ? KK.assistant.byId(p.entryId) : null;
         return `<li><time>${u.fmtDateTime(ev.at)}</time><span><b>Пациент:</b> ${e(p.q || '')}<br>
-          <span class="${p.kind === 'crisis' ? 'badge badge--critical' : 'badge badge--info'}">${e(app.ASSISTANT_KIND[p.kind] || p.kind || '')}</span>
+          <span class="${p.kind === 'crisis' || p.kind === 'emergency' ? 'badge badge--critical' : 'badge badge--info'}">${e(Object.hasOwn(app.ASSISTANT_KIND, p.kind) ? app.ASSISTANT_KIND[p.kind] : String(p.kind || ''))}</span>
           ${entry ? ` <span class="hint">«${e(entry.q)}» · ${e(entry.source.title)}</span>` : ''}</span></li>`;
       }).join('')}</ul>` : '<p class="hint">Пациент пока не обращался к ассистенту.</p>';
       return `<section class="card stack assistant-log"><details data-assistant-log${open ? ' open' : ''}><summary><h2 style="display:inline">Переписка с ассистентом</h2> <span class="hint">${list.length}</span></summary>
