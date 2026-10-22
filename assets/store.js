@@ -23,6 +23,8 @@
   const INTAKE_REQUIRED = ['form', 'cssrs', 'tipi', 'dass'];
   const INTAKE_LEVELS = ['psychiatrist_required', 'psychotherapy_desirable', 'consultation', 'observation'];
   const DRAFT_PREFIX = 'kk:intake-draft:';
+  const DRAFT_PREFIXES = [DRAFT_PREFIX, 'kk:previsit-draft:']; // черновики первичной беседы и анкеты до приёма
+  const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
   // Клиника: сотрудники, приглашения, одноразовые коды, ссылки восстановления (спек регистрации §4).
   const STAFF_ROLES = ['doctor', 'psychologist', 'admin'];
   const INVITE_TTL = 72 * 3600000;
@@ -110,7 +112,7 @@
       try {
         if (typeof storage.key !== 'function') return;
         const ks = [];
-        for (let i = 0; i < storage.length; i++) { const k = storage.key(i); if (k && k.startsWith(DRAFT_PREFIX)) ks.push(k); }
+        for (let i = 0; i < storage.length; i++) { const k = storage.key(i); if (k && DRAFT_PREFIXES.some((pre) => k.startsWith(pre))) ks.push(k); }
         ks.forEach((k) => storage.removeItem(k));
       } catch (e) { /* приватный режим */ }
     }
@@ -496,11 +498,29 @@
         for (const m of parsed.meds) if (!p.meds.some((x) => x.name.toLowerCase().startsWith(m.name.toLowerCase()))) p.meds.push(m);
         for (const d of parsed.diagnoses) if (!p.diagnoses.some((x) => x.code === d.code)) p.diagnoses.push(d);
         for (const c of parsed.conditions) if (!p.conditions.includes(c)) p.conditions.push(c);
+        // Аллергии — строки со слов пациента (анкета до приёма); без учёта регистра не дублируем.
+        p.allergies = p.allergies || [];
+        for (const a of parsed.allergies || []) if (!p.allergies.some((x) => String(x).toLowerCase() === String(a).toLowerCase())) p.allergies.push(String(a));
         ['age', 'sex', 'pregnant', 'lactating', 'postCovid'].forEach((k) => { if (parsed[k] != null) p[k] = parsed[k]; });
         if (parsed.history) p.history = Object.assign({}, p.history, parsed.history);
-        audit(patientId, 'import_history', { fields: Object.keys(parsed).filter((k) => k !== 'spans') });
+        audit(patientId, 'import_history', Object.assign({ fields: Object.keys(parsed).filter((k) => k !== 'spans' && k !== 'source') },
+          parsed.source ? { source: String(parsed.source) } : {}));
         syncAlerts(patientId, nowIso());
         write();
+      },
+      // Анкета до приёма (спек 2026-10-22 §B): назначение хранится у пациента и создаётся при первой отправке.
+      // Новая отправка заменяет прежнюю; ответы — события previsit после sentAt. visitDate — ГГГГ-ММ-ДД или пусто.
+      sendPrevisit(patientId, { visitDate, by } = {}) {
+        need();
+        if (!has(patientId)) throw new Error(`Unknown patient ${patientId}`);
+        const vd = String(visitDate || '').trim();
+        if (vd && (!ISO_DAY.test(vd) || Number.isNaN(+new Date(vd)))) throw new Error('Проверьте дату приёма');
+        const q = KK.data.questionnaires && KK.data.questionnaires.previsit;
+        const a = { questionnaireId: 'previsit', version: q ? q.version : 1, sentAt: nowIso(), visitDate: vd || null, by: by || db.doctor.id };
+        db.patients[patientId].previsit = a;
+        audit(patientId, 'previsit_sent', { version: a.version, visitDate: a.visitDate }, a.by);
+        write();
+        return Object.assign({}, a);
       },
       // Каналы, через которые пациент ведёт дневник. История хранится по пациенту, а не по каналу.
       channels: (id) => (need(), has(id) ? (db.patients[id].channels || []).filter((c) => !c.revokedAt).map((c) => Object.assign({}, c)) : []),

@@ -9,6 +9,8 @@
 
   function isUrgent(type, payload) {
     if (type === 'sos') return true;
+    // Анкета до приёма: «да» на вопрос о мыслях о самоповреждении поднимает критический сигнал (previsit_selfharm).
+    if (type === 'previsit') return !!(payload && payload.answers && payload.answers.selfHarm === true);
     if (type === 'ae') return !!(payload && Array.isArray(payload.items) && payload.items.some((i) => i && i.severity === 'severe'));
     if (type !== 'scale' || !KK.scales || !payload) return false;
     const r = KK.scales.score(payload.scaleId, payload.answers);

@@ -280,11 +280,13 @@
         phone_verified: 'Пациент подтвердил номер телефона', phone_confirm_requested: 'Номер при регистрации отличается от карты: ждёт подтверждения врача',
         phone_confirm_approved: 'Врач подтвердил номер пациента', phone_confirm_rejected: 'Врач отклонил подключение по пересланной ссылке' };
       if (INV[a.action]) return INV[a.action];
+      if (a.action === 'previsit_sent') return `Врач отправил анкету до приёма${a.details && a.details.visitDate ? ` (приём ${a.details.visitDate.split('-').reverse().join('.')})` : ''}`;
+      if (a.action === 'import_history') return a.details && a.details.source === 'previsit' ? 'Врач добавил в карту данные из анкеты до приёма (со слов пациента)' : 'Врач добавил в карту данные из выписки';
       return a.action;
     },
     ROUTING_PATIENT_MSG: 'Я оформил(а) направление на консультацию к врачу-психиатру. Подробности обсудим по телефону.',
     // Ключи пациентского приложения на этом устройстве, которые сбрасываются вместе с демо-данными (как на index.html).
-    demoDeviceKeys: (keys) => keys.filter((k) => k.startsWith('kk:linked:') || k.startsWith('kk:prefs:') || k.startsWith('kk:intake-draft:') || k === 'kk:outbox'),
+    demoDeviceKeys: (keys) => keys.filter((k) => k.startsWith('kk:linked:') || k.startsWith('kk:prefs:') || k.startsWith('kk:intake-draft:') || k.startsWith('kk:previsit-draft:') || k === 'kk:outbox'),
     alertStats(alerts) {
       const delivered = alerts.filter((a) => a.deliveredAt).map((a) => (new Date(a.deliveredAt) - new Date(a.dataAt)) / 1000);
       const acked = alerts.filter((a) => a.ackAt).map((a) => (new Date(a.ackAt) - new Date(a.dataAt)) / 60000);

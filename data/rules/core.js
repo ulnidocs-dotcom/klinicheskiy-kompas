@@ -19,6 +19,24 @@
     const r = c.latest(id);
     return r && new Date(c.now) - new Date(r.at) > STALE_DAYS * 864e5 ? [`${name} старше ${STALE_DAYS} дней — нужна переоценка`] : [];
   };
+  // Анкета до приёма: ответы на текущую отправку (события previsit после sentAt). Правила не зависят от assets/questionnaire.js —
+  // они считаются на каждой странице, где есть стор; подсчёт PHQ-2/GAD-2 тот же (сверяется в tests/previsit.test.js).
+  const PREVISIT_SRC = 'Kroenke et al., 2003 (PHQ-2); Kroenke et al., 2007 (GAD-2)';
+  const previsits = (c) => {
+    const from = c.patient.previsit?.sentAt;
+    return c.events.filter((e) => e.type === 'previsit' && e.payload && typeof e.payload.answers === 'object' && e.payload.answers && (!from || e.at >= from));
+  };
+  const selfHarmYes = (c) => previsits(c).filter((e) => e.payload.answers.selfHarm === true);
+  const n03 = (v) => (Number.isInteger(v) && v >= 0 && v <= 3 ? v : 0);
+  // { at, phq2, gad2, needPhq9, needGad7 } по последнему ответу; полная шкала после анкеты снимает напоминание.
+  const previsitScreen = (c) => {
+    const e = previsits(c).at(-1);
+    if (!e) return null;
+    const a = e.payload.answers;
+    const phq2 = n03(a.phq2_1) + n03(a.phq2_2), gad2 = n03(a.gad2_1) + n03(a.gad2_2);
+    const after = (id) => (c.scales[id] || []).some((r) => r.context !== 'intake' && r.at >= e.at);
+    return { at: e.at, phq2, gad2, needPhq9: phq2 >= 3 && !after('phq9'), needGad7: gad2 >= 3 && !after('gad7') };
+  };
   const unknownCi = (c) => (c.therapy ? c.therapy.contraindications.filter((x) => x.status === 'unknown').map((x) => `нет данных: ${x.label}`) : []);
 
   // Версия набора правил: попадает в каждый сигнал и алерт, чтобы решение можно было восстановить по журналу.
@@ -47,6 +65,14 @@
       basis: (c) => c.events.filter((e) => e.type === 'sos' && within(c, e.at, 24)).at(-1)?.at,
       inputs: (c) => [`нажатие кнопки — ${d(c.events.filter((e) => e.type === 'sos').at(-1).at)}`],
       text: () => 'Пациенту показаны контакты экстренной помощи. Свяжитесь с пациентом.' },
+    // Основание — первый ответ «да» по текущей анкете: черновой ответ и итоговая отправка не поднимают алерт дважды.
+    { id: 'previsit_selfharm', level: 'critical', routing: 'required', teamRule: true, source: 'Правило команды',
+      title: 'Мысли о самоповреждении (анкета до приёма)',
+      when: (c) => selfHarmYes(c).length > 0,
+      basis: (c) => selfHarmYes(c)[0]?.at,
+      inputs: (c) => [`анкета до приёма от ${d(selfHarmYes(c)[0].at)}: мысли о смерти или самоповреждении за 2 недели — «да»`],
+      missing: (c) => (c.scales.cssrs.some((r) => r.context !== 'intake' && r.at >= selfHarmYes(c)[0].at) ? [] : ['C-SSRS после анкеты не проведена']),
+      text: () => 'Пациент ответил «да» на вопрос о мыслях о смерти или самоповреждении за последние 2 недели. Пациенту показаны контакты экстренной помощи. Свяжитесь с пациентом, оцените суицидальный риск (C-SSRS).' },
     { id: 'ae_severe', level: 'critical', routing: null, teamRule: true, source: `${LABEL}; правило команды`,
       title: 'Выраженное нежелательное явление',
       when: (c) => c.events.some((e) => e.type === 'ae' && within(c, e.at, 72) && e.payload.items.some((i) => i.severity === 'severe')),
@@ -120,6 +146,16 @@
       inputs: (c) => [sc(c.latest('phq9'), 'PHQ-9'), sc(c.latest('gad7'), 'GAD-7'), 'порог правила: оба ≥ 10'],
       missing: (c) => [...staleScale(c, 'phq9', 'PHQ-9'), ...staleScale(c, 'gad7', 'GAD-7')],
       text: (c) => `PHQ-9 = ${c.latest('phq9').total}, GAD-7 = ${c.latest('gad7').total}.` },
+    { id: 'previsit_screen', level: 'info', routing: null, teamRule: false, source: PREVISIT_SRC,
+      title: 'PHQ-2 или GAD-2 ≥ 3 — оцените полной шкалой',
+      when: (c) => { const s = previsitScreen(c); return !!s && (s.needPhq9 || s.needGad7); },
+      basis: (c) => previsitScreen(c)?.at,
+      inputs: (c) => { const s = previsitScreen(c); return [`анкета до приёма от ${d(s.at)}: PHQ-2 = ${s.phq2}, GAD-2 = ${s.gad2}`, 'порог правила: ≥ 3 из 6']; },
+      text: (c) => {
+        const s = previsitScreen(c);
+        return [s.needPhq9 ? `PHQ-2 = ${s.phq2} (≥ 3) — оцените полной шкалой PHQ-9` : '', s.needGad7 ? `GAD-2 = ${s.gad2} (≥ 3) — оцените полной шкалой GAD-7` : '']
+          .filter(Boolean).join('; ') + '.';
+      } },
     { id: 'recurrent', level: 'info', routing: 'desirable', teamRule: true, source: KR_DEP,
       title: 'Рекуррентное депрессивное расстройство',
       when: (c) => (c.patient.diagnoses || []).some((d) => d.code.startsWith('F33')),
