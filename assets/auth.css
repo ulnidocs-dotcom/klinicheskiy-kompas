@@ -36,7 +36,7 @@
 /* Витрина демо входа: карточка на каждый кабинет */
 .demo-hub{max-width:1040px;margin:0 auto;padding:24px 16px 64px;display:grid;gap:20px;box-sizing:border-box}
 .demo-hub h1{font-size:clamp(28px,5vw,44px);font-weight:300;letter-spacing:-.02em;margin:0}
-.demo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px}
+.demo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:12px}
 .demo-card .btn{white-space:nowrap}
 .demo-card h2{margin:0}
 .demo-hub .kv{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;margin:0;font-size:14px}
