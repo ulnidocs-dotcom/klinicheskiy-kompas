@@ -42,3 +42,10 @@
 .demo-hub .kv{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;margin:0;font-size:14px}
 .demo-hub .kv dt{color:var(--text-3)}
 .demo-hub .kv dd{margin:0;min-width:0}
+/* Планшет: почты переносятся по символам, кнопки в последней колонке встают столбиком. */
+.admin-table .hint{overflow-wrap:anywhere;word-break:break-all}
+.admin-table td:last-child .row{flex-direction:column;align-items:flex-start;gap:4px}
+.admin-table td:last-child .btn{min-height:32px;padding:0 10px}
+.admin-table{table-layout:fixed;width:100%}
+.admin-table .btn{white-space:normal;text-align:left;line-height:1.2;padding-block:4px}
+.admin-table th:nth-child(1){width:30%}.admin-table th:nth-child(2){width:20%}.admin-table th:nth-child(3){width:16%}.admin-table th:nth-child(4){width:14%}

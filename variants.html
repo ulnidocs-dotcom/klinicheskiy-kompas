@@ -9,28 +9,28 @@
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Onest:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --page:#ECEBE7; --ink:#1B1B1A; --ink-2:#5E5D58; --line:#D6D4CE; --card:#F6F5F2;
-  --accent:#FF7A2F; --accent-2:#B98CFF; --focus:#2F5BFF;
+  --page:#E8E6E3; --ink:#1F252E; --ink-2:#5E5D58; --line:#D6D3CE; --card:#EAE6E1;
+  --accent:#B69D78; --accent-2:#C6B4D7; --focus:#7896B6;
   --f-ui:"Onest",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
   --f-dot:"Onest",system-ui,sans-serif;
   --f-mono:"JetBrains Mono","IBM Plex Mono",ui-monospace,Consolas,monospace;
   /* A — Закат */
-  --a-bg:#F3F2EF; --a-ink:#151515; --a-mute:#8C8B86; --a-dot:#1A1A1A; --a-dot-off:#D3D2CD; --a-hi:#FF6A1F;
-  --a-sunset:linear-gradient(180deg,#B9B8F0 0%,#D9C1E6 30%,#FFB27A 68%,#FF7A2F 100%);
-  --a-bar:linear-gradient(90deg,#FFD66B,#FFB27A 45%,#A9C6FF);
+  --a-bg:#E9E6E2; --a-ink:#1F252E; --a-mute:#8C8B86; --a-dot:#1F252E; --a-dot-off:#D3D2CD; --a-hi:#B1966D;
+  --a-sunset:linear-gradient(180deg,#C7D4E1 0%,#D3C6E1 30%,#D0C0A9 68%,#B69D78 100%);
+  --a-bar:linear-gradient(90deg,#CBB99F,#D0C0A9 45%,#C7D4E1);
   /* B — Виджеты */
   --b-bg:#EEEEEC;
-  --g-lime:radial-gradient(circle at 35% 75%,#F4FF6E 0,transparent 55%),linear-gradient(160deg,#9BEA5E,#18B48A);
-  --g-pink:radial-gradient(circle at 70% 25%,#FFB0E0 0,transparent 55%),linear-gradient(160deg,#B65CFF,#FF4F9A);
-  --g-orange:radial-gradient(circle at 40% 80%,#FFE58A 0,transparent 55%),linear-gradient(170deg,#FFC66B,#FF6F2C);
-  --g-blue:radial-gradient(circle at 30% 25%,#A8DBFF 0,transparent 55%),linear-gradient(160deg,#4B82FF,#22318F);
-  --g-violet:radial-gradient(circle at 70% 70%,#F59BFF 0,transparent 50%),linear-gradient(160deg,#7A5CFF,#3C1FA8);
-  --g-peach:radial-gradient(circle at 30% 30%,#FFE7C2 0,transparent 55%),linear-gradient(165deg,#FFC48A,#E3895B);
-  --g-amber:radial-gradient(circle at 70% 75%,#FFE69A 0,transparent 55%),linear-gradient(165deg,#F2B04A,#C9773F);
-  --b-pill:#E9FF3B;
+  --g-lime:radial-gradient(circle at 35% 75%,#CCBBA1 0,transparent 55%),linear-gradient(160deg,#89BFA4,#478566);
+  --g-pink:radial-gradient(circle at 70% 25%,#D8CCE3 0,transparent 55%),linear-gradient(160deg,#AE95C6,#A78DC1);
+  --g-orange:radial-gradient(circle at 40% 80%,#D6C8B3 0,transparent 55%),linear-gradient(170deg,#CBB99F,#B59C76);
+  --g-blue:radial-gradient(circle at 30% 25%,#C6D3E1 0,transparent 55%),linear-gradient(160deg,#8AA4C0,#3E5873);
+  --g-violet:radial-gradient(circle at 70% 70%,#CDBEDC 0,transparent 50%),linear-gradient(160deg,#AE95C6,#644681);
+  --g-peach:radial-gradient(circle at 30% 30%,#EAE2D7 0,transparent 55%),linear-gradient(165deg,#D6C8B3,#BCA582);
+  --g-amber:radial-gradient(circle at 70% 75%,#DCD0BD 0,transparent 55%),linear-gradient(165deg,#BBA481,#A98B5F);
+  --b-pill:#BAA380;
   /* C — Аура */
-  --c-bg:#0B0B0C; --c-ink:#F1EEE8; --c-mute:#8F8C86; --c-pill:rgba(255,255,255,.12);
-  --c-pink:#E2457F; --c-sage:#6F8F7A; --c-lilac:#8F7BD6; --c-amber:#E8A33D; --c-gold:#F5D36B;
+  --c-bg:#1F252E; --c-ink:#ECE7DF; --c-mute:#8F8C86; --c-pill:rgba(255,255,255,.12);
+  --c-pink:#9373B4; --c-sage:#6F8F7F; --c-lilac:#A98FC2; --c-amber:#B39972; --c-gold:#C8B598;
 }
 *{box-sizing:border-box}
 html{background:var(--page)}
@@ -55,14 +55,14 @@ figcaption{display:flex;flex-direction:column;gap:8px}
 .note{font-size:14px;color:var(--ink-2);margin:0}
 .like{align-self:flex-start;min-height:44px;padding:0 18px;border-radius:999px;border:1.5px solid var(--ink);background:transparent;font-weight:500;display:inline-flex;align-items:center;gap:8px}
 .like::before{content:"";width:14px;height:14px;border-radius:50%;border:1.5px solid currentColor}
-.like[aria-pressed="true"]{background:var(--ink);color:#fff}
+.like[aria-pressed="true"]{background:var(--ink);color:#FFFFFF}
 .like[aria-pressed="true"]::before{background:var(--accent);border-color:var(--accent)}
 
 /* ===== phone frame ===== */
-.phone{width:320px;max-width:100%;height:660px;border-radius:50px;padding:9px;background:linear-gradient(145deg,#F8F8F6,#C9C8C3);box-shadow:0 1px 0 #fff inset,0 24px 50px -24px rgba(0,0,0,.35),0 0 0 1px #BEBDB8}
-.phone.dk{background:linear-gradient(145deg,#2A2A2C,#0A0A0B);box-shadow:0 24px 50px -24px rgba(0,0,0,.5),0 0 0 1px #000}
+.phone{width:320px;max-width:100%;height:660px;border-radius:50px;padding:9px;background:linear-gradient(145deg,#E9E6E2,#C9C8C3);box-shadow:0 1px 0 #FFFFFF inset,0 24px 50px -24px rgba(31,37,46,.35),0 0 0 1px #BEBDB8}
+.phone.dk{background:linear-gradient(145deg,#2A2A2C,#1F252E);box-shadow:0 24px 50px -24px rgba(31,37,46,.5),0 0 0 1px #1F252E}
 .scr{position:relative;height:100%;border-radius:41px;overflow:hidden;font-size:14px}
-.island{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:92px;height:27px;border-radius:20px;background:#060606;z-index:9}
+.island{position:absolute;top:10px;left:50%;transform:translateX(-50%);width:92px;height:27px;border-radius:20px;background:#1F252E;z-index:9}
 .sb{position:absolute;top:16px;right:24px;display:flex;gap:4px;align-items:center;z-index:8}
 .sb i{display:block;width:3px;border-radius:1px;background:currentColor}
 .sb i:nth-child(1){height:5px}.sb i:nth-child(2){height:7px}.sb i:nth-child(3){height:9px}
@@ -79,13 +79,13 @@ figcaption{display:flex;flex-direction:column;gap:8px}
 .A .rule{height:1px;background:#DAD9D4;margin:10px 0}
 .A .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px}
 .A .val{font-size:17px;font-weight:500;margin-top:3px}
-.A .bar{height:26px;border-radius:7px;background:#E3E2DE;position:relative;overflow:hidden}
+.A .bar{height:26px;border-radius:7px;background:#E3E1DE;position:relative;overflow:hidden}
 .A .bar>span{position:absolute;inset:0 auto 0 0;background:var(--a-bar);border-radius:7px}
 .A .bar>em{position:absolute;left:8px;top:50%;transform:translateY(-50%);font-style:normal;font-family:var(--f-mono);font-size:10px}
-.A .chk{width:44px;height:44px;border-radius:50%;border:1.5px solid #1A1A1A;background:transparent;display:grid;place-items:center;flex:none}
-.A .chk[aria-pressed="true"]{background:#1A1A1A;color:#fff}
+.A .chk{width:44px;height:44px;border-radius:50%;border:1.5px solid #1F252E;background:transparent;display:grid;place-items:center;flex:none}
+.A .chk[aria-pressed="true"]{background:#1F252E;color:#FFFFFF}
 .A .chk svg{width:18px;height:18px}
-.A .btn{min-height:46px;border-radius:14px;border:0;background:#151515;color:#fff;font-weight:500;padding:0 18px}
+.A .btn{min-height:46px;border-radius:14px;border:0;background:#1F252E;color:#FFFFFF;font-weight:500;padding:0 18px}
 .dots{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
 .dots .d{aspect-ratio:1;border-radius:50%;background:var(--a-dot-off)}
 .dots .d.on{background:var(--a-dot)}
@@ -94,17 +94,17 @@ figcaption{display:flex;flex-direction:column;gap:8px}
 .dots .h{font-family:var(--f-mono);font-size:9px;text-align:center;color:var(--a-mute)}
 
 /* ===== B — Виджеты ===== */
-.B{background:var(--b-bg);color:#121212}
+.B{background:var(--b-bg);color:#1F252E}
 .B h3{font-size:24px;font-weight:600;letter-spacing:-.02em;margin:4px 0 12px}
-.gc{border-radius:24px;padding:12px 13px;color:#fff;position:relative;overflow:hidden}
+.gc{border-radius:24px;padding:12px 13px;color:#FFFFFF;position:relative;overflow:hidden}
 .gc .t{font-size:12px;font-weight:600;line-height:1.1}
 .gc .s{font-size:11px;opacity:.75}
 .gc .n{font-weight:300;letter-spacing:-.04em;line-height:1}
 .bbar{position:absolute;left:14px;right:14px;bottom:18px;display:flex;align-items:center;justify-content:space-between;z-index:6}
-.bbar .cb{width:44px;height:44px;border-radius:50%;background:#fff;border:0;display:grid;place-items:center;box-shadow:0 2px 8px rgba(0,0,0,.08)}
-.bbar .yp{height:44px;min-width:116px;border-radius:999px;background:var(--b-pill);border:0;font-weight:600;font-size:13px;padding:0 18px;box-shadow:0 4px 14px rgba(200,230,0,.45)}
+.bbar .cb{width:44px;height:44px;border-radius:50%;background:#FFFFFF;border:0;display:grid;place-items:center;box-shadow:0 2px 8px rgba(31,37,46,.08)}
+.bbar .yp{height:44px;min-width:116px;border-radius:999px;background:var(--b-pill);border:0;font-weight:600;font-size:13px;padding:0 18px;box-shadow:0 4px 14px rgba(150,122,81,.45)}
 .deck{position:relative}
-.deck .gc{box-shadow:0 -6px 18px rgba(0,0,0,.08)}
+.deck .gc{box-shadow:0 -6px 18px rgba(31,37,46,.08)}
 
 /* ===== C — Аура ===== */
 .C{background:var(--c-bg);color:var(--c-ink)}
@@ -113,8 +113,8 @@ figcaption{display:flex;flex-direction:column;gap:8px}
 .C .mute{color:var(--c-mute)}
 .dotnum{font-family:var(--f-dot);font-weight:300;letter-spacing:-.02em;line-height:1;font-variant-numeric:tabular-nums}
 .pill{min-height:48px;border-radius:999px;border:0;background:var(--c-pill);color:var(--c-ink);display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 6px 0 18px;font-size:14px;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
-.pill .plus{width:36px;height:36px;border-radius:50%;background:#fff;color:#111;display:grid;place-items:center;font-size:20px;font-weight:400;flex:none}
-.ctile{border-radius:22px;padding:12px;position:relative;overflow:hidden;background:#1A1A1C}
+.pill .plus{width:36px;height:36px;border-radius:50%;background:#FFFFFF;color:#1F252E;display:grid;place-items:center;font-size:20px;font-weight:400;flex:none}
+.ctile{border-radius:22px;padding:12px;position:relative;overflow:hidden;background:#1F252E}
 .tag{font-size:11px;color:var(--c-mute)}
 
 /* interactive options */
@@ -138,11 +138,11 @@ figcaption{display:flex;flex-direction:column;gap:8px}
 }
 
 /* selection bar */
-.selbar{position:fixed;left:0;right:0;bottom:0;z-index:50;background:rgba(236,235,231,.92);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-top:1px solid var(--line)}
+.selbar{position:fixed;left:0;right:0;bottom:0;z-index:50;background:rgba(232,230,227,.92);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-top:1px solid var(--line)}
 .selbar .wrap{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:12px;padding-bottom:12px;flex-wrap:wrap}
 .selbar strong{font-weight:500;font-size:16px}
-.selbar .go{min-height:46px;border-radius:999px;border:0;background:var(--ink);color:#fff;padding:0 22px;font-weight:500}
-.selbar textarea{width:100%;min-height:70px;font:inherit;font-size:14px;border-radius:12px;border:1px solid var(--line);padding:10px;background:#fff;color:var(--ink)}
+.selbar .go{min-height:46px;border-radius:999px;border:0;background:var(--ink);color:#FFFFFF;padding:0 22px;font-weight:500}
+.selbar textarea{width:100%;min-height:70px;font:inherit;font-size:14px;border-radius:12px;border:1px solid var(--line);padding:10px;background:#FFFFFF;color:var(--ink)}
 .selbar .msg{font-size:13px;color:var(--ink-2)}
 footer{padding:40px 0;color:var(--ink-2);font-size:13px}
 @media (max-width:420px){.row{gap:36px}}
@@ -168,8 +168,8 @@ footer{padding:40px 0;color:var(--ink-2);font-size:13px}
   <div class="island"></div><div class="sb"><i></i><i></i><i></i><b></b></div>
   <div style="position:absolute;inset:0 0 auto;height:300px;background:var(--a-sunset)"></div>
   <div class="bd">
-    <div style="position:relative;color:#151515;padding-top:8px">
-      <div class="ml" style="color:#4c4566">Доброе утро, Анна</div>
+    <div style="position:relative;color:#1F252E;padding-top:8px">
+      <div class="ml" style="color:#564566">Доброе утро, Анна</div>
       <div class="big" style="font-size:132px;margin-top:22px">20</div>
       <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:6px">
         <div style="font-size:26px;font-weight:600;letter-spacing:-.02em">ОКТЯБРЯ</div><div style="font-size:20px;opacity:.7">Вт</div>
@@ -196,9 +196,9 @@ footer{padding:40px 0;color:var(--ink-2);font-size:13px}
   <div class="island"></div><div class="sb"><i></i><i></i><i></i><b></b></div>
   <div class="bd">
     <div style="display:flex;justify-content:space-between;align-items:end;margin-top:6px">
-      <h3 style="margin:0">Сегодня</h3><span style="font-size:12px;color:#777">Вторник, 20 октября</span>
+      <h3 style="margin:0">Сегодня</h3><span style="font-size:12px;color:#777777">Вторник, 20 октября</span>
     </div>
-    <p style="margin:6px 0 14px;color:#555;font-size:13px">Анна, всё по силам. Начните с малого.</p>
+    <p style="margin:6px 0 14px;color:#555555;font-size:13px">Анна, всё по силам. Начните с малого.</p>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <div class="gc" style="background:var(--g-lime);height:150px">
         <div class="t">Авиандр</div><div class="s">20 мг</div>
@@ -207,7 +207,7 @@ footer{padding:40px 0;color:var(--ink-2);font-size:13px}
       </div>
       <div class="gc" style="background:var(--g-pink);height:150px">
         <div class="t">Самочувствие</div><div class="s">ещё не отмечено</div>
-        <svg viewBox="0 0 120 40" style="width:100%;margin-top:26px" class="wave"><path d="M0 22 C20 6,30 36,52 20 S90 8,120 20" stroke="#fff" stroke-width="1.6" opacity=".9"/></svg>
+        <svg viewBox="0 0 120 40" style="width:100%;margin-top:26px" class="wave"><path d="M0 22 C20 6,30 36,52 20 S90 8,120 20" stroke="#FFFFFF" stroke-width="1.6" opacity=".9"/></svg>
         <div class="s" style="position:absolute;bottom:12px">3 вопроса · минута</div>
       </div>
       <div class="gc" style="background:var(--g-blue);height:150px">
@@ -216,7 +216,7 @@ footer{padding:40px 0;color:var(--ink-2);font-size:13px}
       </div>
       <div class="gc" style="background:var(--g-orange);height:150px">
         <div class="t">Дыхание</div><div class="s">вдох 4 · выдох 6</div>
-        <div style="width:58px;height:58px;border-radius:50%;margin:18px auto 0;background:radial-gradient(circle,#fff 0,rgba(255,255,255,.2) 70%)"></div>
+        <div style="width:58px;height:58px;border-radius:50%;margin:18px auto 0;background:radial-gradient(circle,#FFFFFF 0,rgba(255,255,255,.2) 70%)"></div>
       </div>
     </div>
   </div>
@@ -261,24 +261,24 @@ footer{padding:40px 0;color:var(--ink-2);font-size:13px}
 <figure class="v" data-v="A">
 <div class="phone"><div class="scr A">
   <div class="island"></div><div class="sb"><i></i><i></i><i></i><b></b></div>
-  <div style="position:absolute;right:-60px;top:-40px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,#FFB27A,#FFD3B0 45%,transparent 70%);filter:blur(10px)"></div>
+  <div style="position:absolute;right:-60px;top:-40px;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,#D0C0A9,#E3DACC 45%,transparent 70%);filter:blur(10px)"></div>
   <div class="bd">
     <div class="ml" style="margin-top:8px">Вторник, 20 октября</div>
     <div style="font-size:30px;font-weight:600;letter-spacing:-.03em;margin:4px 0 14px;line-height:1">Как вы<br>сегодня?</div>
     <div class="ci" data-choice>
-      <div style="display:flex;justify-content:space-between"><span class="ml">Настроение</span><span class="ml cv" style="color:#151515">как обычно</span></div>
+      <div style="display:flex;justify-content:space-between"><span class="ml">Настроение</span><span class="ml cv" style="color:#1F252E">как обычно</span></div>
       <div style="display:flex;justify-content:space-between;margin:6px 0 12px">
         <button class="opt adot" data-w="совсем плохо" aria-label="Совсем плохо" aria-pressed="false"></button><button class="opt adot" data-w="хуже обычного" aria-label="Хуже обычного" aria-pressed="false"></button><button class="opt adot" data-w="как обычно" aria-label="Как обычно" aria-pressed="true"></button><button class="opt adot" data-w="неплохо" aria-label="Неплохо" aria-pressed="false"></button><button class="opt adot" data-w="хорошо" aria-label="Хорошо" aria-pressed="false"></button>
       </div>
     </div>
     <div class="ci" data-choice>
-      <div style="display:flex;justify-content:space-between"><span class="ml">Беспокойство</span><span class="ml cv" style="color:#151515">немного</span></div>
+      <div style="display:flex;justify-content:space-between"><span class="ml">Беспокойство</span><span class="ml cv" style="color:#1F252E">немного</span></div>
       <div style="display:flex;justify-content:space-between;margin:6px 0 12px">
         <button class="opt adot" data-w="очень сильно" aria-label="Очень сильно" aria-pressed="false"></button><button class="opt adot" data-w="заметно" aria-label="Заметно" aria-pressed="false"></button><button class="opt adot" data-w="немного" aria-label="Немного" aria-pressed="true"></button><button class="opt adot" data-w="почти нет" aria-label="Почти нет" aria-pressed="false"></button><button class="opt adot" data-w="спокойно" aria-label="Спокойно" aria-pressed="false"></button>
       </div>
     </div>
     <div class="ci" data-choice>
-      <div style="display:flex;justify-content:space-between"><span class="ml">Сон</span><span class="ml cv" style="color:#151515">выберите</span></div>
+      <div style="display:flex;justify-content:space-between"><span class="ml">Сон</span><span class="ml cv" style="color:#1F252E">выберите</span></div>
       <div style="display:flex;justify-content:space-between;margin:6px 0 12px">
         <button class="opt adot" data-w="почти не спала" aria-label="Почти не спала" aria-pressed="false"></button><button class="opt adot" data-w="плохо" aria-label="Плохо" aria-pressed="false"></button><button class="opt adot" data-w="как обычно" aria-label="Как обычно" aria-pressed="false"></button><button class="opt adot" data-w="хорошо" aria-label="Хорошо" aria-pressed="false"></button><button class="opt adot" data-w="отлично" aria-label="Отлично" aria-pressed="false"></button>
       </div>
@@ -323,7 +323,7 @@ footer{padding:40px 0;color:var(--ink-2);font-size:13px}
   <div class="aura" style="width:300px;height:300px;left:0;top:90px;background:var(--c-pink);opacity:.6"></div>
   <div class="island"></div><div class="sb"><i></i><i></i><i></i><b></b></div>
   <div class="bd" data-choice>
-    <div style="display:flex;gap:6px;justify-content:center;margin-top:12px"><span style="width:22px;height:4px;border-radius:2px;background:#fff"></span><span style="width:22px;height:4px;border-radius:2px;background:#555"></span><span style="width:22px;height:4px;border-radius:2px;background:#555"></span></div>
+    <div style="display:flex;gap:6px;justify-content:center;margin-top:12px"><span style="width:22px;height:4px;border-radius:2px;background:#FFFFFF"></span><span style="width:22px;height:4px;border-radius:2px;background:#555555"></span><span style="width:22px;height:4px;border-radius:2px;background:#555555"></span></div>
     <div class="mute" style="text-align:center;margin-top:28px;font-size:13px">Настроение</div>
     <div class="cv" style="text-align:center;font-size:30px;font-weight:300;margin-top:8px;min-height:40px">как обычно</div>
     <div style="display:flex;justify-content:space-between;margin:70px 4px 0">
@@ -356,7 +356,7 @@ footer{padding:40px 0;color:var(--ink-2);font-size:13px}
     <div class="ml" style="margin-top:8px">Авиандр · 2 раза в день</div>
     <div style="display:flex;align-items:baseline;gap:6px;margin-top:12px"><span class="big" style="font-size:110px">20</span><span style="font-size:24px;font-weight:500">мг</span></div>
     <div style="height:110px;border-radius:20px;margin:16px 0 6px;background:var(--a-sunset);position:relative">
-      <div style="position:absolute;left:14px;bottom:12px" class="ml"><span style="color:#2a2340">Утром и вечером, как назначил врач</span></div>
+      <div style="position:absolute;left:14px;bottom:12px" class="ml"><span style="color:#382849">Утром и вечером, как назначил врач</span></div>
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #DAD9D4">
       <div><div class="ml">Утром</div><div class="val">Принято</div></div>
@@ -379,7 +379,7 @@ footer{padding:40px 0;color:var(--ink-2);font-size:13px}
   <div class="island"></div><div class="sb"><i></i><i></i><i></i><b></b></div>
   <div class="bd">
     <h3>Напоминание</h3>
-    <div class="gc" style="background:var(--g-lime);height:330px;padding:16px;color:#0c2a1c">
+    <div class="gc" style="background:var(--g-lime);height:330px;padding:16px;color:#1F252E">
       <div style="display:flex;justify-content:space-between"><div><div class="t">Авиандр 20 мг</div><div class="s">вечерний приём</div></div><span style="font-size:11px;background:rgba(255,255,255,.55);border-radius:999px;padding:4px 10px;height:22px">вкл</span></div>
       <div class="dial" data-ticks="60" style="width:210px;height:210px;margin:16px auto 0;position:relative;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.55) 0,rgba(255,255,255,.12) 62%,transparent 63%)">
         <div style="position:absolute;inset:0;display:grid;place-items:center;text-align:center">
@@ -388,7 +388,7 @@ footer{padding:40px 0;color:var(--ink-2);font-size:13px}
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
-      <div class="gc" style="background:#fff;color:#121212;height:76px"><div class="s" style="opacity:.6">Утром</div><div style="font-size:17px;margin-top:8px">принято ✓</div></div>
+      <div class="gc" style="background:#FFFFFF;color:#1F252E;height:76px"><div class="s" style="opacity:.6">Утром</div><div style="font-size:17px;margin-top:8px">принято ✓</div></div>
       <div class="gc" style="background:var(--g-orange);height:76px"><div class="s">Вечером</div><div style="font-size:17px;margin-top:8px">впереди</div></div>
     </div>
   </div>
@@ -401,10 +401,10 @@ footer{padding:40px 0;color:var(--ink-2);font-size:13px}
 <figure class="v" data-v="C">
 <div class="phone dk"><div class="scr C">
   <div class="aura" style="width:280px;height:280px;left:10px;top:60px;background:var(--c-pink);opacity:.75"></div>
-  <div class="aura" style="width:160px;height:160px;left:80px;top:110px;background:#2a0f1c;opacity:.9"></div>
+  <div class="aura" style="width:160px;height:160px;left:80px;top:110px;background:#1F252E;opacity:.9"></div>
   <div class="island"></div><div class="sb"><i></i><i></i><i></i><b></b></div>
   <div class="bd">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px"><span style="font-size:17px">Авиандр</span><span class="pill" style="min-height:30px;padding:0 4px 0 12px;font-size:12px">Напоминание <span style="width:22px;height:22px;border-radius:50%;background:#fff;display:inline-block"></span></span></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px"><span style="font-size:17px">Авиандр</span><span class="pill" style="min-height:30px;padding:0 4px 0 12px;font-size:12px">Напоминание <span style="width:22px;height:22px;border-radius:50%;background:#FFFFFF;display:inline-block"></span></span></div>
     <div style="text-align:center;margin-top:46px"><div class="dotnum" style="font-size:96px">20</div><div style="font-size:15px">мг</div></div>
     <div class="tag" style="text-align:center;margin-top:46px">два раза в день</div>
     <div style="margin-top:auto;margin-bottom:30px;display:flex;flex-direction:column;gap:10px">
@@ -439,7 +439,7 @@ footer{padding:40px 0;color:var(--ink-2);font-size:13px}
       <button class="opt aq" aria-pressed="false"><span>Более половины дней</span><i></i></button>
       <button class="opt aq" aria-pressed="false"><span>Почти каждый день</span><i></i></button>
     </div>
-    <div style="display:flex;justify-content:space-between;margin-top:auto;margin-bottom:30px" class="ml"><span>← Назад</span><span style="color:#151515">Дальше →</span></div>
+    <div style="display:flex;justify-content:space-between;margin-top:auto;margin-bottom:30px" class="ml"><span>← Назад</span><span style="color:#1F252E">Дальше →</span></div>
   </div>
   <div class="home"></div>
 </div></div>
@@ -451,8 +451,8 @@ footer{padding:40px 0;color:var(--ink-2);font-size:13px}
   <div class="island"></div><div class="sb"><i></i><i></i><i></i><b></b></div>
   <div class="bd" data-choice>
     <div style="display:flex;align-items:center;gap:12px;margin-top:6px">
-      <svg width="44" height="44" viewBox="0 0 44 44" aria-label="Вопрос 3 из 9"><circle cx="22" cy="22" r="18" fill="none" stroke="#dcdcd8" stroke-width="5"/><circle cx="22" cy="22" r="18" fill="none" stroke="#B65CFF" stroke-width="5" stroke-linecap="round" stroke-dasharray="113" stroke-dashoffset="75" transform="rotate(-90 22 22)"/><text x="22" y="26" text-anchor="middle" font-size="11" font-family="Onest" fill="#121212">3/9</text></svg>
-      <div style="font-size:12px;color:#666;line-height:1.25">Последние<br>2 недели</div>
+      <svg width="44" height="44" viewBox="0 0 44 44" aria-label="Вопрос 3 из 9"><circle cx="22" cy="22" r="18" fill="none" stroke="#DCDCD8" stroke-width="5"/><circle cx="22" cy="22" r="18" fill="none" stroke="#AE95C6" stroke-width="5" stroke-linecap="round" stroke-dasharray="113" stroke-dashoffset="75" transform="rotate(-90 22 22)"/><text x="22" y="26" text-anchor="middle" font-size="11" font-family="Onest" fill="#1F252E">3/9</text></svg>
+      <div style="font-size:12px;color:#666666;line-height:1.25">Последние<br>2 недели</div>
     </div>
     <div style="font-size:22px;font-weight:600;letter-spacing:-.02em;line-height:1.12;margin:20px 0 16px">Как часто вам было трудно расслабиться?</div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -506,11 +506,11 @@ footer{padding:40px 0;color:var(--ink-2);font-size:13px}
     <div style="font-size:20px;font-weight:600;letter-spacing:-.02em;margin-top:2px">ОКТЯБРЬ <span style="font-weight:400;color:#8C8B86">с приёмом</span></div>
     <div class="dots" data-cal="a" style="margin-top:12px"></div>
     <div class="rule" style="margin-top:14px"></div>
-    <div style="display:flex;justify-content:space-between"><span class="ml">Настроение · 2 недели</span><span class="ml" style="color:#151515">ровнее</span></div>
+    <div style="display:flex;justify-content:space-between"><span class="ml">Настроение · 2 недели</span><span class="ml" style="color:#1F252E">ровнее</span></div>
     <svg viewBox="0 0 280 70" style="width:100%;height:70px;margin-top:4px" aria-label="Настроение становится ровнее">
       <g stroke="#DAD9D4" stroke-dasharray="2 3"><line x1="0" y1="10" x2="280" y2="10"/><line x1="0" y1="35" x2="280" y2="35"/><line x1="0" y1="60" x2="280" y2="60"/></g>
-      <polyline fill="none" stroke="#151515" stroke-width="1.3" points="0,56 20,50 40,58 60,44 80,48 100,40 120,46 140,36 160,38 180,30 200,34 220,26 240,28 260,24 280,22"/>
-      <circle cx="260" cy="24" r="4.5" fill="#FF6A1F"/>
+      <polyline fill="none" stroke="#1F252E" stroke-width="1.3" points="0,56 20,50 40,58 60,44 80,48 100,40 120,46 140,36 160,38 180,30 200,34 220,26 240,28 260,24 280,22"/>
+      <circle cx="260" cy="24" r="4.5" fill="#B1966D"/>
     </svg>
     <div class="grid2" style="margin-top:6px">
       <div><div class="ml">Сон</div><div class="val">как обычно</div></div>
@@ -527,10 +527,10 @@ footer{padding:40px 0;color:var(--ink-2);font-size:13px}
   <div class="island"></div><div class="sb"><i></i><i></i><i></i><b></b></div>
   <div class="bd">
     <h3>Мой путь</h3>
-    <div class="gc" style="background:linear-gradient(170deg,#9FB4C4,#5C7486);height:200px;padding:16px">
+    <div class="gc" style="background:linear-gradient(170deg,#9FB1C4,#5C7086);height:200px;padding:16px">
       <div class="t">Настроение</div><div class="s">две недели</div>
       <div style="font-size:36px;font-weight:300;letter-spacing:-.03em;margin-top:18px">ровнее</div>
-      <svg viewBox="0 0 260 50" style="width:100%;margin-top:10px" class="wave" aria-hidden="true"><path d="M0 34 C20 10,40 46,62 28 S100 12,124 30 S170 40,190 22 S236 14,260 18" stroke="#F4FF6E" stroke-width="1.6"/><path d="M190 22 l-6 -11 h12z" fill="#F5D500" transform="translate(0,-6)"/></svg>
+      <svg viewBox="0 0 260 50" style="width:100%;margin-top:10px" class="wave" aria-hidden="true"><path d="M0 34 C20 10,40 46,62 28 S100 12,124 30 S170 40,190 22 S236 14,260 18" stroke="#CCBBA1" stroke-width="1.6"/><path d="M190 22 l-6 -11 h12z" fill="#9F8256" transform="translate(0,-6)"/></svg>
     </div>
     <div class="deck" style="height:220px;margin-top:10px">
       <div class="gc" style="position:absolute;inset:0 0 auto;height:80px;background:var(--g-lime)"><div class="t">Приём</div><div style="font-size:20px;font-weight:300;margin-top:6px">14 из 14 дней</div></div>
@@ -553,12 +553,12 @@ footer{padding:40px 0;color:var(--ink-2);font-size:13px}
       <span class="wd">пн</span><span class="wd">вт</span><span class="wd">ср</span><span class="wd">чт</span><span class="wd">пт</span><span class="wd">сб</span><span class="wd">вс</span>
     </div>
     <div style="text-align:center;margin-top:20px"><div style="font-size:15px">Дни с приёмом</div><div class="dotnum" style="font-size:84px;margin-top:6px">14</div><div class="tag">из 14 подряд</div></div>
-    <svg viewBox="0 0 280 50" style="width:100%;margin-top:14px" class="wave" aria-hidden="true"><path d="M0 26 C18 6,30 44,50 26 S84 8,104 26 S140 42,160 26 S196 12,216 24 L280 24" stroke="#F5D36B" stroke-width="1.3"/><path d="M216 24 l-5 -9 h10z" fill="#F5D36B" transform="translate(0,-4)"/></svg>
+    <svg viewBox="0 0 280 50" style="width:100%;margin-top:14px" class="wave" aria-hidden="true"><path d="M0 26 C18 6,30 44,50 26 S84 8,104 26 S140 42,160 26 S196 12,216 24 L280 24" stroke="#C8B598" stroke-width="1.3"/><path d="M216 24 l-5 -9 h10z" fill="#C8B598" transform="translate(0,-4)"/></svg>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
-      <div class="ctile" style="background:linear-gradient(160deg,#3a4d40,#1a1f1b)"><div class="tag">Настроение</div><div style="font-size:18px;margin-top:16px">ровнее</div></div>
-      <div class="ctile" style="background:linear-gradient(160deg,#4a2a52,#1b141d)"><div class="tag">Сон</div><div style="font-size:18px;margin-top:16px">как обычно</div></div>
-      <div class="ctile" style="background:linear-gradient(160deg,#6b2a45,#1f1216)"><div class="tag">Беспокойство</div><div style="font-size:18px;margin-top:16px">ровнее</div></div>
-      <div class="ctile" style="background:linear-gradient(160deg,#5a4a24,#1e1a12)"><div class="tag">Дыхание</div><div style="font-size:18px;margin-top:16px">5 раз</div></div>
+      <div class="ctile" style="background:linear-gradient(160deg,#3A4D44,#1F252E)"><div class="tag">Настроение</div><div style="font-size:18px;margin-top:16px">ровнее</div></div>
+      <div class="ctile" style="background:linear-gradient(160deg,#3E2B51,#1F252E)"><div class="tag">Сон</div><div style="font-size:18px;margin-top:16px">как обычно</div></div>
+      <div class="ctile" style="background:linear-gradient(160deg,#4B3461,#1F252E)"><div class="tag">Беспокойство</div><div style="font-size:18px;margin-top:16px">ровнее</div></div>
+      <div class="ctile" style="background:linear-gradient(160deg,#52432C,#1F252E)"><div class="tag">Дыхание</div><div style="font-size:18px;margin-top:16px">5 раз</div></div>
     </div>
   </div>
   <div class="home"></div>
@@ -577,11 +577,11 @@ footer{padding:40px 0;color:var(--ink-2);font-size:13px}
 <figure class="v" data-v="A">
 <div class="phone"><div class="scr A">
   <div class="island"></div><div class="sb"><i></i><i></i><i></i><b></b></div>
-  <div style="position:absolute;inset:0 0 auto;height:290px;background:linear-gradient(180deg,#8E9BE8 0%,#B7B3EE 40%,#E9C9E6 75%,var(--a-bg) 100%)"></div>
+  <div style="position:absolute;inset:0 0 auto;height:290px;background:linear-gradient(180deg,#A7BACF 0%,#C3D0DE 40%,#D9CEE4 75%,var(--a-bg) 100%)"></div>
   <div class="bd">
     <div style="position:relative">
-      <div class="ml" style="color:#2f2f63;margin-top:8px">Прошлая ночь</div>
-      <div class="big" style="font-size:54px;margin-top:70px;color:#151515">Как<br>обычно</div>
+      <div class="ml" style="color:#33485F;margin-top:8px">Прошлая ночь</div>
+      <div class="big" style="font-size:54px;margin-top:70px;color:#1F252E">Как<br>обычно</div>
     </div>
     <div class="grid2" style="margin-top:56px">
       <div><div class="ml">Засыпание</div><div class="val">легче</div></div>
@@ -591,7 +591,7 @@ footer{padding:40px 0;color:var(--ink-2);font-size:13px}
     </div>
     <div class="rule"></div>
     <div class="ml" style="margin-bottom:6px">Неделя</div>
-    <div class="dots"><span class="h">пн</span><span class="h">вт</span><span class="h">ср</span><span class="h">чт</span><span class="h">пт</span><span class="h">сб</span><span class="h">вс</span><span class="d" style="background:#C9C6EE"></span><span class="d" style="background:#9C97E2"></span><span class="d" style="background:#C9C6EE"></span><span class="d" style="background:#6D67D2"></span><span class="d" style="background:#9C97E2"></span><span class="d" style="background:#6D67D2"></span><span class="d hi"></span></div>
+    <div class="dots"><span class="h">пн</span><span class="h">вт</span><span class="h">ср</span><span class="h">чт</span><span class="h">пт</span><span class="h">сб</span><span class="h">вс</span><span class="d" style="background:#CFDAE5"></span><span class="d" style="background:#A9BCD0"></span><span class="d" style="background:#CFDAE5"></span><span class="d" style="background:#7F9CBA"></span><span class="d" style="background:#A9BCD0"></span><span class="d" style="background:#7F9CBA"></span><span class="d hi"></span></div>
   </div>
   <div class="home"></div>
 </div></div>
@@ -604,11 +604,11 @@ footer{padding:40px 0;color:var(--ink-2);font-size:13px}
   <div class="bd">
     <h3>Сон</h3>
     <div class="deck" style="height:420px">
-      <div class="gc" style="position:absolute;inset:0 0 auto;height:110px;background:linear-gradient(170deg,#DADDE3,#9DA3AE);color:#1d1d1d"><div class="t" style="font-size:15px">Луна</div><div class="s">растущая</div></div>
+      <div class="gc" style="position:absolute;inset:0 0 auto;height:110px;background:linear-gradient(170deg,#DADEE3,#9DA5AE);color:#1F252E"><div class="t" style="font-size:15px">Луна</div><div class="s">растущая</div></div>
       <div class="gc" style="position:absolute;left:0;right:0;top:64px;height:356px;background:var(--g-violet);padding:16px" data-choice>
         <div class="t" style="font-size:15px">Как спалось?</div><div class="s">прошлая ночь</div>
         <div class="cv" style="font-size:38px;font-weight:300;letter-spacing:-.03em;margin:22px 0 4px">как обычно</div>
-        <svg viewBox="0 0 260 46" style="width:100%" class="wave" aria-hidden="true"><path d="M0 30 C26 10,44 40,70 26 S120 6,150 22 S210 38,260 16" stroke="#FFE36E" stroke-width="1.5"/><path d="M150 22 l-6 -10 h12z" fill="#FFE36E" transform="translate(0,-6)"/></svg>
+        <svg viewBox="0 0 260 46" style="width:100%" class="wave" aria-hidden="true"><path d="M0 30 C26 10,44 40,70 26 S120 6,150 22 S210 38,260 16" stroke="#CCBBA1" stroke-width="1.5"/><path d="M150 22 l-6 -10 h12z" fill="#CCBBA1" transform="translate(0,-6)"/></svg>
         <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:22px">
           <button class="opt bs" aria-pressed="false" data-w="почти не спала">1</button>
           <button class="opt bs" aria-pressed="false" data-w="плохо">2</button>
@@ -628,12 +628,12 @@ footer{padding:40px 0;color:var(--ink-2);font-size:13px}
 
 <figure class="v" data-v="C">
 <div class="phone dk"><div class="scr C">
-  <div class="aura" style="width:300px;height:300px;left:0;top:40px;background:#3A3F9E;opacity:.7"></div>
+  <div class="aura" style="width:300px;height:300px;left:0;top:40px;background:#4C6B8C;opacity:.7"></div>
   <div class="aura" style="width:160px;height:160px;right:-30px;top:200px;background:var(--c-lilac);opacity:.6"></div>
   <div class="island"></div><div class="sb"><i></i><i></i><i></i><b></b></div>
   <div class="bd">
     <div class="mute" style="font-size:13px;margin-top:10px;text-align:center">Прошлая ночь</div>
-    <div style="width:150px;height:150px;border-radius:50%;margin:40px auto 0;background:radial-gradient(circle at 38% 38%,#F1EEE8 0,#C9C3E8 35%,rgba(140,130,220,.15) 70%,transparent 72%)"></div>
+    <div style="width:150px;height:150px;border-radius:50%;margin:40px auto 0;background:radial-gradient(circle at 38% 38%,#ECE7DF 0,#C9D5E2 35%,rgba(151,174,199,.15) 70%,transparent 72%)"></div>
     <div style="text-align:center;font-size:28px;font-weight:300;margin-top:22px">Спалось как обычно</div>
     <div class="tag" style="text-align:center;margin-top:4px">засыпать стало легче</div>
     <div style="display:flex;justify-content:center;gap:9px;margin-top:26px" aria-label="Неделя сна">
@@ -660,7 +660,7 @@ footer{padding:40px 0;color:var(--ink-2);font-size:13px}
   <div class="bd">
     <div style="display:flex;justify-content:space-between;margin-top:8px"><span class="ml">Медленное дыхание</span><span class="ml">5 циклов</span></div>
     <div style="height:300px;display:grid;place-items:center;margin-top:20px">
-      <div class="breathe" style="width:260px;height:260px;border-radius:50%;background:radial-gradient(circle at 50% 30%,#FFE1A8 0,#FFB27A 35%,#FF7A2F 60%,rgba(185,140,255,.35) 80%,transparent 72%);filter:blur(2px)"></div>
+      <div class="breathe" style="width:260px;height:260px;border-radius:50%;background:radial-gradient(circle at 50% 30%,#E1D6C6 0,#D0C0A9 35%,#B69D78 60%,rgba(198,180,215,.35) 80%,transparent 72%);filter:blur(2px)"></div>
     </div>
     <div class="lblstack" style="text-align:center">
       <div class="lbl-in"><div class="big" style="font-size:44px">Вдох</div><div class="ml" style="margin-top:6px">4 счёта · через нос</div></div>
@@ -682,11 +682,11 @@ footer{padding:40px 0;color:var(--ink-2);font-size:13px}
   <div class="island"></div><div class="sb"><i></i><i></i><i></i><b></b></div>
   <div class="bd">
     <h3>Дыхание</h3>
-    <div class="gc" style="background:var(--g-lime);height:420px;padding:16px;color:#0c2a1c">
+    <div class="gc" style="background:var(--g-lime);height:420px;padding:16px;color:#1F252E">
       <div class="t">Вдох 4 · выдох 6</div><div class="s">около минуты</div>
       <div class="ring" data-ring="12" style="position:relative;width:240px;height:240px;margin:30px auto 0">
         <div style="position:absolute;inset:0;display:grid;place-items:center">
-          <div class="breathe" style="width:140px;height:140px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#fff 0,#F4FF6E 40%,rgba(255,255,255,.1) 72%)"></div>
+          <div class="breathe" style="width:140px;height:140px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#FFFFFF 0,#CCBBA1 40%,rgba(255,255,255,.1) 72%)"></div>
         </div>
       </div>
       <div class="lblstack" style="text-align:center;margin-top:18px">
@@ -709,7 +709,7 @@ footer{padding:40px 0;color:var(--ink-2);font-size:13px}
     <div class="mute" style="text-align:center;font-size:13px;margin-top:12px">Дышите вместе с кругом</div>
     <div class="dial" data-ticks="72" data-tone="light" style="position:relative;width:260px;height:260px;margin:44px auto 0">
       <div style="position:absolute;inset:0;display:grid;place-items:center">
-        <div class="breathe" style="width:150px;height:150px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#fff 0,#EDEBE4 35%,rgba(255,255,255,.12) 70%)"></div>
+        <div class="breathe" style="width:150px;height:150px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#FFFFFF 0,#EBE7E0 35%,rgba(255,255,255,.12) 70%)"></div>
       </div>
     </div>
     <div class="lblstack" style="text-align:center;margin-top:24px">
@@ -734,20 +734,20 @@ footer{padding:40px 0;color:var(--ink-2);font-size:13px}
 <figure class="v" data-v="A">
 <div class="phone"><div class="scr A">
   <div class="island"></div><div class="sb"><i></i><i></i><i></i><b></b></div>
-  <div style="position:absolute;inset:0 0 auto;height:230px;background:linear-gradient(180deg,#F6D9B8 0%,#F4C7A1 45%,#F7E3CF 80%,var(--a-bg) 100%)"></div>
+  <div style="position:absolute;inset:0 0 auto;height:230px;background:linear-gradient(180deg,#E3D9CB 0%,#DACEBB 45%,#EBE5DB 80%,var(--a-bg) 100%)"></div>
   <div class="bd">
     <div style="position:relative;margin-top:8px">
-      <div class="ml" style="color:#7a4a2c">Вы не одна</div>
-      <div style="font-size:30px;font-weight:600;letter-spacing:-.03em;line-height:1.05;margin-top:40px;color:#2a1a10">Давайте сделаем это вместе, шаг за шагом</div>
+      <div class="ml" style="color:#6C583A">Вы не одна</div>
+      <div style="font-size:30px;font-weight:600;letter-spacing:-.03em;line-height:1.05;margin-top:40px;color:#1F252E">Давайте сделаем это вместе, шаг за шагом</div>
     </div>
     <div style="margin-top:22px">
       <a href="tel:112" class="arow"><span><span class="ml">Экстренная помощь</span><b>112</b></span><span class="call">Позвонить</span></a>
       <a href="tel:84959895050" class="arow"><span><span class="ml">Психологическая помощь МЧС</span><b>8 495 989-50-50</b></span><span class="call">Позвонить</span></a>
       <a href="tel:88002000122" class="arow"><span><span class="ml">Телефон доверия для подростков</span><b>8 800 2000-122</b></span><span class="call">Позвонить</span></a>
     </div>
-    <button class="btn" style="margin-top:12px;background:#C8734F">Сообщить врачу</button>
+    <button class="btn" style="margin-top:12px;background:#AE9269">Сообщить врачу</button>
     <div class="ml" style="margin-top:14px">Заземление · 5 4 3 2 1</div>
-    <div style="font-size:12px;color:#5d4a3d;margin-top:4px">Назовите 5 вещей, которые видите, 4 — которые слышите…</div>
+    <div style="font-size:12px;color:#5D503D;margin-top:4px">Назовите 5 вещей, которые видите, 4 — которые слышите…</div>
   </div>
   <div class="home"></div>
 </div></div>
@@ -755,42 +755,42 @@ footer{padding:40px 0;color:var(--ink-2);font-size:13px}
 </figure>
 
 <figure class="v" data-v="B">
-<div class="phone"><div class="scr B" style="background:#F2EEE9">
+<div class="phone"><div class="scr B" style="background:#ECE7DF">
   <div class="island"></div><div class="sb"><i></i><i></i><i></i><b></b></div>
   <div class="bd">
     <h3 style="margin-bottom:6px">Мне тяжело</h3>
-    <p style="margin:0 0 12px;font-size:13px;color:#6b5b50">Вы не одна. Выберите, что сейчас ближе.</p>
+    <p style="margin:0 0 12px;font-size:13px;color:#6B6050">Вы не одна. Выберите, что сейчас ближе.</p>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <a href="tel:112" class="gc" style="background:var(--g-amber);height:104px;text-decoration:none"><div class="t">Экстренно</div><div class="n" style="font-size:40px;margin-top:20px">112</div></a>
-      <button class="gc" style="background:var(--g-peach);height:104px;border:0;text-align:left;color:#3a2316"><div class="t">Сообщить врачу</div><div class="s" style="margin-top:34px;opacity:.8">врач получит сообщение</div></button>
+      <button class="gc" style="background:var(--g-peach);height:104px;border:0;text-align:left;color:#262E39"><div class="t">Сообщить врачу</div><div class="s" style="margin-top:34px;opacity:.8">врач получит сообщение</div></button>
     </div>
-    <a href="tel:84959895050" class="gc" style="display:block;margin-top:10px;background:linear-gradient(160deg,#E9B98F,#C8734F);text-decoration:none"><div class="t">Психологическая помощь МЧС</div><div style="font-size:22px;font-weight:300;margin-top:6px">8 495 989-50-50</div></a>
-    <a href="tel:88002000122" class="gc" style="display:block;margin-top:10px;background:linear-gradient(160deg,#F2CF9A,#D9965A);text-decoration:none"><div class="t">Телефон доверия для подростков</div><div style="font-size:22px;font-weight:300;margin-top:6px">8 800 2000-122</div></a>
-    <div class="gc" style="margin-top:10px;background:#fff;color:#3a2316;display:flex;align-items:center;justify-content:space-between">
+    <a href="tel:84959895050" class="gc" style="display:block;margin-top:10px;background:linear-gradient(160deg,#D0C0A8,#AE9269);text-decoration:none"><div class="t">Психологическая помощь МЧС</div><div style="font-size:22px;font-weight:300;margin-top:6px">8 495 989-50-50</div></a>
+    <a href="tel:88002000122" class="gc" style="display:block;margin-top:10px;background:linear-gradient(160deg,#D7C9B5,#B8A07B);text-decoration:none"><div class="t">Телефон доверия для подростков</div><div style="font-size:22px;font-weight:300;margin-top:6px">8 800 2000-122</div></a>
+    <div class="gc" style="margin-top:10px;background:#FFFFFF;color:#262E39;display:flex;align-items:center;justify-content:space-between">
       <div><div class="t">Заземление</div><div class="s">через органы чувств</div></div>
       <div style="font-weight:300;font-size:22px;letter-spacing:.12em">54321</div>
     </div>
   </div>
-  <div class="bbar"><button class="cb" aria-label="Назад">←</button><button class="yp" style="background:#FFD27A;box-shadow:0 4px 14px rgba(230,160,60,.4)">Начать 5-4-3-2-1</button><button class="cb" aria-label="Дыхание">◯</button></div>
+  <div class="bbar"><button class="cb" aria-label="Назад">←</button><button class="yp" style="background:#D0C0A9;box-shadow:0 4px 14px rgba(178,152,112,.4)">Начать 5-4-3-2-1</button><button class="cb" aria-label="Дыхание">◯</button></div>
   <div class="home"></div>
 </div></div>
 <figcaption><span class="vlabel">B · Виджеты</span><p class="note">Тёплые янтарные и персиковые плитки-кнопки: каждый номер — отдельный виджет, звонок в одно касание.</p><button class="like" aria-pressed="false">Нравится</button></figcaption>
 </figure>
 
 <figure class="v" data-v="C">
-<div class="phone dk"><div class="scr C" style="background:#120D0A">
+<div class="phone dk"><div class="scr C" style="background:#1F252E">
   <div class="aura" style="width:300px;height:300px;left:-20px;top:30px;background:var(--c-amber);opacity:.5"></div>
-  <div class="aura" style="width:200px;height:200px;right:-60px;top:260px;background:#C8734F;opacity:.45"></div>
+  <div class="aura" style="width:200px;height:200px;right:-60px;top:260px;background:#AE9269;opacity:.45"></div>
   <div class="island"></div><div class="sb"><i></i><i></i><i></i><b></b></div>
   <div class="bd">
     <div style="font-size:24px;font-weight:300;line-height:1.2;margin-top:14px">Я рядом.<br><span class="mute">Давайте замедлимся.</span></div>
     <div style="margin-top:20px;display:flex;align-items:flex-end;gap:12px">
-      <span class="dotnum" style="font-size:64px;color:#F7D9A8">5</span>
+      <span class="dotnum" style="font-size:64px;color:#DED2C1">5</span>
       <span style="font-size:13px;line-height:1.3;padding-bottom:8px">вещей, которые<br>вы сейчас видите</span>
     </div>
-    <div class="dotnum" style="font-size:20px;letter-spacing:.3em;color:#8F7A66;margin-top:4px">4 3 2 1</div>
+    <div class="dotnum" style="font-size:20px;letter-spacing:.3em;color:#8F7F66;margin-top:4px">4 3 2 1</div>
     <div style="margin-top:auto;margin-bottom:30px;display:flex;flex-direction:column;gap:8px">
-      <a href="tel:112" class="pill" style="text-decoration:none;background:rgba(232,163,61,.28)">112 · экстренно<span class="plus">↗</span></a>
+      <a href="tel:112" class="pill" style="text-decoration:none;background:rgba(179,153,114,.28)">112 · экстренно<span class="plus">↗</span></a>
       <a href="tel:84959895050" class="pill" style="text-decoration:none"><span>МЧС · 8 495 989-50-50</span><span class="plus">↗</span></a>
       <a href="tel:88002000122" class="pill" style="text-decoration:none"><span>Подросткам · 8 800 2000-122</span><span class="plus">↗</span></a>
       <button class="pill">Сообщить врачу<span class="plus">+</span></button>
@@ -819,31 +819,31 @@ footer{padding:40px 0;color:var(--ink-2);font-size:13px}
 .adot{width:46px;height:46px;border-radius:50%;background:var(--a-dot-off);transition:background .15s}
 .adot[aria-pressed="true"]{background:var(--a-hi)}
 .adot:hover{background:#BDBBB5}.adot[aria-pressed="true"]:hover{background:var(--a-hi)}
-.bopt{min-height:44px;border-radius:14px;background:rgba(255,255,255,.18);color:#fff;text-align:left;padding:0 14px;font-size:14px}
-.bopt[aria-pressed="true"]{background:#fff;color:#7a2a8a;font-weight:600}
+.bopt{min-height:44px;border-radius:14px;background:rgba(255,255,255,.18);color:#FFFFFF;text-align:left;padding:0 14px;font-size:14px}
+.bopt[aria-pressed="true"]{background:#FFFFFF;color:#5A3F75;font-weight:600}
 .cdot{width:48px;height:48px;border-radius:50%;background:rgba(255,255,255,.14);box-shadow:inset 0 0 0 1px rgba(255,255,255,.2)}
-.cdot[aria-pressed="true"]{background:radial-gradient(circle,#fff 0,#fff 40%,rgba(255,255,255,.4) 70%);box-shadow:0 0 24px rgba(255,255,255,.6)}
-.aq{min-height:52px;border-radius:14px;background:#fff;display:flex;justify-content:space-between;align-items:center;padding:0 14px;font-size:15px;text-align:left;box-shadow:0 0 0 1px #E2E1DC}
-.aq i{width:20px;height:20px;border-radius:50%;border:1.5px solid #151515;flex:none}
-.aq[aria-pressed="true"]{box-shadow:0 0 0 1.5px #151515}
+.cdot[aria-pressed="true"]{background:radial-gradient(circle,#FFFFFF 0,#FFFFFF 40%,rgba(255,255,255,.4) 70%);box-shadow:0 0 24px rgba(255,255,255,.6)}
+.aq{min-height:52px;border-radius:14px;background:#FFFFFF;display:flex;justify-content:space-between;align-items:center;padding:0 14px;font-size:15px;text-align:left;box-shadow:0 0 0 1px #E2E0DC}
+.aq i{width:20px;height:20px;border-radius:50%;border:1.5px solid #1F252E;flex:none}
+.aq[aria-pressed="true"]{box-shadow:0 0 0 1.5px #1F252E}
 .aq[aria-pressed="true"] i{background:var(--a-hi);border-color:var(--a-hi)}
 .bq{height:118px;text-align:left;display:flex;align-items:flex-end;border:0;opacity:.82}
 .bq .t{font-size:15px}
-.bq[aria-pressed="true"]{opacity:1;box-shadow:inset 0 0 0 3px #fff,0 6px 16px rgba(0,0,0,.15)}
+.bq[aria-pressed="true"]{opacity:1;box-shadow:inset 0 0 0 3px #FFFFFF,0 6px 16px rgba(31,37,46,.15)}
 .cq{width:100%}
 .cq .plus{width:26px;height:26px;background:transparent;border:1.5px solid rgba(255,255,255,.4);margin-right:5px}
-.cq[aria-pressed="true"]{background:#F1EEE8;color:#111}
-.cq[aria-pressed="true"] .plus{background:#111;border-color:#111}
-.pd{flex:1;height:4px;border-radius:2px;background:#3a3a3d}
-.pd.on{background:#8F8C86}.pd.now{background:#fff}
-.wd{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:11px;box-shadow:inset 0 0 0 1px #3a3a3d;color:var(--c-mute)}
-.wd:nth-child(2){background:#F1EEE8;color:#111;box-shadow:none}
-.sd{width:14px;height:14px;border-radius:50%;background:#C9C3E8}
-.bs{height:48px;border-radius:14px;background:rgba(255,255,255,.18);color:#fff;font-size:16px;font-weight:300}
-.bs[aria-pressed="true"]{background:#fff;color:#3C1FA8;font-weight:600}
-.arow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #E4DCD3;text-decoration:none}
-.arow b{display:block;font-size:18px;font-weight:500;color:#2a1a10;margin-top:2px}
-.arow .call{min-height:36px;display:inline-flex;align-items:center;border-radius:999px;padding:0 12px;background:#F4C7A1;color:#5a3218;font-size:12px;font-weight:500;flex:none}
+.cq[aria-pressed="true"]{background:#ECE7DF;color:#1F252E}
+.cq[aria-pressed="true"] .plus{background:#1F252E;border-color:#1F252E}
+.pd{flex:1;height:4px;border-radius:2px;background:#3A3A3D}
+.pd.on{background:#8F8C86}.pd.now{background:#FFFFFF}
+.wd{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:11px;box-shadow:inset 0 0 0 1px #3A3A3D;color:var(--c-mute)}
+.wd:nth-child(2){background:#ECE7DF;color:#1F252E;box-shadow:none}
+.sd{width:14px;height:14px;border-radius:50%;background:#C9D5E2}
+.bs{height:48px;border-radius:14px;background:rgba(255,255,255,.18);color:#FFFFFF;font-size:16px;font-weight:300}
+.bs[aria-pressed="true"]{background:#FFFFFF;color:#644681;font-weight:600}
+.arow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #E4DDD3;text-decoration:none}
+.arow b{display:block;font-size:18px;font-weight:500;color:#1F252E;margin-top:2px}
+.arow .call{min-height:36px;display:inline-flex;align-items:center;border-radius:999px;padding:0 12px;background:#DACEBB;color:#4A3C28;font-size:12px;font-weight:500;flex:none}
 </style>
 
 <script>
@@ -877,17 +877,17 @@ footer{padding:40px 0;color:var(--ink-2);font-size:13px}
       var x1=100+Math.sin(a)*r1, y1=100-Math.cos(a)*r1, x2=100+Math.sin(a)*r2, y2=100-Math.cos(a)*r2;
       svg+='<line x1="'+x1.toFixed(1)+'" y1="'+y1.toFixed(1)+'" x2="'+x2.toFixed(1)+'" y2="'+y2.toFixed(1)+'" stroke="'+col+(long?'.9':'.45')+')" stroke-width="'+(long?1.6:1)+'" stroke-linecap="round"/>';
     }
-    if(!light) svg+='<path d="M100 2 l-5 -0 l5 9 l5 -9z" fill="#F5D500"/>';
+    if(!light) svg+='<path d="M100 2 l-5 -0 l5 9 l5 -9z" fill="#9F8256"/>';
     el.insertAdjacentHTML('afterbegin',svg+'</svg>');
   });
 
   /* --- ring of spheres around orb --- */
-  var grads=["#FF7A2F","#B65CFF","#4B82FF","#18B48A","#FFC66B","#FF4F9A"];
+  var grads=["#B69D78","#AE95C6","#8AA4C0","#478566","#CBB99F","#A78DC1"];
   document.querySelectorAll('[data-ring]').forEach(function(el){
     var n=+el.getAttribute('data-ring'), html="";
     for(var i=0;i<n;i++){
       var a=i/n*Math.PI*2, x=50+Math.sin(a)*44, y=50-Math.cos(a)*44, c=grads[i%grads.length];
-      html+='<span aria-hidden="true" style="position:absolute;left:'+x+'%;top:'+y+'%;width:28px;height:28px;margin:-14px 0 0 -14px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff 0,'+c+' 45%,#1a1a1a 100%);box-shadow:0 3px 8px rgba(0,0,0,.2)"></span>';
+      html+='<span aria-hidden="true" style="position:absolute;left:'+x+'%;top:'+y+'%;width:28px;height:28px;margin:-14px 0 0 -14px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#FFFFFF 0,'+c+' 45%,#1F252E 100%);box-shadow:0 3px 8px rgba(31,37,46,.2)"></span>';
     }
     el.insertAdjacentHTML('afterbegin',html);
   });

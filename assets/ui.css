@@ -20,6 +20,7 @@ code{font-size:.92em}
 :focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:8px}
 /* Фокус, поставленный скриптом (заголовок вопроса анкеты), рамку не рисует; при навигации с клавиатуры она остаётся. */
 :focus:not(:focus-visible){outline:none}
+[tabindex="-1"]:focus,[tabindex="-1"]:focus-visible{outline:none}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 
 /* Цифры точечной матрицей — только для нейтральных крупных чисел */
