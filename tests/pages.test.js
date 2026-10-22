@@ -55,3 +55,14 @@ test('previsit page explains itself instead of silently redirecting; demo hub of
   assert.match(demo, /demoResetRegistration/);
   assert.match(read('assets/patient.js'), /registered\(pid\)/);
 });
+
+test('messenger bot demo page is wired and linked from the demo', () => {
+  const h = read('patient/bot.html');
+  for (const s of ['assets/sync.js', 'assets/assistant.js', 'data/bot-messages.js', 'data/faq.js', 'assets/bot.css', 'st.max.ru']) assert.ok(h.includes(s), s);
+  const js = read('patient/bot.js');
+  assert.doesNotThrow(() => new Function(js));
+  assert.match(js, /channel: 'max-chat'/);
+  assert.doesNotMatch(js, /store\.addEvent\(/);
+  assert.match(read('auth/demo.js'), /patient\/bot\.html/);
+  assert.match(read('index.html'), /patient\/bot\.html/);
+});

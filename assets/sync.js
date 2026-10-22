@@ -70,7 +70,8 @@
       return { sent: res.filter((r) => r.status === 'accepted').length, pending: rest.length };
     }
     function submit(patientId, type, payload, opts = {}) {
-      const item = { clientId: uid(), patientId, type, payload, opts: opts.at ? { at: opts.at } : {}, channel, queuedAt: clock().toISOString() };
+      // opts.channel — событие пришло не из мини-приложения, а, например, кнопкой в чате бота ('max-chat').
+      const item = { clientId: uid(), patientId, type, payload, opts: opts.at ? { at: opts.at } : {}, channel: opts.channel || channel, queuedAt: clock().toISOString() };
       const urgent = isUrgent(type, payload);
       if (!urgent && read().length) flush(); // сначала старые отметки, чтобы сохранить порядок
       const res = send([item]);

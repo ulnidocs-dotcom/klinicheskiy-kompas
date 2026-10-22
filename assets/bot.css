@@ -1,0 +1,30 @@
+/* Демо чата с ботом в мессенджере: нейтральный интерфейс чата (без фирменного стиля мессенджера). */
+.bot-demo{display:grid;grid-template-columns:1fr;gap:20px;max-width:1080px;margin:0 auto;padding:16px 16px 110px;box-sizing:border-box}
+.bot-phone{display:flex;flex-direction:column;height:min(760px,calc(100dvh - 140px));min-height:480px;border:1px solid var(--line);border-radius:24px;background:var(--surface-2);overflow:hidden}
+.bot-head{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface);border-bottom:1px solid var(--line)}
+.bot-head b{display:block;font-weight:600}
+.bot-head span{display:block;font-size:12px;color:var(--text-3)}
+.bot-back{display:inline-flex;color:var(--text-2)}
+.bot-ava{width:36px;height:36px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:var(--accent-tint);color:var(--accent-strong);flex:none}
+.bot-feed{flex:1;overflow-y:auto;padding:14px 12px;display:flex;flex-direction:column;gap:8px}
+.bot-msg{display:flex;flex-direction:column;align-items:flex-start;max-width:86%}
+.bot-msg--me{align-self:flex-end;align-items:flex-end}
+.bot-bubble{position:relative;padding:8px 12px 18px;border-radius:16px 16px 16px 4px;background:var(--surface);color:var(--text);line-height:1.42;font-size:15px;white-space:pre-wrap;overflow-wrap:anywhere;min-width:60px}
+.bot-msg--me .bot-bubble{border-radius:16px 16px 4px 16px;background:var(--accent);color:var(--on-accent)}
+.bot-time{position:absolute;right:10px;bottom:3px;font-size:10px;opacity:.65}
+.bot-src{display:block;margin-top:6px;font-size:12px;color:var(--text-3)}
+.bot-kb{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.bot-btn{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:6px 12px;border-radius:10px;border:1px solid var(--line);background:var(--surface);color:var(--accent-strong);font:inherit;font-size:14px;line-height:1.25;text-align:left;text-decoration:none;cursor:pointer}
+.bot-btn[aria-pressed="true"]{opacity:.55;cursor:default}
+.bot-btn--app{background:var(--accent-tint)}
+.bot-compose{display:flex;gap:8px;padding:10px;background:var(--surface);border-top:1px solid var(--line)}
+.bot-compose input{flex:1;min-width:0;font:inherit;color:var(--text);background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:10px 14px}
+.bot-send{flex:none;width:44px;height:44px;border-radius:50%;border:0;background:var(--accent);color:var(--on-accent);display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.bot-side h1{font-size:28px;font-weight:300;letter-spacing:-.01em;margin:4px 0 6px}
+.bot-side h2{font-size:17px;margin:0}
+.bot-side .kicker{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--text-3);margin:0}
+@media (min-width:900px){
+  .bot-demo{grid-template-columns:400px 1fr;align-items:start;padding-top:28px}
+  .bot-phone{position:sticky;top:20px}
+}
+.bot-side .chips{flex-wrap:wrap;overflow:visible}

@@ -140,3 +140,9 @@ test('queued check-in marks its day in the week strip', () => {
   const days = KK.patientApp.markedDays([], sync.queued('p_olga'));
   assert.ok(days.has(KK.util.dayKey(sync.queued('p_olga')[0].queuedAt)));
 });
+
+test('submit can mark an event as coming from the bot chat', () => {
+  const { sync } = setup();
+  const e = sync.submit('p_olga', 'dose', { slot: 'утро', taken: true }, { channel: 'max-chat' });
+  assert.equal(e.channel, 'max-chat');
+});
