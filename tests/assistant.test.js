@@ -236,3 +236,14 @@ test('doctor: assistant transcript is collapsed by default, escaped, newest firs
   assert.match(html, /Материал «Что помогает спать»/);
   assert.match(D.assistantLog([]), /не обращался к ассистенту/);
 });
+
+test('crisis: phrasings with inserted words and common variants are caught', () => {
+  const A = globalThis.KK.assistant;
+  for (const t of ['не хочу больше жить', 'Не хочу уже жить.', 'жить больше совсем не хочется', 'устала жить', 'не вижу больше смысла жить',
+    'не хочу просыпаться', 'хочется уснуть и не проснуться', 'всем будет лучше без меня', 'лучше бы я умерла', 'хочу исчезнуть навсегда']) {
+    assert.equal(A.answer(t, {}).kind, 'crisis', t);
+  }
+  for (const t of ['плохо сплю', 'не хочу пить таблетки утром', 'как жить с тревогой', 'устала на работе', 'хочу пропустить визит']) {
+    assert.notEqual(A.answer(t, {}).kind, 'crisis', t);
+  }
+});
