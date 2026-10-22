@@ -24,6 +24,11 @@
       return KK.store.activePatientId();
     },
     linked: (pid) => LS.get(`kk:linked:${pid}`, false) === true,
+    registered(pid) {
+      if (app.linked(pid)) return true;
+      const p = KK.store.patient(pid);
+      return !!(p && (p.consents || []).length);
+    },
     link(pid) {
       LS.set(`kk:linked:${pid}`, true);
       try { KK.store.linkChannel(pid, KK.host.platform); } catch (e) { /* канал уже есть или стор недоступен */ }
@@ -64,7 +69,9 @@
       KK.host.guardClose(false); // каждая страница начинает без подтверждения закрытия; анкеты включают его сами
       const pid = app.pid(forced);
       if (!KK.store.patient(pid)) { location.href = '../index.html'; return null; }
-      if (requireLink && !app.linked(pid)) { location.replace(`onboarding.html?p=${pid}`); return null; }
+      // Подключённым считается пациент, который отметил это устройство или уже прошёл регистрацию (есть согласия):
+      // в демо «Сбросить демо» не должен отправлять зарегистрированных пациентов на экран регистрации.
+      if (requireLink && !app.registered(pid)) { location.replace(`onboarding.html?p=${pid}`); return null; }
       if (app.linked(pid) && KK.store.channels(pid).length === 0) { try { KK.store.linkChannel(pid, KK.host.platform); } catch (e) { /* */ } }
       const shell = document.getElementById('shell');
       const nav = tab ? `<div class="tabbar"><nav aria-label="Разделы">${TABS.map((t) =>

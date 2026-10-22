@@ -591,6 +591,16 @@
         if (fresh) { fresh.usedAt = nowIso(); write(); }
         return rec.patientId;
       },
+      // Демо: вернуть пациента к началу регистрации, чтобы витрину «Регистрация» можно было пройти снова.
+      demoResetRegistration(id) {
+        need();
+        if (!has(id)) throw new Error(`Unknown patient ${id}`);
+        const p = db.patients[id];
+        p.consents = [];
+        p.channels = [];
+        audit(id, 'demo_registration_reset', {}, 'patient');
+        write();
+      },
       recordConsents(id, kinds) {
         need();
         if (!has(id)) throw new Error(`Unknown patient ${id}`);

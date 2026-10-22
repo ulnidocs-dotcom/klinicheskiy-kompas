@@ -18,6 +18,7 @@
       email: 'admin@clinic.demo' },
   ];
   const ANNA = 'p_anna';
+  const OLGA = 'p_olga';
   const OLGA_PHONE = '+79000002648';
 
   function card(c) {
@@ -39,6 +40,12 @@
         ${A.demoNote('SMS и письма не отправляются: код или ссылка появятся на экране. Пароль можно ввести любой надёжный, он нигде не сохраняется.')}
       </header>
       <div class="demo-grid">${CABINETS.map(card).join('')}</div>
+      <article class="card stack demo-card">
+        <div><h2>Анкета до приёма</h2><p class="hint">Врач отправляет анкету, пациент заполняет её дома, ответы появляются в карточке врача.</p></div>
+        <div class="row wrap">
+          <button class="btn btn--primary" data-previsit="fill">Заполнить как пациент (Ольга)</button>
+          <button class="btn" data-previsit="doctor">Посмотреть у врача</button></div>
+      </article>
       <div class="row wrap"><button class="btn btn--ghost" data-reset>Сбросить демо</button>
         <span class="hint">Вернёт пациентов и сотрудников в исходное состояние в этом браузере.</span></div>
     </div>`);
@@ -51,11 +58,12 @@
     if (reg) {
       const id = reg.dataset.reg;
       if (id === 'patient') {
-        const p = store.patient(ANNA);
-        if (p && (p.consents || []).length) {
-          A.showErr('Анна уже зарегистрирована в этом браузере. Нажмите «Сбросить демо» ниже, чтобы пройти регистрацию снова.', 'err-patient');
-          return;
+        // Если Анна уже прошла регистрацию в этом браузере — возвращаем её к началу, чтобы показать регистрацию снова.
+        if ((store.patient(ANNA).consents || []).length) {
+          store.demoResetRegistration(ANNA);
+          try { localStorage.removeItem(`kk:linked:${ANNA}`); } catch (err) { /* приватный режим */ }
         }
+        const p = store.patient(ANNA);
         // Ссылка врача с приглашением: в браузере код подставится из ?startapp=, как в MAX.
         location.href = `../patient/onboarding.html?p=${ANNA}&startapp=${encodeURIComponent(`inv_${p.inviteCode}`)}`;
         return;
@@ -64,6 +72,15 @@
         const inv = store.inviteStaff(demoEmail(id), id);
         location.href = `invite.html?token=${encodeURIComponent(inv.token)}`;
       } catch (err) { A.showErr(err.message, `err-${id}`); }
+      return;
+    }
+    const pv = e.target.closest('[data-previsit]');
+    if (pv) {
+      // Анкету отправляет врач: в демо отправляем её за врача, если она ещё не отправлена.
+      if (pv.dataset.previsit === 'fill') {
+        if (!store.patient(OLGA).previsit) store.sendPrevisit(OLGA, { by: store.doctor().id });
+        location.href = `../patient/previsit.html?p=${OLGA}`;
+      } else location.href = `../doctor/patient.html?id=${OLGA}`;
       return;
     }
     const login = e.target.closest('[data-login]');

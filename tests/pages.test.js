@@ -45,3 +45,13 @@ test('login page takes the phone or email from the link', () => {
   assert.match(js, /ui\.param\('phone'\)/);
   assert.match(js, /ui\.param\('email'\)/);
 });
+
+test('previsit page explains itself instead of silently redirecting; demo hub offers the questionnaire', () => {
+  const pv = read('patient/previsit.js');
+  assert.doesNotMatch(pv, /if \(!assignment\) \{ location\.replace/);
+  assert.match(pv, /data-demo-send/);
+  const demo = read('auth/demo.js');
+  assert.match(demo, /data-previsit="fill"/);
+  assert.match(demo, /demoResetRegistration/);
+  assert.match(read('assets/patient.js'), /registered\(pid\)/);
+});

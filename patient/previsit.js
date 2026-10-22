@@ -8,7 +8,21 @@
   const def = KK.data.questionnaires.previsit;
   const DRAFT = Q.draftKey(ctx.pid);
   const assignment = ctx.patient().previsit || null;
-  if (!assignment) { location.replace('index.html'); return; }
+  // Анкету отправляет врач. Без отправки — объяснение (а не молчаливый возврат на главную) и в демо — кнопка получить её.
+  if (!assignment) {
+    ui.mount('#app', `<section class="stack-l" style="padding-top:8vh">
+        <h1>Анкета перед приёмом</h1>
+        <p class="muted">Эту анкету присылает ваш врач перед визитом. Когда он её отправит, на главной появится плитка «Анкета перед приёмом».</p>
+        <p class="hint" role="status"><b>Демо:</b> можно получить анкету сразу, как будто врач уже отправил её.</p>
+        <button class="btn btn--pill btn--block" data-demo-send>Получить анкету</button>
+        <a class="btn btn--ghost btn--block" href="index.html">На главную</a></section>`);
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('[data-demo-send]')) return;
+      store.sendPrevisit(ctx.pid, { by: store.doctor().id });
+      location.reload();
+    });
+    return;
+  }
 
   let st = { sentAt: assignment.sentAt, step: 'intro', i: 0, answers: {}, urgentSent: false };
   try {

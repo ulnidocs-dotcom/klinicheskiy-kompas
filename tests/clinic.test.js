@@ -168,3 +168,12 @@ test('demo patients are already registered except Anna, whose onboarding is the 
   assert.equal(s.patient('p_olga').consents.length, 3);
   assert.equal((s.patient('p_anna').consents || []).length, 0);
 });
+
+test('demo: a registered patient can be returned to the start of registration', () => {
+  const { s } = mk();
+  s.recordConsents('p_anna', ['data_processing']);
+  s.linkChannel('p_anna', 'web');
+  s.demoResetRegistration('p_anna');
+  assert.equal(s.patient('p_anna').consents.length, 0);
+  assert.equal(s.channels('p_anna').length, 0);
+});
