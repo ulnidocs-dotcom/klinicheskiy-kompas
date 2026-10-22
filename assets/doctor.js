@@ -230,7 +230,7 @@
         return `<section class="card stack previsit" id="previsit">${head}
           <p class="muted">Пациент ещё не заполнил анкету.</p>${msgHtml}${resend}</section>`;
       }
-      const s = Q.summary(def, resp.payload, p);
+      const s = Q.summary(def, resp.payload, p, { selfHarmEver: st.selfHarmEver });
       const rows = Q.answerRows(def, resp.payload, p);
       const score = (r, full) => `${r.total} из ${r.max}${r.complete ? '' : ' <span class="hint">(не на все вопросы есть ответ)</span>'}${r.positive
         ? ` <span class="badge badge--warn">≥ ${def.threshold} — желательно оценить полной шкалой</span> <a href="assess.html?id=${e(p.id)}">Оценить ${full}</a>` : ''}`;

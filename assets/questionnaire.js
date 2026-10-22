@@ -63,13 +63,17 @@
 
   // Состояние назначенной анкеты по событиям previsit после отправки: none / sent / in_progress / completed.
   function status(assignment, events) {
-    if (!assignment) return { state: 'none', response: null, partial: null };
+    if (!assignment) return { state: 'none', response: null, partial: null, selfHarmEver: false };
     const from = +new Date(assignment.sentAt);
+    // Ответ к прежней отправке (assignedAt раньше текущей), пришедший из очереди позже, к этой анкете не относится.
     const mine = (events || []).filter((e) => e && e.type === 'previsit' && +new Date(e.at) >= from && isObj(e.payload)
-      && (!e.payload.questionnaireId || e.payload.questionnaireId === assignment.questionnaireId));
+      && (!e.payload.questionnaireId || e.payload.questionnaireId === assignment.questionnaireId)
+      && !(e.payload.assignedAt && +new Date(e.payload.assignedAt) < from));
     const response = mine.filter((e) => e.payload.status === 'completed').at(-1) || null;
     const partial = mine.at(-1) || null;
-    return { state: response ? 'completed' : partial ? 'in_progress' : 'sent', response, partial };
+    // «Да» на вопрос о самоповреждении хоть в одной отправке этой анкеты — врач видит его, даже если позже ответ изменён.
+    const selfHarmEver = mine.some((e) => selfHarm(e.payload.answers));
+    return { state: response ? 'completed' : partial ? 'in_progress' : 'sent', response, partial, selfHarmEver };
   }
 
   function display(q, v) {
@@ -88,12 +92,14 @@
   }
 
   // Сводка для врача: жалоба, длительность, PHQ-2/GAD-2 и флаги (critical — самоповреждение, warn — остальное).
-  function summary(def, payload, patient) {
+  // selfHarmEver — из status(): в одной из отправок этой анкеты был ответ «да» (флаг не исчезает, если пациент его изменил).
+  function summary(def, payload, patient, { selfHarmEver = false } = {}) {
     const a = clean(def, answersOf(payload), patient);
     const item = (id) => def.items.find((q) => q.id === id);
     const s = scores(a, def.threshold);
     const flags = [];
     if (a.selfHarm === true) flags.push({ level: 'critical', text: 'Мысли о смерти или самоповреждении за 2 недели — «да»' });
+    else if (selfHarmEver) flags.push({ level: 'critical', text: 'В анкете был ответ «да» на вопрос о самоповреждении (позже изменён)' });
     if (s.phq2.positive) flags.push({ level: 'warn', text: `PHQ-2 = ${s.phq2.total} (≥ ${def.threshold}) — желательно оценить полной шкалой PHQ-9` });
     if (s.gad2.positive) flags.push({ level: 'warn', text: `GAD-2 = ${s.gad2.total} (≥ ${def.threshold}) — желательно оценить полной шкалой GAD-7` });
     if (['pregnant', 'maybe', 'lactating'].includes(a.pregnancy)) flags.push({ level: 'warn', text: `Со слов пациентки: ${optOf(item('pregnancy'), a.pregnancy).label.toLowerCase()}` });
@@ -180,10 +186,12 @@
       questionnaire: `${def.canonical}|${def.version}`,
       status: isObj(payload) && payload.status === 'in-progress' ? 'in-progress' : 'completed',
       authored: event.at,
-      subject: { reference: `Patient/${patient && patient.id}` },
       item: visible(def, a, patient).filter((q) => a[q.id] !== undefined).map((q) => ({ linkId: q.id, text: q.title, answer: answer(q, a[q.id]) })),
     };
-    if (event.id) res.id = String(event.id);
+    // FHIR id: [A-Za-z0-9\-.]{1,64} — прочие символы (например «_») заменяем на «-». Без id пациента subject не пишем.
+    const fid = (x) => String(x == null ? '' : x).replace(/[^A-Za-z0-9.-]/g, '-').slice(0, 64);
+    if (patient && fid(patient.id)) res.subject = { reference: `Patient/${fid(patient.id)}` };
+    if (event.id && fid(event.id)) res.id = fid(event.id);
     return res;
   }
 

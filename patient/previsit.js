@@ -105,12 +105,14 @@
   const toHelp = (from) => { KK.host.guardClose(false); location.replace(`help.html?from=${from}`); };
 
   // «Да» на вопрос о самоповреждении: отправить то, что уже заполнено, и сразу показать помощь. Анкету можно продолжить позже.
-  function urgentNow() {
-    st.i++;
-    try { KK.sync.submit(ctx.pid, 'previsit', payload('in-progress')); } catch (err) {
-      if (!err.offline) { st.i--; app.toast('Не получилось сохранить. Попробуйте ещё раз'); return; }
-      save(); toHelp('offline'); return;
-    }
+  // advance — перейти к следующему вопросу (ответ только что дан); при повторе после открытия черновика остаёмся на месте.
+  // Помощь показывается всегда; отправка — только пока не дошла (urgentSent).
+  function urgentNow(advance = true) {
+    if (advance) st.i++;
+    if (st.urgentSent) { save(); toHelp('previsit'); return; }
+    // Не отправилось (нет связи или ошибка) — всё равно экран помощи с 112, без обещания, что ответ дошёл.
+    // urgentSent остаётся false: при следующем открытии анкеты отправка повторится.
+    try { KK.sync.submit(ctx.pid, 'previsit', payload('in-progress')); } catch (err) { save(); toHelp('offline'); return; }
     st.urgentSent = true;
     save();
     toHelp('previsit');
@@ -142,7 +144,7 @@
 
   function answered(q, v) {
     st.answers[q.id] = v;
-    if (q.urgent && v === true && !st.urgentSent) { urgentNow(); return; }
+    if (q.urgent && v === true) { urgentNow(); return; }
     next();
   }
 
@@ -215,5 +217,7 @@
   });
 
   if (st.step !== 'already') save();
+  // Черновик с «да», которое не дошло (раньше не было связи): повторить срочную отправку сразу при открытии.
+  if (st.step !== 'already' && Q.selfHarm(st.answers) && !st.urgentSent) { urgentNow(false); return; }
   render();
 })();

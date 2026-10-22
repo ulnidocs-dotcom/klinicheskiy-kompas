@@ -528,7 +528,8 @@
         need();
         if (!has(patientId)) throw new Error(`Unknown patient ${patientId}`);
         const vd = String(visitDate || '').trim();
-        if (vd && (!ISO_DAY.test(vd) || Number.isNaN(+new Date(vd)))) throw new Error('Проверьте дату приёма');
+        // Сверка туда-обратно отсекает несуществующие даты вроде 2026-02-30.
+        if (vd && (!ISO_DAY.test(vd) || Number.isNaN(+new Date(`${vd}T00:00:00Z`)) || new Date(`${vd}T00:00:00Z`).toISOString().slice(0, 10) !== vd)) throw new Error('Проверьте дату приёма');
         const q = KK.data.questionnaires && KK.data.questionnaires.previsit;
         const a = { questionnaireId: 'previsit', version: q ? q.version : 1, sentAt: nowIso(), visitDate: vd || null, by: by || db.doctor.id };
         db.patients[patientId].previsit = a;

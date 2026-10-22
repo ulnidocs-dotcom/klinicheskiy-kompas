@@ -24,7 +24,9 @@
   const PREVISIT_SRC = 'Kroenke et al., 2003 (PHQ-2); Kroenke et al., 2007 (GAD-2)';
   const previsits = (c) => {
     const from = c.patient.previsit?.sentAt;
-    return c.events.filter((e) => e.type === 'previsit' && e.payload && typeof e.payload.answers === 'object' && e.payload.answers && (!from || e.at >= from));
+    // Ответ к прежней отправке (payload.assignedAt раньше текущей), дошедший из очереди позже, не учитываем.
+    return c.events.filter((e) => e.type === 'previsit' && e.payload && typeof e.payload.answers === 'object' && e.payload.answers && (!from || e.at >= from)
+      && !(from && e.payload.assignedAt && new Date(e.payload.assignedAt) < new Date(from)));
   };
   const selfHarmYes = (c) => previsits(c).filter((e) => e.payload.answers.selfHarm === true);
   const n03 = (v) => (Number.isInteger(v) && v >= 0 && v <= 3 ? v : 0);

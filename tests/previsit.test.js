@@ -162,6 +162,8 @@ test('store: sendPrevisit creates the assignment lazily, validates the visit dat
   assert.equal(s.patient('p_anna').previsit.sentAt, NOW.toISOString());
   assert.equal(s.audit('p_anna').at(-1).action, 'previsit_sent');
   assert.throws(() => s.sendPrevisit('p_anna', { visitDate: '25.10' }), /дат/i);
+  for (const bad of ['2026-02-30', '2026-13-01', '2026-04-31', '2026-00-10']) assert.throws(() => s.sendPrevisit('p_anna', { visitDate: bad }), /дат/i, bad);
+  assert.equal(s.sendPrevisit('p_anna', { visitDate: '2028-02-29' }).visitDate, '2028-02-29');
   assert.equal(s.sendPrevisit('p_anna', {}).visitDate, null);
   assert.throws(() => s.sendPrevisit('nope', {}), /Unknown patient/);
 });
@@ -227,7 +229,13 @@ test('FHIR QuestionnaireResponse R4 shape', () => {
   assert.equal(r.questionnaire, `${DEF().canonical}|1`);
   assert.equal(r.status, 'completed');
   assert.equal(r.authored, ev.at);
-  assert.deepEqual(r.subject, { reference: 'Patient/p_anna' });
+  // FHIR id: [A-Za-z0-9\-.]{1,64} — «_» заменён на «-»
+  assert.deepEqual(r.subject, { reference: 'Patient/p-anna' });
+  assert.equal(r.id, 'ev-1');
+  assert.match(r.id, /^[A-Za-z0-9\-.]{1,64}$/);
+  const anon = Q().toFhir(DEF(), { at: ev.at, payload: payload() }, null);
+  assert.equal(anon.subject, undefined, 'no Patient/undefined');
+  assert.equal(anon.id, undefined);
   const by = Object.fromEntries(r.item.map((i) => [i.linkId, i]));
   assert.deepEqual(by.complaint.answer, [{ valueString: ANSWERS.complaint }]);
   assert.deepEqual(by.selfHarm.answer, [{ valueBoolean: false }]);
@@ -302,4 +310,50 @@ test('doctor card: send button, waiting state, summary with escaped answers, unc
   assert.match(ph, /Не завершена/);
   assert.match(ph, /badge--critical/);
   assert.doesNotMatch(ph, /data-previsit-apply|data-previsit-fhir/);
+});
+
+// ——— Ревью: «да» на самоповреждение не скрывается и всегда ведёт к помощи ———
+test('a self-harm «yes» changed later to «no» stays visible as a critical flag', () => {
+  const a = { questionnaireId: 'previsit', version: 1, sentAt: '2026-10-18T10:00:00.000Z' };
+  const part = { type: 'previsit', at: '2026-10-18T11:00:00.000Z', payload: payload({ selfHarm: true }, { status: 'in-progress' }) };
+  const fin = { type: 'previsit', at: '2026-10-18T12:00:00.000Z', payload: payload({ selfHarm: false }) };
+  const st = Q().status(a, [part, fin]);
+  assert.equal(st.state, 'completed');
+  assert.equal(st.selfHarmEver, true);
+  assert.equal(Q().status(a, [fin]).selfHarmEver, false);
+  const s = Q().summary(DEF(), st.response.payload, F, { selfHarmEver: st.selfHarmEver });
+  const f = s.flags.find((x) => x.level === 'critical');
+  assert.ok(f);
+  assert.equal(f.text, 'В анкете был ответ «да» на вопрос о самоповреждении (позже изменён)');
+  assert.ok(!Q().summary(DEF(), fin.payload, F).flags.some((x) => x.level === 'critical'));
+  // и в карточке врача
+  const p = { id: 'p1', sex: 'f', meds: [], allergies: [], conditions: [], previsit: a };
+  const html = KK.doctorApp.previsitCard(p, [part, fin]);
+  assert.match(html, /badge--critical[\s\S]*позже изменён/);
+  // правило тоже остаётся
+  const sig = KK.rules.evaluate(KK.rules.buildContext(Object.assign({ diagnoses: [], meds: [], allergies: [], conditions: [], labs: {}, history: {}, plan: null, age: 40 }, p), [part, fin], NOW.toISOString()));
+  assert.ok(sig.some((x) => x.ruleId === 'previsit_selfharm'));
+});
+
+test('answers to an older assignment (assignedAt before sentAt) are ignored by status and rules', () => {
+  const a = { questionnaireId: 'previsit', version: 1, sentAt: '2026-10-18T10:00:00.000Z' };
+  // пришло из очереди после новой отправки, но относится к прежней
+  const stale = { type: 'previsit', at: '2026-10-18T12:00:00.000Z', payload: payload({ selfHarm: true, phq2_1: 3, phq2_2: 3 }, { assignedAt: '2026-10-10T10:00:00.000Z' }) };
+  const st = Q().status(a, [stale]);
+  assert.equal(st.state, 'sent');
+  assert.equal(st.selfHarmEver, false);
+  const p = { id: 'p1', sex: 'f', diagnoses: [], meds: [], allergies: [], conditions: [], labs: {}, history: {}, plan: null, age: 40, previsit: a };
+  const sig = KK.rules.evaluate(KK.rules.buildContext(p, [stale], NOW.toISOString()));
+  assert.ok(!sig.some((x) => x.ruleId === 'previsit_selfharm' || x.ruleId === 'previsit_screen'));
+  const ok = { type: 'previsit', at: stale.at, payload: payload({ selfHarm: true }, { assignedAt: a.sentAt }) };
+  assert.equal(Q().status(a, [ok]).state, 'completed');
+  assert.ok(KK.rules.evaluate(KK.rules.buildContext(p, [ok], NOW.toISOString())).some((x) => x.ruleId === 'previsit_selfharm'));
+});
+
+test('patient page: «yes» always opens help; only the resend is gated; an unsent «yes» in a draft is retried on load', () => {
+  const src = require('node:fs').readFileSync(require('node:path').join(__dirname, '..', 'patient', 'previsit.js'), 'utf8');
+  assert.match(src, /if \(q\.urgent && v === true\) \{ urgentNow\(\); return; \}/);
+  assert.match(src, /if \(st\.urgentSent\) \{ save\(\); toHelp\('previsit'\); return; \}/);
+  assert.match(src, /Q\.selfHarm\(st\.answers\) && !st\.urgentSent\) \{ urgentNow\(false\); return; \}/);
+  assert.doesNotThrow(() => new Function(src));
 });
