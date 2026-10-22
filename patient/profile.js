@@ -14,10 +14,10 @@
       <header class="p-head"><h1>${ui.esc(p.name)}</h1><p class="muted">Ваш врач: ${ui.esc(store.doctor().name)}</p></header>
       <div class="stack">
         <section class="card stack"><p class="q-title">Оформление</p>
-          <div class="seg" role="group" aria-label="Тема">${[['light', 'Дневная'], ['dark', 'Ночная'], ['auto', 'Как в системе']].map(([v, l]) =>
+          <div class="seg" role="group" aria-label="Тема">${[['light', 'Дневная'], ['dark', 'Ночная'], ['auto', 'Системная']].map(([v, l]) =>
             `<button id="th-${v}" data-theme-set="${v}" aria-pressed="${theme === v}">${l}</button>`).join('')}</div></section>
-        <section class="card stack"><p class="q-title">Опросники</p><p class="hint">Как часто предлагать короткие опросники</p>
-          <div class="seg" role="group" aria-label="Частота">${[[7, 'Раз в неделю'], [14, 'Раз в 2 недели'], [28, 'Раз в месяц']].map(([v, l]) =>
+        <section class="card stack"><p class="q-title">Опросники</p><p class="hint">Предлагать короткие опросники раз в</p>
+          <div class="seg" role="group" aria-label="Частота">${[[7, 'Неделя'], [14, '2 недели'], [28, 'Месяц']].map(([v, l]) =>
             `<button data-every="${v}" aria-pressed="${prefs.scaleEveryDays === v}">${l}</button>`).join('')}</div></section>
         <section class="card"><label class="check"><input type="checkbox" data-rem ${prefs.reminders ? 'checked' : ''}><span>Напоминать о приёме лекарства</span></label></section>
         <section class="card stack"><p class="q-title">Где открыт дневник</p>

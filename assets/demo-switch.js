@@ -1,4 +1,4 @@
-// ВРЕМЕННО (демо): плавающий переключатель «Пациент | Врач | Психолог» на всех страницах.
+// ВРЕМЕННО (демо): плавающий переключатель «Пациент | Врач | Психолог | Вход» на всех страницах.
 // Удаление: убрать этот файл и тег <script src="…assets/demo-switch.js"> из HTML.
 (function (g) {
   const KK = g.KK;
@@ -7,7 +7,8 @@
   const inPatient = /\/patient\//.test(path);
   const inDoctor = /\/doctor\//.test(path);
   const inPsych = /\/psych\//.test(path);
-  const base = inPatient || inDoctor || inPsych ? '../' : '';
+  const inAuth = /\/(auth|admin)\//.test(path);
+  const base = inPatient || inDoctor || inPsych || inAuth ? '../' : '';
   const params = new URLSearchParams(location.search);
   const known = (id) => !!(id && KK.store.patient(id));
   let pid = inDoctor || inPsych ? params.get('id') : params.get('p');
@@ -25,7 +26,9 @@
     body.has-demo-switch .p-app{padding-bottom:calc(84px + env(safe-area-inset-bottom, 0px))}
     body.has-demo-switch.with-tabs .p-app{padding-bottom:calc(150px + env(safe-area-inset-bottom, 0px))}
     body.has-demo-switch .d-main{padding-bottom:84px}
-    @media (max-width:400px){.demo-switch a{padding:0 11px;font-size:12px}.demo-switch .tag{padding:0 4px 0 8px}}`;
+    body.has-demo-switch .auth__main,body.has-demo-switch .demo-hub{padding-bottom:96px}
+    @media (max-width:400px){.demo-switch a{padding:0 9px;font-size:12px}.demo-switch .tag{padding:0 4px 0 8px}}
+    @media (max-width:350px){.demo-switch .tag{display:none}}`;
   document.head.appendChild(style);
 
   const nav = document.createElement('nav');
@@ -35,7 +38,8 @@
   nav.innerHTML = `<span class="tag">Демо</span>
     <a href="${base}patient/index.html?p=${encodeURIComponent(pid)}" data-demo-role="patient" ${inPatient ? 'aria-current="page"' : ''}>Пациент</a>
     <a href="${base}doctor/patient.html?id=${encodeURIComponent(pid)}" ${inDoctor ? 'aria-current="page"' : ''}>Врач</a>
-    <a href="${base}${KK.store.patient(pid)?.intake ? `psych/patient.html?id=${encodeURIComponent(pid)}` : 'psych/index.html'}" ${inPsych ? 'aria-current="page"' : ''}>Психолог</a>`;
+    <a href="${base}${KK.store.patient(pid)?.intake ? `psych/patient.html?id=${encodeURIComponent(pid)}` : 'psych/index.html'}" ${inPsych ? 'aria-current="page"' : ''}>Психолог</a>
+    <a href="${base}auth/demo.html" ${inAuth ? 'aria-current="page"' : ''}>Вход</a>`;
   document.body.appendChild(nav);
 
   // Переход в кабинет пациента без онбординга — только для демо.

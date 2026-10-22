@@ -72,7 +72,7 @@
       // Подключённым считается пациент, который отметил это устройство или уже прошёл регистрацию (есть согласия):
       // в демо «Сбросить демо» не должен отправлять зарегистрированных пациентов на экран регистрации.
       if (requireLink && !app.registered(pid)) { location.replace(`onboarding.html?p=${pid}`); return null; }
-      if (app.linked(pid) && KK.store.channels(pid).length === 0) { try { KK.store.linkChannel(pid, KK.host.platform); } catch (e) { /* */ } }
+      if (app.registered(pid) && KK.store.channels(pid).length === 0) { try { KK.store.linkChannel(pid, KK.host.platform); } catch (e) { /* */ } }
       const shell = document.getElementById('shell');
       const nav = tab ? `<div class="tabbar"><nav aria-label="Разделы">${TABS.map((t) =>
         `<a href="${t.href}" ${t.id === tab ? 'aria-current="page"' : ''}>${KK.ui.icon(t.icon)}<span>${t.label}</span></a>`).join('')}${help ? `<a class="tab-help" href="help.html">${KK.ui.icon('heart')}<span>Помощь</span></a>` : ''}</nav></div>` : '';
