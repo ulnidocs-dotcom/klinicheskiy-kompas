@@ -74,7 +74,7 @@ test('alcohol question also quotes the instruction', () => {
 });
 
 const NOT_CHANGE = ['Как принимать лекарство?', 'Когда подействует лечение?', 'Как отменить приём у врача?', 'Хочу перенести визит',
-  'Забыл отметить самочувствие', 'Можно ли водить машину?', 'Сколько длится лечение?'];
+  'Забыл отметить самочувствие', 'Можно ли водить машину?', 'Сколько длится лечение?', 'Не могу дозвониться, визит отменили'];
 test('neutral treatment questions are not flagged as a change of treatment', () => {
   for (const t of NOT_CHANGE) assert.notEqual(A().answer(t).kind, 'treatment_change', t);
 });
@@ -200,6 +200,8 @@ test('assistant turns are events: kept in the store and do not raise signals; cr
   assert.equal(store.alerts({ patientId: 'p_olga', open: true }).length, before);
   store.addEvent('p_olga', 'sos', { source: 'assistant' });
   assert.ok(store.alerts({ patientId: 'p_olga', open: true }).some((a) => a.ruleId === 'sos' && a.level === 'critical'));
+  const sig = store.signals('p_olga').find((s) => s.ruleId === 'sos');
+  assert.match(JSON.stringify(sig.inputs), /в чате с ассистентом/);
   assert.equal(KK.syncIsUrgent('sos', { source: 'assistant' }), true);
 });
 
@@ -207,4 +209,30 @@ test('bot topics menu passes the lock-screen rules', () => {
   const t = KK.data.botMessages.find((x) => x.id === 'topics_menu');
   assert.ok(t);
   assert.deepEqual(t.buttons.filter((b) => b.type === 'callback').map((b) => b.text), ['Лечение', 'Побочные эффекты', 'Как пользоваться', 'Связь с врачом']);
+});
+
+test('doctor: forwarded marker only on assistant messages, with the reason', () => {
+  const D = KK.doctorApp;
+  assert.equal(D.viaLabel({ text: 'x' }), '');
+  assert.match(D.viaLabel({ via: 'assistant', reason: 'treatment_change' }), /передано ассистентом · вопрос об изменении лечения/);
+  assert.match(D.viaLabel({ via: 'assistant', reason: 'not_helped' }), /ответ ассистента не помог/);
+  assert.match(D.viaLabel({ via: 'assistant' }), /передано ассистентом<\/span>/);
+});
+
+test('doctor: assistant transcript is collapsed by default, escaped, newest first, crisis highlighted', () => {
+  const D = KK.doctorApp;
+  const ev = [
+    { id: 'e1', at: '2026-10-21T10:00:00.000Z', type: 'assistant', payload: { q: 'плохо сплю', kind: 'faq', entryId: 'sleep', reply: '' } },
+    { id: 'e2', at: '2026-10-22T10:00:00.000Z', type: 'assistant', payload: { q: '<b>не хочу жить</b>', kind: 'crisis', entryId: null, reply: '' } },
+  ];
+  const html = D.assistantLog(ev);
+  assert.match(html, /Переписка с ассистентом/);
+  assert.match(html, /<details data-assistant-log>/);
+  assert.match(D.assistantLog(ev, { open: true }), /<details data-assistant-log open>/);
+  assert.match(html, /&lt;b&gt;не хочу жить/);
+  assert.doesNotMatch(html, /<b>не хочу/);
+  assert.ok(html.indexOf('не хочу жить') < html.indexOf('плохо сплю'));
+  assert.match(html, /badge--critical/);
+  assert.match(html, /Материал «Что помогает спать»/);
+  assert.match(D.assistantLog([]), /не обращался к ассистенту/);
 });

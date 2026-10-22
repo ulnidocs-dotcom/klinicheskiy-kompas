@@ -16,7 +16,7 @@
         <nav class="list card" aria-label="Пациенты">${ps.map((x) => { const last = store.messages(x.id).filter((m) => m.from !== 'system').at(-1);
           return `<a href="?id=${ui.esc(x.id)}" ${x.id === pid ? 'aria-current="page"' : ''}><b>${ui.esc(x.name)}</b><br><span class="hint">${last ? ui.esc(last.text.slice(0, 40)) : 'нет сообщений'}</span></a>`; }).join('')}</nav>
         <section class="card stack"><div class="row-between"><h2>${ui.esc(p.name)}</h2><a href="patient.html?id=${ui.esc(pid)}">Карточка</a></div>
-          <div class="stack" aria-live="polite">${msgs.map((m) => `<div class="msg ${m.from === 'doctor' ? 'me' : m.from === 'system' ? 'sys' : ''}">${ui.esc(m.text)}<div class="hint">${ui.fmtDateTime(m.at)}</div></div>`).join('') || '<p class="hint">Переписки пока нет</p>'}</div>
+          <div class="stack" aria-live="polite">${msgs.map((m) => `<div class="msg ${m.from === 'doctor' ? 'me' : m.from === 'system' ? 'sys' : ''}">${ui.esc(m.text)}<div class="hint">${ui.fmtDateTime(m.at)}${m.via === 'assistant' ? ` ${D.viaLabel(m)}` : ''}</div></div>`).join('') || '<p class="hint">Переписки пока нет</p>'}</div>
           <div class="row wrap">${TPL.map((t) => `<button class="btn btn--ghost" data-tpl="${ui.esc(t)}">${ui.esc(t.slice(0, 32))}…</button>`).join('')}</div>
           <form id="f" class="row"><label class="sr-only" for="t">Сообщение</label><input id="t" class="input grow" style="flex:1" placeholder="Сообщение пациенту" value="${ui.esc(draft)}"><button class="btn btn--primary">Отправить</button></form>
         </section></div>`));

@@ -21,7 +21,7 @@
       return e.payload.scaleId === 'cssrs' ? `${head}: ${lbl}` : `${head}: ${e.payload.total} — ${lbl}`;
     }
     if (e.type === 'ae') return e.payload.items.map((i) => `${i.label} (${i.severity === 'severe' ? 'сильно' : i.severity === 'mild' ? 'немного' : i.severity})`).join(', ') + (e.payload.note ? ` · «${e.payload.note}»` : '');
-    if (e.type === 'sos') return 'пациент сообщил, что ему очень плохо';
+    if (e.type === 'sos') return e.payload && e.payload.source === 'assistant' ? 'в чате с ассистентом — слова о самоповреждении или суициде; пациенту открыт экран помощи' : 'пациент сообщил, что ему очень плохо';
     if (e.type === 'intake_form') return 'пациент заполнил анкету';
     if (e.type === 'cto') return e.payload.skipped ? 'цветовой тест пропущен (по желанию)' : 'цветовой тест отношений выполнен';
     if (e.type === 'previsit') return e.payload && e.payload.status === 'completed' ? 'пациент заполнил анкету' : 'анкета не завершена, часть ответов передана';
@@ -43,6 +43,9 @@
   }
   // Анкета до приёма (спек 2026-10-22 §B): форма отправки, сообщение, отмеченные предложения (переживают перерисовку).
   let pvOpen = false, pvMsg = '';
+  // Переписка с ассистентом (спек 2026-10-22 §C): свёрнута; раскрытие переживает перерисовку.
+  let alogOpen = false;
+  document.addEventListener('toggle', (e) => { if (e.target.matches && e.target.matches('[data-assistant-log]')) alogOpen = e.target.open; }, true);
   const pvChecked = new Set();
   function invitePanel(p) {
     if (!inviteOpen || connected(p)) return '';
@@ -80,7 +83,7 @@
     // Пациент может изменить отметку самочувствия (за сегодня или до 7 дней назад): в ленте и сводке — последняя за день.
     const checkins = KK.util.latestPerDay(store.events(id, 'checkin'));
     const keep = new Set(checkins.map((e) => e.id));
-    const feed = [...store.events(id)].filter((e) => e.type !== 'dose' && (e.type !== 'checkin' || keep.has(e.id))).reverse().slice(0, 12);
+    const feed = [...store.events(id)].filter((e) => e.type !== 'dose' && e.type !== 'assistant' && (e.type !== 'checkin' || keep.has(e.id))).reverse().slice(0, 12);
     const aes = store.events(id, 'ae').slice(-5).reverse();
     const plan = p.plan;
     const drug = data.drugs[plan?.drugId];
@@ -117,6 +120,7 @@
           ${D.inboxHtml(store.inbox({ to: store.doctor().id, patientId: id, unread: true }).filter((m) => m.kind !== 'phone_confirm'), { title: "Новое от психолога" })}
           ${D.previsitCard(p, store.events(id, 'previsit'), { open: pvOpen, msg: pvMsg, checked: [...pvChecked] })}
           ${D.intakeCard(p, store.intakeOf(id))}
+          ${D.assistantLog(store.events(id, 'assistant'), { open: alogOpen })}
           <section class="card stack"><h2>Терапия</h2>
             <dl class="kv">
               <dt>План</dt><dd>${drug ? `${ui.esc(drug.name)} ${ui.esc(drug.dosing.dose)} × ${drug.dosing.timesPerDay}/сут` : '—'}</dd>

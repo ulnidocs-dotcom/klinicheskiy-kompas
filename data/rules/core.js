@@ -63,7 +63,9 @@
       title: 'Пациент нажал «Мне сейчас очень плохо»',
       when: (c) => c.events.some((e) => e.type === 'sos' && within(c, e.at, 24)),
       basis: (c) => c.events.filter((e) => e.type === 'sos' && within(c, e.at, 24)).at(-1)?.at,
-      inputs: (c) => [`нажатие кнопки — ${d(c.events.filter((e) => e.type === 'sos').at(-1).at)}`],
+      // source 'assistant' — слова о кризисе в чате с ассистентом (спек 2026-10-22 §C), иначе — кнопка пациента.
+      inputs: (c) => { const e = c.events.filter((x) => x.type === 'sos').at(-1);
+        return [`${e.payload && e.payload.source === 'assistant' ? 'слова о самоповреждении или суициде в чате с ассистентом' : 'нажатие кнопки'} — ${d(e.at)}`]; },
       text: () => 'Пациенту показаны контакты экстренной помощи. Свяжитесь с пациентом.' },
     // Основание — первый ответ «да» по текущей анкете: черновой ответ и итоговая отправка не поднимают алерт дважды.
     { id: 'previsit_selfharm', level: 'critical', routing: 'required', teamRule: true, source: 'Правило команды',
