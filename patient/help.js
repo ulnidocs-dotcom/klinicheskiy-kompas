@@ -8,8 +8,10 @@
   const fromIntake = ui.param('from') === 'intake' && store.alerts({ patientId: ctx.pid, open: true }).some((a) => a.ruleId === 'cssrs_risk');
   // После ответа «да» в анкете до приёма: «уведомлены» — только при открытом алерте previsit_selfharm.
   const fromPrevisit = ui.param('from') === 'previsit' && store.alerts({ patientId: ctx.pid, open: true }).some((a) => a.ruleId === 'previsit_selfharm');
+  // Из чата с ассистентом (спек 2026-10-22 §C): «уведомлены» — только при открытом алерте по кнопке SOS.
+  const fromAssistant = ui.param('from') === 'assistant' && store.alerts({ patientId: ctx.pid, open: true }).some((a) => a.ruleId === 'sos');
   const offline = ui.param('from') === 'offline';
-  let sent = fromPhq || fromIntake || fromPrevisit;
+  let sent = fromPhq || fromIntake || fromPrevisit || fromAssistant;
   let failed = false;
   let g = -1;
   const GROUND = ['5 вещей, которые вы видите', '4 вещи, которых можете коснуться', '3 звука, которые слышите', '2 запаха вокруг', '1 вкус, который чувствуете'];
@@ -40,6 +42,7 @@
         </section>
         ${fromIntake ? '<a class="btn btn--block" href="intake.html">Вернуться к беседе с психологом</a>' : ''}
         ${ui.param('from') === 'previsit' ? '<a class="btn btn--block" href="previsit.html">Вернуться к анкете</a>' : ''}
+        ${ui.param('from') === 'assistant' ? '<a class="btn btn--block" href="chat.html?mode=assistant">Вернуться в чат</a>' : ''}
       </section>`);
   }
   document.addEventListener('click', (e) => {
