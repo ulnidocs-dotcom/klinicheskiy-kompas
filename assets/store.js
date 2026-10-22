@@ -37,6 +37,25 @@
     unknown: 'Приглашение не найдено. Проверьте ссылку или попросите администратора клиники отправить новое',
   };
   const DENIED = 'Не получилось войти. Проверьте почту или обратитесь к администратору клиники';
+  // Приглашение пациента в дневник (спек 2026-10-22 §A): одноразовая ссылка на 72 часа, без персональных данных в токене.
+  const PATIENT_INVITE_TTL = 72 * 3600000;
+  const PATIENT_CONSENTS = ['data_processing', 'doctor_access', 'not_emergency'];
+  const ASK_NEW = 'Попросите врача прислать новое приглашение';
+  const PATIENT_INVITE_TEXT = {
+    expired: `Срок действия ссылки истёк. ${ASK_NEW}`,
+    used: `Эта ссылка уже использована. Если дневник подключали вы, войдите по номеру телефона. ${ASK_NEW}`,
+    revoked: `Эта ссылка больше не действует. ${ASK_NEW}`,
+    unknown: `Ссылка не найдена: проверьте, что она скопирована целиком. ${ASK_NEW}`,
+  };
+  const ICD10 = /^[A-Z]\d{2}(\.\d{1,2})?$/;
+  // Российский мобильный в формате +7XXXXXXXXXX (как KK.auth.normalizePhone; стор не зависит от порядка подключения).
+  function normPhone(raw) {
+    if (KK.auth && typeof KK.auth.normalizePhone === 'function') return KK.auth.normalizePhone(raw);
+    const d = String(raw || '').replace(/\D/g, '');
+    const ten = d.length === 11 && (d[0] === '8' || d[0] === '7') ? d.slice(1) : d.length === 10 ? d : null;
+    return ten && ten[0] === '9' ? `+7${ten}` : null;
+  }
+  const fmtPhone = (p) => (/^\+7\d{10}$/.test(p || '') ? `+7 ${p.slice(2, 5)} ${p.slice(5, 8)}-${p.slice(8, 10)}-${p.slice(10)}` : String(p || '—'));
   // Коды и токены — из криптостойкого генератора, если он есть.
   function rnd(n, abc) {
     const c = g.crypto && g.crypto.getRandomValues ? g.crypto.getRandomValues(new Uint32Array(n))
@@ -223,6 +242,27 @@
       const inv = { token: rnd(24, TOKEN_ABC), email, role, by, createdAt: nowIso(), expiresAt: new Date(+clock() + INVITE_TTL).toISOString(), usedAt: null, revokedAt: null };
       clinic().invites.push(inv);
       return inv;
+    }
+    // Приглашения пациентов и запросы подтверждения номера появляются лениво (без миграции версии).
+    const pinvites = () => (db.patientInvites = db.patientInvites || []);
+    const pconfirms = () => (db.phoneConfirms = db.phoneConfirms || []);
+    const findPInvite = (token) => { const t = String(token || ''); return t ? pinvites().find((i) => i.token === t) || null : null; };
+    const markInbox = (inboxId) => { const m = (db.inbox || []).find((x) => x.id === inboxId); if (m && !m.readAt) m.readAt = nowIso(); };
+    // Новое приглашение или решение по другому запросу отменяет ожидающие подтверждения номера этого пациента.
+    function cancelConfirms(patientId) {
+      pconfirms().filter((c) => c.patientId === patientId && c.state === 'pending').forEach((c) => {
+        c.state = 'cancelled'; c.decidedAt = nowIso(); markInbox(c.inboxId);
+      });
+    }
+    const phoneTaken = (id, phone) => Object.keys(db.patients).some((k) => k !== id && db.patients[k].phone === phone);
+    // Завершить регистрацию по приглашению: телефон, согласия (на момент, когда их дал пациент), гашение ссылки.
+    function linkByInvite(inv, phone, actor, consentAt) {
+      const p = db.patients[inv.patientId];
+      p.phone = phone;
+      p.consents = PATIENT_CONSENTS.map((kind) => ({ kind, at: consentAt, version: CONSENT_VERSION }));
+      inv.usedAt = nowIso();
+      audit(p.id, 'consents_recorded', { kinds: PATIENT_CONSENTS.slice() }, 'patient');
+      audit(p.id, 'invite_redeemed', {}, actor);
     }
 
     const api = {
@@ -683,6 +723,130 @@
         db.patients[id].phone = phone;
         audit(id, 'phone_verified', {}, 'patient');
         write();
+      },
+      // ——— Новый пациент и приглашение в дневник (спек 2026-10-22 §A) ———
+      // Карточка без событий: ФИО, возраст, пол, мобильный (обязателен, нормализуется), диагноз МКБ-10 (необязателен).
+      addPatient({ name, age, sex, phone, dxCode, dxText } = {}, by) {
+        need();
+        const nm = String(name || '').trim().replace(/\s+/g, ' ').slice(0, 120);
+        if (nm.length < 3 || !nm.includes(' ')) throw new Error('Укажите ФИО: хотя бы фамилию и имя');
+        const a = typeof age === 'string' && age.trim() === '' ? NaN : Number(age);
+        if (!Number.isInteger(a) || a < 1 || a > 120) throw new Error('Укажите возраст: полных лет, от 1 до 120');
+        if (sex !== 'f' && sex !== 'm') throw new Error('Укажите пол');
+        if (!String(phone || '').trim()) throw new Error('Укажите мобильный телефон: по нему пациент подтвердит регистрацию');
+        const ph = normPhone(phone);
+        if (!ph) throw new Error('Проверьте номер телефона: нужен российский мобильный, например +7 900 000-00-00');
+        if (phoneTaken(null, ph)) throw new Error('Этот номер уже указан в карте другого пациента');
+        const code = String(dxCode || '').trim().toUpperCase().replace(',', '.');
+        const text = String(dxText || '').trim().slice(0, 200);
+        if (code && !ICD10.test(code)) throw new Error('Проверьте код МКБ-10: например F41.1');
+        if (!code && text) throw new Error('Укажите код диагноза по МКБ-10, например F41.1');
+        let id;
+        do { id = KK.util.uid('p'); } while (Object.hasOwn(db.patients, id));
+        const initials = nm.split(' ').slice(0, 2).map((w) => w[0]).join('').toUpperCase();
+        db.patients[id] = { id, name: nm, initials, age: a, sex, phone: ph,
+          pregnant: false, lactating: false, allergies: [], conditions: [], meds: [], history: {}, labs: {},
+          diagnoses: code ? [{ code, text }] : [], plan: null, consents: [],
+          doctorId: db.doctor.id, createdAt: nowIso() };
+        db.events[id] = [];
+        db.messages[id] = [];
+        audit(id, 'patient_added', {}, by);
+        write();
+        return id;
+      },
+      // Новое приглашение отменяет прежнее (и ожидающее подтверждение номера). Только для неподключённого пациента.
+      createPatientInvite(patientId, by) {
+        need();
+        if (!has(patientId)) throw new Error(`Unknown patient ${patientId}`);
+        if ((db.patients[patientId].consents || []).length) throw new Error('Пациент уже подключён к дневнику');
+        const at = nowIso();
+        pinvites().filter((i) => i.patientId === patientId && !i.usedAt && !i.revokedAt).forEach((i) => { i.revokedAt = at; });
+        cancelConfirms(patientId);
+        const inv = { token: rnd(24, TOKEN_ABC), patientId, by: by || db.doctor.id, createdAt: at,
+          expiresAt: new Date(+clock() + PATIENT_INVITE_TTL).toISOString(), usedAt: null, revokedAt: null };
+        pinvites().push(inv);
+        audit(patientId, 'invite_created', { expiresAt: inv.expiresAt }, inv.by);
+        write();
+        return Object.assign({}, inv, { state: 'pending' });
+      },
+      // Последнее приглашение пациента со статусом (pending / used / expired / revoked) или null.
+      patientInvite(patientId) {
+        need();
+        const inv = has(patientId) ? pinvites().filter((i) => i.patientId === patientId).at(-1) : null;
+        return inv ? Object.assign({}, inv, { state: inviteState(inv) }) : null;
+      },
+      // Что знает страница регистрации по токену: статус, а пациента — только у действующей ссылки.
+      patientInviteInfo(token) {
+        need();
+        const inv = findPInvite(token);
+        if (!inv || !has(inv.patientId)) return { state: 'unknown' };
+        const state = inviteState(inv);
+        return state === 'pending' ? { state, patientId: inv.patientId, expiresAt: inv.expiresAt } : { state };
+      },
+      patientInviteText: (state) => PATIENT_INVITE_TEXT[state] || PATIENT_INVITE_TEXT.unknown,
+      // Совпадает ли подтверждённый кодом номер с номером в карте (в карте нет номера — совпадает).
+      invitePhoneMatches(token, phone) {
+        need();
+        const inv = findPInvite(token);
+        if (!inv || inviteState(inv) !== 'pending' || !has(inv.patientId)) return false;
+        const cur = db.patients[inv.patientId].phone;
+        return !cur || cur === normPhone(phone);
+      },
+      // Завершение регистрации по приглашению (после подтверждения номера кодом и согласий).
+      // Номер совпал с картой → { status: 'linked' }, ссылка гасится. Номер другой → { status: 'pending', confirmId }:
+      // пациент не подключён, ссылка не гасится, врачу — запись во входящих «Подтвердите номер пациента».
+      redeemPatientInvite(token, { phone, consents } = {}) {
+        need();
+        const inv = findPInvite(token);
+        const st = inv && has(inv.patientId) ? inviteState(inv) : 'unknown';
+        if (st !== 'pending') failWith(st, PATIENT_INVITE_TEXT[st] || PATIENT_INVITE_TEXT.unknown);
+        const ph = normPhone(phone);
+        if (!ph) throw new Error('Подтвердите номер телефона кодом из SMS');
+        const kinds = Array.isArray(consents) ? consents : [];
+        if (!PATIENT_CONSENTS.every((k) => kinds.includes(k))) throw new Error('Отметьте все согласия, чтобы подключить дневник');
+        if (phoneTaken(inv.patientId, ph)) failWith('taken', 'Этот номер уже привязан к дневнику. Войдите по номеру телефона');
+        const p = db.patients[inv.patientId];
+        if (p.phone && p.phone !== ph) {
+          cancelConfirms(p.id);
+          const c = { id: KK.util.uid('pc'), token: inv.token, patientId: p.id, phone: ph, state: 'pending', createdAt: nowIso(), decidedAt: null, by: null, inboxId: null };
+          const m = { id: KK.util.uid('in'), at: c.createdAt, from: 'patient', fromName: p.name, to: p.doctorId || db.doctor.id, patientId: p.id, kind: 'phone_confirm', confirmId: c.id,
+            text: `Подтвердите номер пациента. В карте указан ${fmtPhone(p.phone)}, при регистрации по приглашению подтверждён кодом ${fmtPhone(ph)}. Если ссылку переслали другому человеку, отклоните подключение.` };
+          c.inboxId = m.id;
+          pconfirms().push(c);
+          (db.inbox = db.inbox || []).push(m);
+          audit(p.id, 'phone_confirm_requested', {}, 'patient');
+          write();
+          return { status: 'pending', confirmId: c.id, patientId: p.id };
+        }
+        linkByInvite(inv, ph, 'patient', nowIso());
+        write();
+        return { status: 'linked', patientId: p.id };
+      },
+      phoneConfirms: ({ patientId, state } = {}) => (need(), pconfirms().filter((c) => (!patientId || c.patientId === patientId) && (!state || c.state === state)).map(copy)),
+      phoneConfirmState: (id) => { need(); const c = pconfirms().find((x) => x.id === String(id || '')); return c ? c.state : null; },
+      // Решение врача по номеру: подтвердить → пациент подключён с подтверждённым номером, ссылка погашена;
+      // отклонить → пациент не подключён, пересланная ссылка больше не действует (врач отправит новое приглашение).
+      resolvePhoneConfirm(id, approve, by) {
+        need();
+        const c = pconfirms().find((x) => x.id === String(id || ''));
+        if (!c) return null;
+        if (c.state !== 'pending') throw new Error('Запрос уже рассмотрен');
+        const inv = findPInvite(c.token);
+        if (approve) {
+          // Срок ссылки не проверяем: пациент зарегистрировался вовремя, решение врача может прийти позже.
+          if (!inv || inv.usedAt || inv.revokedAt || !has(c.patientId)) throw new Error('Приглашение больше не действует. Отправьте пациенту новое');
+          if (phoneTaken(c.patientId, c.phone)) throw new Error('Этот номер уже привязан к дневнику другого пациента');
+          linkByInvite(inv, c.phone, by || db.doctor.id, c.createdAt);
+          c.state = 'approved';
+        } else {
+          if (inv && !inv.usedAt && !inv.revokedAt) inv.revokedAt = nowIso();
+          c.state = 'rejected';
+        }
+        c.decidedAt = nowIso(); c.by = by || db.doctor.id;
+        markInbox(c.inboxId);
+        audit(c.patientId, approve ? 'phone_confirm_approved' : 'phone_confirm_rejected', {}, c.by);
+        write();
+        return c.state;
       },
       // Ссылка восстановления специалиста. null — почты нет или сотрудник не активен (страница об этом не говорит).
       createReset(email) {
