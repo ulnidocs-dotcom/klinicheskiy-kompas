@@ -249,3 +249,57 @@ test('draft key is reset with the demo data', () => {
   assert.equal(Q().draftKey('p_anna'), 'kk:previsit-draft:p_anna');
   assert.deepEqual(KK.doctorApp.demoDeviceKeys(['kk:previsit-draft:p_anna', 'kk:v1']), ['kk:previsit-draft:p_anna']);
 });
+
+test('patient app: previsitState counts a queued (offline) answer as sent', () => {
+  const app = KK.patientApp;
+  const p = { id: 'p1', previsit: { questionnaireId: 'previsit', version: 1, sentAt: '2026-10-18T10:00:00.000Z' } };
+  assert.equal(app.previsitState({ id: 'p1' }, [], []), 'none');
+  assert.equal(app.previsitState(p, [], []), 'sent');
+  const queued = [{ type: 'previsit', queuedAt: '2026-10-18T12:00:00.000Z', payload: payload() }];
+  assert.equal(app.previsitState(p, [], queued), 'completed');
+});
+
+test('pages: patient questionnaire and today load the questionnaire modules; scripts parse', () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const read = (f) => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
+  for (const page of ['patient/previsit.html', 'patient/index.html', 'doctor/patient.html']) {
+    const h = read(page);
+    assert.match(h, /data\/questionnaires\.js/, page);
+    assert.match(h, /assets\/questionnaire\.js/, page);
+    assert.ok(h.indexOf('data/questionnaires.js') < h.indexOf('assets/questionnaire.js'), page);
+  }
+  for (const js of ['patient/previsit.js', 'patient/today.js', 'patient/help.js', 'doctor/patient.js']) assert.doesNotThrow(() => new Function(read(js)), js);
+  assert.match(read('patient/today.js'), /previsit\.html/);
+  assert.match(read('patient/previsit.js'), /help\.html\?from=\$\{from\}|help\.html\?from=/);
+  assert.match(read('patient/help.js'), /previsit_selfharm/);
+});
+
+test('doctor card: send button, waiting state, summary with escaped answers, unchecked proposals, FHIR export', () => {
+  const D = KK.doctorApp;
+  const base = { id: 'p1', sex: 'f', meds: [], allergies: [], conditions: [], pregnant: false, lactating: false };
+  const none = D.previsitCard(base, []);
+  assert.match(none, /data-previsit-open/);
+  assert.match(D.previsitCard(base, [], { open: true }), /id="pv-date"[\s\S]*data-previsit-send/);
+  const p = Object.assign({}, base, { previsit: { questionnaireId: 'previsit', version: 1, sentAt: '2026-10-18T10:00:00.000Z', visitDate: '2026-10-25' } });
+  assert.match(D.previsitCard(p, []), /ещё не заполнил/);
+  const ev = { id: 'ev1', type: 'previsit', at: '2026-10-18T12:00:00.000Z', payload: payload({ complaint: '<img src=x onerror=alert(1)>' }) };
+  const html = D.previsitCard(p, [ev], { msg: '<b>x</b>' });
+  assert.doesNotMatch(html, /<img|<b>x/);
+  assert.match(html, /&lt;img/);
+  assert.match(html, /приём 25\.10\.2026/);
+  assert.match(html, /GAD-2[\s\S]*желательно оценить полной шкалой/);
+  assert.match(html, /Предлагается добавить в карту — со слов пациента/);
+  assert.match(html, /data-pv-key="med:Сертралин"(?! checked)/);
+  assert.doesNotMatch(html, /data-pv-key="[^"]*" checked/);
+  assert.match(html, /data-previsit-apply/);
+  assert.match(html, /Экспорт \(FHIR QuestionnaireResponse\)/);
+  assert.match(html, /Не распознано автоматически[\s\S]*Какие-то капли/);
+  assert.match(D.previsitCard(p, [ev], { checked: ['med:Сертралин'] }), /data-pv-key="med:Сертралин" checked/);
+  // незавершённая анкета с «да»: критический флаг, без предложений и экспорта
+  const part = { type: 'previsit', at: '2026-10-18T11:00:00.000Z', payload: payload({ selfHarm: true }, { status: 'in-progress' }) };
+  const ph = D.previsitCard(p, [part]);
+  assert.match(ph, /Не завершена/);
+  assert.match(ph, /badge--critical/);
+  assert.doesNotMatch(ph, /data-previsit-apply|data-previsit-fhir/);
+});

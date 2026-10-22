@@ -4,7 +4,8 @@
   const id = ui.param('id');
   if (!store.patient(id)) { location.replace('index.html'); return; }
   const TYPE = { checkin: 'Самочувствие', dose: 'Приём', scale: 'Шкала', ae: 'Нежелательные явления', sos: 'Кнопка «Мне тяжело»',
-    intake_form: 'Первичный приём психолога', cto: 'Первичный приём психолога', intake_decision: 'Первичный приём психолога' };
+    intake_form: 'Первичный приём психолога', cto: 'Первичный приём психолога', intake_decision: 'Первичный приём психолога',
+    previsit: 'Анкета до приёма' };
   const describe = (e) => {
     if (e.type === 'checkin') {
       const sameDay = store.events(id, 'checkin').filter((x) => KK.util.dayKey(x.at) === KK.util.dayKey(e.at)).length;
@@ -23,6 +24,7 @@
     if (e.type === 'sos') return 'пациент сообщил, что ему очень плохо';
     if (e.type === 'intake_form') return 'пациент заполнил анкету';
     if (e.type === 'cto') return e.payload.skipped ? 'цветовой тест пропущен (по желанию)' : 'цветовой тест отношений выполнен';
+    if (e.type === 'previsit') return e.payload && e.payload.status === 'completed' ? 'пациент заполнил анкету' : 'анкета не завершена, часть ответов передана';
     if (e.type === 'intake_decision') return `решение психолога: ${KK.battery ? KK.battery.levelLabel(e.payload.level) : e.payload.level}`;
     return '';
   };
@@ -39,6 +41,9 @@
     if (store.patient(id) && !connected(store.patient(id))) ensureInvite(false);
     try { history.replaceState(null, '', `patient.html?id=${encodeURIComponent(id)}`); } catch (e) { /* песочница */ }
   }
+  // Анкета до приёма (спек 2026-10-22 §B): форма отправки, сообщение, отмеченные предложения (переживают перерисовку).
+  let pvOpen = false, pvMsg = '';
+  const pvChecked = new Set();
   function invitePanel(p) {
     if (!inviteOpen || connected(p)) return '';
     const inv = store.patientInvite(id);
@@ -90,6 +95,7 @@
         ${plan?.status === 'proposed' ? `<a class="btn btn--primary" href="therapy.html?id=${ui.esc(id)}">Рассмотреть назначение ${ui.esc(drug?.name || '')}</a>` : ''}
         ${p.routing && !p.routingConfirmed ? `<a class="btn ${p.routing === 'required' ? 'btn--primary' : ''}" href="routing.html?id=${id}">Оформить направление к психиатру</a>` : ''}
         ${connected(p) ? '' : '<button class="btn btn--primary" data-invite-open>Пригласить в дневник</button>'}
+        ${p.previsit ? '' : '<button class="btn" data-previsit-open>Отправить анкету до приёма</button>'}
         <a class="btn" href="assess.html?id=${id}">Оценка на приёме</a>
         <a class="btn btn--ghost" href="messages.html?id=${id}">Написать пациенту</a>
         <button class="btn btn--ghost" data-export>Экспорт данных</button>
@@ -109,6 +115,7 @@
         </div>
         <div class="stack">
           ${D.inboxHtml(store.inbox({ to: store.doctor().id, patientId: id, unread: true }).filter((m) => m.kind !== 'phone_confirm'), { title: "Новое от психолога" })}
+          ${D.previsitCard(p, store.events(id, 'previsit'), { open: pvOpen, msg: pvMsg, checked: [...pvChecked] })}
           ${D.intakeCard(p, store.intakeOf(id))}
           <section class="card stack"><h2>Терапия</h2>
             <dl class="kv">
@@ -148,6 +155,59 @@
       const done = () => { document.body.classList.remove('print-invite'); window.removeEventListener('afterprint', done); };
       window.addEventListener('afterprint', done);
       try { window.print(); } catch (err) { done(); document.getElementById('inv-msg').textContent = 'Печать недоступна в этом окне'; }
+    }
+  });
+  // ——— Анкета до приёма ———
+  document.addEventListener('change', (e) => {
+    const box = e.target.closest && e.target.closest('[data-pv-key]');
+    if (!box) return;
+    if (box.checked) pvChecked.add(box.dataset.pvKey); else pvChecked.delete(box.dataset.pvKey);
+  });
+  document.addEventListener('click', (e) => {
+    const Q = KK.questionnaire, def = data.questionnaires && data.questionnaires.previsit;
+    if (!Q || !def) return;
+    if (e.target.closest('[data-previsit-open]')) {
+      pvOpen = true; pvMsg = ''; render();
+      const el = document.getElementById('pv-date') || document.getElementById('previsit');
+      if (el) { if (el.scrollIntoView) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); if (el.id === 'pv-date') el.focus({ preventScroll: true }); }
+      return;
+    }
+    if (e.target.closest('[data-previsit-cancel]')) { pvOpen = false; pvMsg = ''; render(); return; }
+    if (e.target.closest('[data-previsit-send]')) {
+      const input = document.getElementById('pv-date');
+      try {
+        store.sendPrevisit(id, { visitDate: input ? input.value : '', by: D.me().id });
+        pvOpen = false; pvChecked.clear();
+        pvMsg = connected(store.patient(id)) ? 'Анкета отправлена. Пациент увидит её на главной странице дневника.'
+          : 'Анкета отправлена. Пациент ещё не подключён к дневнику: анкета появится после подключения.';
+      } catch (err) { pvMsg = err.message; }
+      render();
+      return;
+    }
+    if (e.target.closest('[data-previsit-apply]')) {
+      const p = store.patient(id);
+      const st = Q.status(p.previsit, store.events(id, 'previsit'));
+      if (!st.response) return;
+      // Предложения пересчитываются по текущей карте: уже добавленное повторно не попадёт.
+      const items = Q.proposals(def, st.response.payload, p, KK.parser).items;
+      const keys = [...pvChecked].filter((k) => items.some((x) => x.key === k));
+      if (!keys.length) { pvMsg = 'Отметьте, что добавить в карту'; render(); return; }
+      const labels = items.filter((x) => keys.includes(x.key)).map((x) => x.label);
+      try {
+        store.importParsed(id, Q.toParsed(items, keys));
+        pvMsg = `Добавлено в карту: ${labels.join('; ')}. Проверка терапии пересчитана.`;
+        pvChecked.clear();
+      } catch (err) { pvMsg = err.message; }
+      render();
+      return;
+    }
+    const fx = e.target.closest('[data-previsit-fhir]');
+    if (fx) {
+      const p = store.patient(id);
+      const st = Q.status(p.previsit, store.events(id, 'previsit'));
+      if (!st.response) return;
+      const text = JSON.stringify(Q.toFhir(def, st.response, p), null, 2);
+      if (!KK.host.download(Q.fhirFileName(id, st.response.at), text)) { pvMsg = 'Скачивание недоступно в этом окне'; render(); }
     }
   });
   document.addEventListener('click', (e) => {

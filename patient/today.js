@@ -145,6 +145,20 @@
         <span class="btn btn--pill" aria-hidden="true">${p.intakeStatus === 'in_progress' ? 'Продолжить' : 'Начать'}</span></a>`;
   }
 
+  // Анкета перед приёмом, отправленная врачом, — пока пациент её не отправил.
+  function previsitCard(p) {
+    const s = app.previsitState(p, store.events(p.id, 'previsit'), KK.sync.queued(p.id));
+    if (s !== 'sent' && s !== 'in_progress') return '';
+    let draft = false;
+    try { const d = JSON.parse(localStorage.getItem(KK.questionnaire.draftKey(p.id))); draft = !!(d && d.sentAt === p.previsit.sentAt && d.step === 'q'); } catch (e) { /* */ }
+    const going = s === 'in_progress' || draft;
+    return `
+      <a class="tile aura aura--lavender" href="previsit.html">
+        <span class="label">${going ? 'Можно продолжить' : `Около ${KK.data.questionnaires.previsit.minutes} минут`}</span>
+        <p class="tile-title">Анкета перед приёмом</p>
+        <span class="btn btn--pill" aria-hidden="true">${going ? 'Продолжить' : 'Заполнить'}</span></a>`;
+  }
+
   function helpCard() {
     return `
       <a class="tile aura aura--sand" href="help.html">
@@ -177,7 +191,7 @@
     const keep = active && active.dataset && active.dataset.day ? `[data-day="${active.dataset.day}"]` : null;
     ui.mount('#app', `
       ${header(p, now)}
-      <div class="stack">${intakeCard(p)}${checkinCard(p)}${medsCard(p)}
+      <div class="stack">${previsitCard(p)}${intakeCard(p)}${checkinCard(p)}${medsCard(p)}
         <div class="tile-grid">${scalesCard(p)}${practiceCard()}${helpCard()}</div></div>`);
     const target = st.focus === 'q' ? document.getElementById('q')
       : st.focus ? document.querySelector(st.focus) : keep ? document.querySelector(keep) : null;

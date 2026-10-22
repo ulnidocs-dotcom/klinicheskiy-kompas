@@ -6,8 +6,10 @@
   const fromPhq = ui.param('from') === 'phq9' && app.phqAlertOpen(store.alerts({ patientId: ctx.pid, open: true }));
   // После скрининга безопасности в первичной беседе: «уведомлены» — только при открытом алерте C-SSRS.
   const fromIntake = ui.param('from') === 'intake' && store.alerts({ patientId: ctx.pid, open: true }).some((a) => a.ruleId === 'cssrs_risk');
+  // После ответа «да» в анкете до приёма: «уведомлены» — только при открытом алерте previsit_selfharm.
+  const fromPrevisit = ui.param('from') === 'previsit' && store.alerts({ patientId: ctx.pid, open: true }).some((a) => a.ruleId === 'previsit_selfharm');
   const offline = ui.param('from') === 'offline';
-  let sent = fromPhq || fromIntake;
+  let sent = fromPhq || fromIntake || fromPrevisit;
   let failed = false;
   let g = -1;
   const GROUND = ['5 вещей, которые вы видите', '4 вещи, которых можете коснуться', '3 звука, которые слышите', '2 запаха вокруг', '1 вкус, который чувствуете'];
@@ -19,6 +21,7 @@
         <h1>Вы не одни</h1>
         <p class="muted">${offline ? 'Ответы не отправлены — нет связи. Когда связь появится, заполните опросник ещё раз. Если вам опасно сейчас, звоните 112 или на линию ниже.' : fromPhq ? 'Спасибо, что ответили честно. Ответы переданы врачу: он увидит их в рабочее время и свяжется с вами. Если вам опасно сейчас — не ждите ответа, звоните 112 или на линию ниже.'
           : fromIntake ? 'Спасибо, что ответили честно. Ответы переданы специалистам: они увидят их в рабочее время и свяжутся с вами. Если вам опасно сейчас — не ждите ответа, звоните 112 или на линию ниже. Беседу с психологом можно продолжить позже.'
+            : fromPrevisit ? 'Спасибо, что ответили честно. Ответ передан врачу: он увидит его в рабочее время и свяжется с вами. Если вам опасно сейчас — не ждите ответа, звоните 112 или на линию ниже. Анкету можно продолжить позже.'
             : 'Сейчас главное — ваша безопасность. Выберите, что подходит.'}</p>
         <div class="stack">
           <a class="help-call" href="tel:112"><span class="ic">${ui.icon('phone', 20)}</span><span><b>112</b><span class="hint">Если есть опасность для жизни</span></span></a>
@@ -36,6 +39,7 @@
             : '<p>Хорошо. Сделайте медленный вдох и длинный выдох.</p><a class="btn btn--block" href="material.html?id=breathing">Медленное дыхание</a>'}
         </section>
         ${fromIntake ? '<a class="btn btn--block" href="intake.html">Вернуться к беседе с психологом</a>' : ''}
+        ${ui.param('from') === 'previsit' ? '<a class="btn btn--block" href="previsit.html">Вернуться к анкете</a>' : ''}
       </section>`);
   }
   document.addEventListener('click', (e) => {

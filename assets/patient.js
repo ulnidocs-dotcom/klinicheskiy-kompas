@@ -105,6 +105,13 @@
     // Черновик первичной беседы на устройстве (переживает закрытие вкладки; сбрасывается при завершении и сбросе демо).
     intakeDraftKey: (pid) => `kk:intake-draft:${pid}`,
     // Плитка «Первичная беседа с психологом» — пока приём назначен и пациент его не завершил.
+    // Анкета до приёма: none / sent / in_progress / completed с учётом ответа, ещё ждущего связи в очереди.
+    // null — модуль анкет не подключён на странице.
+    previsitState(p, events = [], queued = []) {
+      if (!KK.questionnaire || !p) return null;
+      const q = (queued || []).filter((x) => x && x.type === 'previsit').map((x) => ({ type: 'previsit', at: (x.opts && x.opts.at) || x.queuedAt, payload: x.payload }));
+      return KK.questionnaire.status(p.previsit || null, (events || []).concat(q)).state;
+    },
     intakeDue: (p) => !!(p && p.intake && (p.intakeStatus === 'assigned' || p.intakeStatus === 'in_progress')),
     // Следующий шаг батареи по уже сохранённым частям (store.intakeOf): intro → form → cssrs → tipi10 → dass21 → cto → done.
     intakeNextStep(it) {

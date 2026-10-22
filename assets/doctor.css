@@ -79,6 +79,9 @@ mark.hl{border-radius:4px;padding:0 2px;color:var(--text)}
 .demo-note{font-size:13px;line-height:1.45;background:var(--accent-tint);color:var(--accent-strong);border-radius:10px;padding:8px 12px;margin:0;overflow-wrap:anywhere}
 .print-only{display:none}
 .add-patient .grid-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.previsit .kv{grid-template-columns:minmax(0,max-content) minmax(0,1fr)}.previsit .kv dt{max-width:16em}.previsit .kv dd{overflow-wrap:anywhere;min-width:0}
+.previsit details .kv{margin-top:8px}.previsit .check-list label{align-items:flex-start;gap:10px}
+.previsit-send{align-items:flex-end}
 @media (max-width:560px){.invite-grid{grid-template-columns:minmax(0,1fr)}.invite-panel .field .row{flex-wrap:wrap}}
 @media print{
   body.print-invite *{visibility:hidden}

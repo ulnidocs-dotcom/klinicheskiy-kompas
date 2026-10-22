@@ -201,6 +201,65 @@
         <p class="hint">Предварительная оценка психолога, не диагноз.</p>
         <a href="../psych/patient.html?id=${e(p.id)}">Подробнее</a></section>`;
     },
+    // ——— Анкета до приёма (спек 2026-10-22 §B) ———
+    // Карточка в карте пациента: отправка, ожидание, сводка (PHQ-2/GAD-2, флаги), все ответы, предложения в карту, экспорт FHIR.
+    // events — события previsit пациента; open — показать форму отправки; checked — ключи отмеченных предложений.
+    previsitCard(p, events, { open = false, msg = '', checked = [] } = {}) {
+      const Q = KK.questionnaire, def = KK.data.questionnaires && KK.data.questionnaires.previsit;
+      if (!Q || !def || !p) return '';
+      const u = ui(), e = u.esc;
+      const a = p.previsit || null;
+      const st = Q.status(a, events);
+      const day = (iso) => (iso ? iso.split('-').reverse().join('.') : '');
+      const visit = a && a.visitDate ? ` · приём ${day(a.visitDate)}` : '';
+      const sendForm = `<div class="row wrap previsit-send no-print">
+          <label class="field"><span class="hint">Дата приёма (необязательно)</span><input class="input" type="date" id="pv-date" value="${e((a && a.visitDate) || '')}"></label>
+          <button class="btn btn--primary" data-previsit-send>${a ? 'Отправить заново' : 'Отправить анкету'}</button>
+          ${a ? '<button class="btn btn--ghost" data-previsit-cancel>Отмена</button>' : ''}</div>
+        ${a ? '<p class="hint">Новая отправка заменит прежнюю: пациент заполнит анкету ещё раз.</p>' : ''}`;
+      const msgHtml = `<p class="hint" id="pv-msg" role="status">${e(msg)}</p>`;
+      const head = `<div class="row-between"><h2>Анкета до приёма</h2>${a ? `<span class="hint">отправлена ${u.fmtDate(a.sentAt)}${e(visit)}</span>` : ''}</div>`;
+      if (st.state === 'none') {
+        return `<section class="card stack previsit" id="previsit">${head}
+          <p class="muted">Пациент ответит на вопросы о жалобах, лекарствах и здоровье до приёма; ответы появятся здесь.</p>
+          ${open ? sendForm : '<button class="btn" data-previsit-open>Отправить анкету до приёма</button>'}${msgHtml}</section>`;
+      }
+      const resend = open ? sendForm : '<button class="btn btn--ghost no-print" data-previsit-open>Отправить анкету заново</button>';
+      const resp = st.response || st.partial;
+      if (!resp) {
+        return `<section class="card stack previsit" id="previsit">${head}
+          <p class="muted">Пациент ещё не заполнил анкету.</p>${msgHtml}${resend}</section>`;
+      }
+      const s = Q.summary(def, resp.payload, p);
+      const rows = Q.answerRows(def, resp.payload, p);
+      const score = (r, full) => `${r.total} из ${r.max}${r.complete ? '' : ' <span class="hint">(не на все вопросы есть ответ)</span>'}${r.positive
+        ? ` <span class="badge badge--warn">≥ ${def.threshold} — желательно оценить полной шкалой</span> <a href="assess.html?id=${e(p.id)}">Оценить ${full}</a>` : ''}`;
+      const flags = s.flags.filter((f) => !/^(PHQ|GAD)-2/.test(f.text));
+      const pr = st.response ? Q.proposals(def, resp.payload, p, KK.parser) : { items: [], unrecognized: [] };
+      const proposalsHtml = !st.response ? '' : `<div class="stack previsit-proposals">
+          <h3>Предлагается добавить в карту — со слов пациента</h3>
+          ${pr.items.length ? `<ul class="check-list">${pr.items.map((x) => `<li><label class="row"><input type="checkbox" data-pv-key="${e(x.key)}" ${checked.includes(x.key) ? 'checked' : ''}><span>${e(x.label)}</span></label></li>`).join('')}</ul>
+            <div class="row wrap no-print"><button class="btn btn--primary" data-previsit-apply>Добавить выбранное</button></div>`
+            : '<p class="hint">Добавлять нечего: пациент ничего не указал или это уже есть в карте.</p>'}
+          ${pr.unrecognized.length ? `<p class="hint">Не распознано автоматически — проверьте на приёме: ${e(pr.unrecognized.join(', '))}</p>` : ''}
+          <p class="hint">Ничего не попадает в карту без вашего подтверждения. Это данные со слов пациента — уточните их на приёме.</p></div>`;
+      return `<section class="card stack previsit" id="previsit">${head}
+        <p>${st.response ? `<span class="badge badge--ok">Заполнена</span> <span class="hint">${u.fmtDateTime(resp.at)}</span>`
+          : `<span class="badge badge--task">Не завершена</span> <span class="hint">последний ответ ${u.fmtDateTime(resp.at)}</span>`}</p>
+        ${flags.map((f) => `<div class="signal"><span class="badge ${f.level === 'critical' ? 'badge--critical' : 'badge--warn'}">${f.level === 'critical' ? 'Критично' : 'Обратите внимание'}</span><span>${e(f.text)}</span></div>`).join('')}
+        <dl class="kv">
+          <dt>Жалоба</dt><dd>${e(s.complaint) || '—'}</dd>
+          <dt>Как давно</dt><dd>${e(s.duration) || '—'}</dd>
+          <dt>PHQ-2</dt><dd>${score(s.phq2, 'PHQ-9')}</dd>
+          <dt>GAD-2</dt><dd>${score(s.gad2, 'GAD-7')}</dd>
+        </dl>
+        <details><summary>Все ответы (${rows.length})</summary><dl class="kv">${rows.map((r) => `<dt>${e(r.title)}</dt><dd>${e(r.text)}</dd>`).join('')}</dl></details>
+        ${proposalsHtml}
+        ${msgHtml}
+        <div class="row wrap no-print">${st.response ? '<button class="btn" data-previsit-fhir>Экспорт (FHIR QuestionnaireResponse)</button>' : ''}</div>
+        <p class="hint">Скрининг: PHQ-2 — ${e(def.sources.phq2)}; GAD-2 — ${e(def.sources.gad2)}. Порог ≥ ${def.threshold} из 6. Не диагноз.</p>
+        ${resend}</section>`;
+    },
     // Бейдж решения психолога для строки очереди врача («Психиатр · обязательно» и др.).
     intakeBadge(p) {
       const l = p && p.intakeRoute;
