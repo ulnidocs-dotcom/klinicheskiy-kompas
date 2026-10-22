@@ -25,7 +25,8 @@
   if (fromLink) state.code = fromLink;
   const C = patientApp.MOVE_COPY;
   if (ui.param('site') === '1') step = 'site';
-  const WAIT_TEXT = 'Номер отличается от указанного в карте. Врач подтвердит подключение';
+  const NO_CODE_TEXT = 'Откройте ссылку-приглашение от врача из SMS или QR-кода. Если ссылки нет — попросите врача прислать новое приглашение.';
+  const WAIT_TEXT ='Номер отличается от указанного в карте. Врач подтвердит подключение';
   function finishLinked(pid) {
     step = 'done'; // до записей в хранилище: подписка checkWait не должна сработать повторно
     waitSet(null);
@@ -80,6 +81,14 @@
         <h1>Здравствуйте</h1>
         <p class="muted">Здесь вы и ваш врач видите, как меняется самочувствие. Отметки занимают меньше минуты в день.</p>
         <button class="btn btn--pill btn--block" data-next>Начать</button>
+        ${helpLink}
+      </section>`;
+    // Пациент, добавленный врачом, кода KMP не получал: войти можно только по ссылке-приглашению.
+    if (step === 1 && !p.inviteCode) return `
+      <section class="stack-l" style="padding-top:8vh">
+        <h1>Приглашение от врача</h1>
+        <p class="muted">${ui.esc(NO_CODE_TEXT)}</p>
+        <button class="btn btn--ghost btn--block" data-site>${ui.esc(C[3])}</button>
         ${helpLink}
       </section>`;
     if (step === 1) return `

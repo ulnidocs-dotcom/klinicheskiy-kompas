@@ -210,7 +210,9 @@ test('doctor invite links: MAX deep link, site link, SMS text', () => {
   const l = D.inviteLinks(tok, 'https://demo.example/kompas/doctor/patient.html?id=p1');
   assert.equal(l.max, `https://max.ru/kompas_bot?startapp=inv_${tok}`);
   assert.equal(l.site, `https://demo.example/kompas/patient/onboarding.html?invite=${tok}`);
-  assert.equal(l.sms, `Ваш врач приглашает вас в дневник самочувствия: ${l.site}. Ссылка действует 3 дня.`);
+  // Ссылка — в конце, без точки вплотную: иначе почтовые и SMS-клиенты склеивают точку с адресом.
+  assert.equal(l.sms, `Ваш врач приглашает вас в дневник самочувствия. Ссылка действует 3 дня: ${l.site}`);
+  assert.ok(l.sms.endsWith(l.site));
 });
 
 test('doctor QR: inline SVG built locally (vendor qrcode-generator), no external service', () => {
@@ -304,4 +306,64 @@ test('onboarding by invite: token picks the patient, code step skipped, card pho
   assert.match(onb, /step = 'done'; \/\/ до записей/);
   assert.match(read('assets/patient.js'), /pid: forced = null/);
   assert.match(read('assets/patient.js'), /const pid = app\.pid\(forced\);/);
+});
+
+test('regression: patient connected via legacy consents → old invite fails as used and is revoked', () => {
+  const { s } = mk();
+  const inv = s.createPatientInvite('p_anna');
+  s.recordConsents('p_anna', ALL); // старый путь онбординга (код KMP)
+  assert.equal(s.patientInviteInfo(inv.token).state, 'revoked');
+  assert.throws(() => s.redeemPatientInvite(inv.token, { phone: '+79000000001', consents: ALL }),
+    (e) => e.reason === 'used' && e.message === s.patientInviteText('used'));
+  assert.equal(s.patient('p_anna').phone, '+79000000001');
+});
+
+test('regression: pending mismatch, patient connects another way → approve fails, confirm leaves the doctor list', () => {
+  const { s } = mk();
+  const id = s.addPatient(NEW);
+  const inv = s.createPatientInvite(id);
+  const r = s.redeemPatientInvite(inv.token, { phone: '+79990001122', consents: ALL });
+  assert.equal(s.phoneConfirms({ state: 'pending' }).length, 1);
+  s.recordConsents(id, ALL);
+  assert.equal(s.phoneConfirms({ state: 'pending' }).length, 0);
+  assert.equal(s.phoneConfirmState(r.confirmId), 'cancelled');
+  assert.equal(s.inbox({ to: 'd1', patientId: id, unread: true }).length, 0);
+  assert.throws(() => s.resolvePhoneConfirm(r.confirmId, true));
+  assert.equal(s.patient(id).phone, '+79123456789'); // номер в карте не заменён
+  assert.throws(() => s.redeemPatientInvite(inv.token, { phone: '+79990001122', consents: ALL }), (e) => e.reason === 'used');
+});
+
+test('regression: approve on a connected patient (stale data) fails as used and cancels the confirm', () => {
+  const storage = memStorage();
+  const s = KK.createStore({ storage, clock: () => T0 });
+  s.reset();
+  const id = s.addPatient(NEW);
+  const inv = s.createPatientInvite(id);
+  const r = s.redeemPatientInvite(inv.token, { phone: '+79990001122', consents: ALL });
+  // Данные из прежней версии: согласия есть, а запрос всё ещё ожидает (записаны до отмены при подключении).
+  const db = JSON.parse(storage.getItem('kk:v1'));
+  db.patients[id].consents = ALL.map((kind) => ({ kind, at: T0.toISOString(), version: '1' }));
+  storage.setItem('kk:v1', JSON.stringify(db));
+  assert.equal(s.phoneConfirmState(r.confirmId), 'pending');
+  assert.throws(() => s.resolvePhoneConfirm(r.confirmId, true), (e) => e.reason === 'used' && e.message === s.patientInviteText('used'));
+  assert.equal(s.phoneConfirmState(r.confirmId), 'cancelled');
+  assert.equal(s.phoneConfirms({ state: 'pending' }).length, 0);
+  assert.equal(s.patient(id).phone, '+79123456789');
+});
+
+test('regression: linking by invite cancels other pending phone confirms of the patient', () => {
+  const { s } = mk();
+  const id = s.addPatient(NEW);
+  const a = s.createPatientInvite(id);
+  const r = s.redeemPatientInvite(a.token, { phone: '+79990001122', consents: ALL });
+  assert.equal(s.resolvePhoneConfirm(r.confirmId, true), 'approved');
+  assert.equal(s.phoneConfirms({ state: 'pending' }).length, 0);
+  assert.equal(s.patientInvite(id).state, 'used');
+});
+
+test('regression: onboarding code step for a patient without KMP code points to the invite link', () => {
+  const onb = read('patient/onboarding.js');
+  assert.match(onb, /step === 1 && !p\.inviteCode/);
+  assert.ok(onb.includes('Откройте ссылку-приглашение от врача из SMS или QR-кода. Если ссылки нет — попросите врача прислать новое приглашение.'));
+  assert.match(onb, /Для демо: \$\{ui\.esc\(p\.inviteCode\)\}/);
 });

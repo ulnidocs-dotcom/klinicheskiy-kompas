@@ -257,12 +257,20 @@
       });
     }
     const phoneTaken = (id, phone) => Object.keys(db.patients).some((k) => k !== id && db.patients[k].phone === phone);
+    const isConnected = (id) => has(id) && (db.patients[id].consents || []).length > 0;
+    // Пациент подключился (любым путём): прежние ссылки и ожидающие подтверждения номера больше не нужны.
+    function onConnected(patientId) {
+      const at = nowIso();
+      pinvites().filter((i) => i.patientId === patientId && !i.usedAt && !i.revokedAt).forEach((i) => { i.revokedAt = at; });
+      cancelConfirms(patientId);
+    }
     // Завершить регистрацию по приглашению: телефон, согласия (на момент, когда их дал пациент), гашение ссылки.
     function linkByInvite(inv, phone, actor, consentAt) {
       const p = db.patients[inv.patientId];
       p.phone = phone;
       p.consents = PATIENT_CONSENTS.map((kind) => ({ kind, at: consentAt, version: CONSENT_VERSION }));
       inv.usedAt = nowIso();
+      onConnected(p.id);
       audit(p.id, 'consents_recorded', { kinds: PATIENT_CONSENTS.slice() }, 'patient');
       audit(p.id, 'invite_redeemed', {}, actor);
     }
@@ -579,6 +587,7 @@
         if (!has(id)) throw new Error(`Unknown patient ${id}`);
         const at = nowIso();
         db.patients[id].consents = kinds.map((kind) => ({ kind, at, version: CONSENT_VERSION }));
+        if (kinds.length) onConnected(id);
         audit(id, 'consents_recorded', { kinds }, 'patient');
         write();
       },
@@ -818,6 +827,8 @@
       redeemPatientInvite(token, { phone, consents } = {}) {
         need();
         const inv = findPInvite(token);
+        // Пациент уже подключён (другой ссылкой, кодом KMP или решением врача) — старая ссылка его не трогает.
+        if (inv && isConnected(inv.patientId)) failWith('used', PATIENT_INVITE_TEXT.used);
         const st = inv && has(inv.patientId) ? inviteState(inv) : 'unknown';
         if (st !== 'pending') failWith(st, PATIENT_INVITE_TEXT[st] || PATIENT_INVITE_TEXT.unknown);
         const ph = normPhone(phone);
@@ -852,6 +863,12 @@
         if (!c) return null;
         if (c.state !== 'pending') throw new Error('Запрос уже рассмотрен');
         const inv = findPInvite(c.token);
+        if (approve && isConnected(c.patientId)) {
+          // Пациент уже подключился другим путём: запрос устарел, номер в карте не меняем.
+          c.state = 'cancelled'; c.decidedAt = nowIso(); markInbox(c.inboxId);
+          write();
+          failWith('used', PATIENT_INVITE_TEXT.used);
+        }
         if (approve) {
           // Срок ссылки не проверяем: пациент зарегистрировался вовремя, решение врача может прийти позже.
           if (!inv || inv.usedAt || inv.revokedAt || !has(c.patientId)) throw new Error('Приглашение больше не действует. Отправьте пациенту новое');
