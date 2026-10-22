@@ -310,5 +310,10 @@ test('style presets use only calm-palette tokens (no hard-coded colors)', () => 
   const block = css.slice(css.indexOf('/* Стили из «Вариаций дизайна»'));
   assert.ok(block.length > 50);
   assert.doesNotMatch(block, /#[0-9a-f]{3,6}\b/i);
-  assert.match(block, /var\(--aura-/);
+  assert.match(block, /var\(--soft-/);
+  // Включаются только атрибутом data-style: без выбора кабинет пациента не меняется.
+  for (const rule of block.replace(/\/\*[\s\S]*?\*\//g, '').match(/[^{}]+\{/g).map((s) => s.trim())) {
+    if (rule.startsWith('@media')) continue;
+    assert.match(rule, /html\[data-style/, rule);
+  }
 });

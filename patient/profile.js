@@ -19,7 +19,7 @@
           <p class="hint">Стиль</p>
           <div class="seg" role="group" aria-label="Стиль оформления">${[['aura', 'Аура'], ['sunset', 'Закат'], ['widgets', 'Виджеты']].map(([v, l]) =>
             `<button data-style-set="${v}" aria-pressed="${KK.theme.style() === v}">${l}</button>`).join('')}</div>
-          <a class="hint" href="../variants.html">Посмотреть все вариации дизайна</a></section>
+          <a class="hint" href="../styles.html">Сравнить стили рядом</a></section>
         <section class="card stack"><p class="q-title">Опросники</p><p class="hint">Предлагать короткие опросники раз в</p>
           <div class="seg" role="group" aria-label="Частота">${[[7, 'Неделя'], [14, '2 недели'], [28, 'Месяц']].map(([v, l]) =>
             `<button data-every="${v}" aria-pressed="${prefs.scaleEveryDays === v}">${l}</button>`).join('')}</div></section>
