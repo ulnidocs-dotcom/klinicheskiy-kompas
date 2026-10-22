@@ -26,8 +26,49 @@
     if (e.type === 'intake_decision') return `решение психолога: ${KK.battery ? KK.battery.levelLabel(e.payload.level) : e.payload.level}`;
     return '';
   };
+  // Приглашение в дневник (спек 2026-10-22 §A). ?invite=1 — сразу после «Добавить пациента»: панель открыта.
+  let inviteOpen = ui.param('invite') === '1';
+  let inviteMsg = '';
+  const connected = (p) => (p.consents || []).length > 0;
+  function ensureInvite(force) {
+    const cur = store.patientInvite(id);
+    if (!force && cur && cur.state === 'pending') return;
+    try { store.createPatientInvite(id, D.me().id); inviteMsg = ''; } catch (err) { inviteMsg = err.message; }
+  }
+  if (inviteOpen) {
+    if (store.patient(id) && !connected(store.patient(id))) ensureInvite(false);
+    try { history.replaceState(null, '', `patient.html?id=${encodeURIComponent(id)}`); } catch (e) { /* песочница */ }
+  }
+  function invitePanel(p) {
+    if (!inviteOpen || connected(p)) return '';
+    const inv = store.patientInvite(id);
+    const pending = inv && inv.state === 'pending';
+    const L = pending ? D.inviteLinks(inv.token, location.href) : null;
+    const qr = pending ? D.qrSvg(L.site) : '';
+    return `<section class="card stack invite-panel" id="invite" aria-label="Приглашение в дневник">
+      <div class="row-between"><h2>Приглашение в дневник</h2><button class="btn btn--ghost no-print" data-invite-close>Скрыть</button></div>
+      <p class="print-only">Пациент: <b>${ui.esc(p.name)}</b>. Отсканируйте QR-код камерой телефона или откройте ссылку. На сайте или в MAX подтвердите номер телефона кодом из SMS и дайте согласия — после этого отметки самочувствия будет видеть ваш врач.</p>
+      <p role="status"><span class="${inv && inv.state !== 'pending' ? 'badge badge--warn' : 'hint'}">${ui.esc(D.inviteStatus(inv) || 'Приглашение ещё не отправлено')}</span></p>
+      ${pending ? `<div class="invite-grid">
+        <div class="invite-qr">${qr || '<p class="hint">QR-код недоступен: не загрузилась библиотека.</p>'}<span class="hint">QR-код ссылки на сайт</span></div>
+        <div class="stack">
+          <label class="field"><span class="hint">Ссылка на сайт</span>
+            <span class="row"><input class="input grow" id="inv-site" readonly value="${ui.esc(L.site)}"><button class="btn no-print" data-copy="inv-site">Скопировать ссылку</button></span></label>
+          <label class="field"><span class="hint">Ссылка для MAX</span>
+            <span class="row"><input class="input grow" id="inv-max" readonly value="${ui.esc(L.max)}"><button class="btn no-print" data-copy="inv-max">Скопировать ссылку</button></span></label>
+          <label class="field no-print"><span class="hint">Текст SMS</span><textarea id="inv-sms" readonly rows="3">${ui.esc(L.sms)}</textarea></label>
+          <p class="demo-note no-print" role="note"><b>Демо: SMS не отправляется.</b> Скопируйте текст или покажите QR-код пациенту.</p>
+          <p class="hint">Ссылка одноразовая, действует 3 дня и не содержит персональных данных. Новое приглашение отменяет прежнее.</p>
+        </div></div>` : ''}
+      <p class="hint no-print" id="inv-msg" role="alert">${ui.esc(inviteMsg)}</p>
+      <div class="row wrap no-print">
+        ${pending ? '<button class="btn" data-invite-print>Распечатать памятку</button>' : ''}
+        <button class="btn ${pending ? 'btn--ghost' : 'btn--primary'}" data-invite-new>Новое приглашение</button>
+      </div></section>`;
+  }
   function render() {
     const p = store.patient(id);
+    const phoneConfirms = store.inbox({ to: store.doctor().id, patientId: id }).filter((m) => m.kind === 'phone_confirm' && store.phoneConfirmState(m.confirmId) === 'pending');
     const mode = D.mode();
     const series = (sid, color) => ({ label: sid === 'phq9' ? 'PHQ-9' : 'GAD-7', color, points: store.events(id, 'scale').filter((e) => e.payload.scaleId === sid).map((e) => ({ at: e.at, v: e.payload.total })) });
     const bands = [{ from: 10, to: 14, color: 'var(--band-warn)' }, { from: 15, to: 27, color: 'var(--band-crit)' }];
@@ -48,10 +89,13 @@
       <div class="row wrap" style="margin-bottom:16px">
         ${plan?.status === 'proposed' ? `<a class="btn btn--primary" href="therapy.html?id=${ui.esc(id)}">Рассмотреть назначение ${ui.esc(drug?.name || '')}</a>` : ''}
         ${p.routing && !p.routingConfirmed ? `<a class="btn ${p.routing === 'required' ? 'btn--primary' : ''}" href="routing.html?id=${id}">Оформить направление к психиатру</a>` : ''}
+        ${connected(p) ? '' : '<button class="btn btn--primary" data-invite-open>Пригласить в дневник</button>'}
         <a class="btn" href="assess.html?id=${id}">Оценка на приёме</a>
         <a class="btn btn--ghost" href="messages.html?id=${id}">Написать пациенту</a>
         <button class="btn btn--ghost" data-export>Экспорт данных</button>
       </div>
+      ${D.inboxHtml(phoneConfirms, { title: 'Подтвердите номер пациента' })}
+      ${invitePanel(p)}
       <div class="grid2">
         <div class="stack">
           ${urgent ? signalsHtml : ''}
@@ -64,7 +108,7 @@
             <ul class="feed">${feed.map((e) => `<li><time>${ui.fmtDateTime(e.at)}${ui.esc(D.channelLabel(e))}</time><span><b>${ui.esc(TYPE[e.type] || e.type)}:</b> ${ui.esc(describe(e))}</span></li>`).join('') || '<li><span class="hint">Нет событий</span></li>'}</ul></section>
         </div>
         <div class="stack">
-          ${D.inboxHtml(store.inbox({ to: store.doctor().id, patientId: id, unread: true }), { title: "Новое от психолога" })}
+          ${D.inboxHtml(store.inbox({ to: store.doctor().id, patientId: id, unread: true }).filter((m) => m.kind !== 'phone_confirm'), { title: "Новое от психолога" })}
           ${D.intakeCard(p, store.intakeOf(id))}
           <section class="card stack"><h2>Терапия</h2>
             <dl class="kv">
@@ -81,6 +125,31 @@
       </div>`);
   }
   document.addEventListener('click', (e) => { const b = e.target.closest('[data-inbox-read]'); if (b) store.markInboxRead(b.dataset.inboxRead); });
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('[data-invite-open]')) {
+      inviteOpen = true; ensureInvite(false); render();
+      const el = document.getElementById('invite'); if (el && el.scrollIntoView) el.scrollIntoView({ block: 'start', behavior: 'smooth' });
+      return;
+    }
+    if (e.target.closest('[data-invite-close]')) { inviteOpen = false; render(); return; }
+    if (e.target.closest('[data-invite-new]')) { ensureInvite(true); render(); return; }
+    const c = e.target.closest('[data-copy]');
+    if (c) {
+      const input = document.getElementById(c.dataset.copy);
+      const msg = (t) => { const m = document.getElementById('inv-msg'); if (m) m.textContent = t; };
+      const manual = () => { input.select(); msg('Ссылка выделена: скопируйте её вручную (Ctrl+C)'); };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(input.value).then(() => msg('Ссылка скопирована'), manual);
+      else manual();
+      return;
+    }
+    if (e.target.closest('[data-invite-print]')) {
+      // Печатается только панель приглашения (doctor.css, @media print).
+      document.body.classList.add('print-invite');
+      const done = () => { document.body.classList.remove('print-invite'); window.removeEventListener('afterprint', done); };
+      window.addEventListener('afterprint', done);
+      try { window.print(); } catch (err) { done(); document.getElementById('inv-msg').textContent = 'Печать недоступна в этом окне'; }
+    }
+  });
   document.addEventListener('click', (e) => {
     const b = e.target.closest('[data-export]');
     if (!b) return;

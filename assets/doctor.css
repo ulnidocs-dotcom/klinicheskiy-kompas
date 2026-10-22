@@ -68,3 +68,22 @@ mark.hl{border-radius:4px;padding:0 2px;color:var(--text)}
 .p-header .grow{min-width:0}
 @media (max-width:560px){.p-header{gap:12px}.avatar{width:40px;height:40px;flex:none}.d-main{padding:16px max(14px,env(safe-area-inset-right,0px)) 84px max(14px,env(safe-area-inset-left,0px))}.thread{grid-template-columns:minmax(0,1fr)}}
 .thread form.row input,.thread form.row textarea{min-width:0;flex:1 1 140px}.thread form.row{flex-wrap:wrap}
+
+/* Приглашение пациента в дневник: ссылки, QR (тёмное на белом в любой теме), памятка для печати */
+.invite-panel{margin-bottom:16px}
+.invite-grid{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:start}
+.invite-qr{display:flex;flex-direction:column;align-items:center;gap:6px}
+.invite-qr svg{display:block;width:200px;height:200px;max-width:100%;border-radius:8px;border:1px solid var(--line)}
+.invite-panel .field .row{gap:8px}.invite-panel .field .row .input{min-width:0;flex:1}
+.invite-panel textarea{min-height:72px}
+.demo-note{font-size:13px;line-height:1.45;background:var(--accent-tint);color:var(--accent-strong);border-radius:10px;padding:8px 12px;margin:0;overflow-wrap:anywhere}
+.print-only{display:none}
+.add-patient .grid-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+@media (max-width:560px){.invite-grid{grid-template-columns:minmax(0,1fr)}.invite-panel .field .row{flex-wrap:wrap}}
+@media print{
+  body.print-invite *{visibility:hidden}
+  body.print-invite .invite-panel,body.print-invite .invite-panel *{visibility:visible}
+  body.print-invite .invite-panel{position:absolute;left:0;top:0;width:100%;border:0;box-shadow:none}
+  body.print-invite .no-print{display:none}
+  body.print-invite .print-only{display:block}
+}

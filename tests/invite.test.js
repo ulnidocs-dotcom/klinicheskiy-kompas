@@ -203,3 +203,76 @@ test('phone mismatch: the phone of another patient is refused before a confirmat
   assert.equal(s.phoneConfirms({}).length, 0);
 });
 
+
+test('doctor invite links: MAX deep link, site link, SMS text', () => {
+  const D = KK.doctorApp;
+  const tok = 'AbCdEfGhJkMnPqRsTuVwXyZ2';
+  const l = D.inviteLinks(tok, 'https://demo.example/kompas/doctor/patient.html?id=p1');
+  assert.equal(l.max, `https://max.ru/kompas_bot?startapp=inv_${tok}`);
+  assert.equal(l.site, `https://demo.example/kompas/patient/onboarding.html?invite=${tok}`);
+  assert.equal(l.sms, `Ваш врач приглашает вас в дневник самочувствия: ${l.site}. Ссылка действует 3 дня.`);
+});
+
+test('doctor QR: inline SVG built locally (vendor qrcode-generator), no external service', () => {
+  const D = KK.doctorApp;
+  const qr = require('../assets/vendor/qrcode.js');
+  const svg = D.qrSvg('https://demo.example/kompas/patient/onboarding.html?invite=AbCdEfGhJkMnPqRsTuVwXyZ2', qr);
+  assert.match(svg, /^<svg[^>]*viewBox="0 0 \d+ \d+"/);
+  assert.match(svg, /<path d="M/);
+  assert.doesNotMatch(svg, /https?:\/\/(?!www\.w3\.org)/);
+  assert.equal(D.qrSvg('x', null), '');
+  const vendor = read('assets/vendor/qrcode.js');
+  assert.match(vendor, /Kazuhiko Arase/);
+  assert.match(vendor, /MIT license/);
+});
+
+test('doctor invite status texts and audit labels', () => {
+  const D = KK.doctorApp;
+  const at = '2026-10-22T09:00:00.000Z', until = '2026-10-25T09:00:00.000Z';
+  assert.match(D.inviteStatus({ state: 'pending', createdAt: at, expiresAt: until }), /^Приглашение отправлено .+, действует до /);
+  assert.match(D.inviteStatus({ state: 'used', usedAt: at }), /использовано/);
+  assert.match(D.inviteStatus({ state: 'expired', expiresAt: until }), /истекло/);
+  assert.equal(D.inviteStatus(null), '');
+  for (const action of ['patient_added', 'invite_created', 'invite_redeemed', 'phone_confirm_approved', 'phone_confirm_rejected']) {
+    assert.notEqual(D.auditLabel({ action }), action, action);
+  }
+});
+
+test('doctor inbox: phone_confirm entry has approve/reject buttons and escapes text', () => {
+  const D = KK.doctorApp;
+  const had = KK.store;
+  const { s } = mk();
+  KK.store = s;
+  try {
+    const id = s.addPatient(NEW);
+    const inv = s.createPatientInvite(id);
+    const r = s.redeemPatientInvite(inv.token, { phone: '+79990001122', consents: ALL });
+    const items = s.inbox({ to: 'd1', patientId: id });
+    let html = D.inboxHtml(items.map((m) => Object.assign({}, m, { text: m.text + ' <b>x</b>' })), { title: 'Подтвердите номер пациента' });
+    assert.match(html, new RegExp(`data-phone-confirm="${r.confirmId}" data-approve="1"`));
+    assert.match(html, /data-approve="0"/);
+    assert.doesNotMatch(html, /data-inbox-read/);
+    assert.match(html, /&lt;b&gt;x&lt;\/b&gt;/);
+    s.resolvePhoneConfirm(r.confirmId, false);
+    html = D.inboxHtml(s.inbox({ to: 'd1', patientId: id }));
+    assert.doesNotMatch(html, /data-phone-confirm/);
+    assert.match(html, /Подключение отклонено/);
+  } finally { KK.store = had; }
+});
+
+test('pages: doctor list and card are wired for invites', () => {
+  for (const f of ['doctor/index.js', 'doctor/patient.js']) assert.doesNotThrow(() => new Function(read(f)), f);
+  assert.match(read('doctor/patient.html'), /assets\/vendor\/qrcode\.js/);
+  const idx = read('doctor/index.js');
+  assert.match(idx, /Добавить пациента/);
+  assert.match(idx, /store\.addPatient\(/);
+  assert.match(idx, /store\.phoneConfirms\(/);
+  const card = read('doctor/patient.js');
+  assert.match(card, /Пригласить в дневник/);
+  assert.match(card, /createPatientInvite\(/);
+  assert.match(card, /Распечатать памятку/);
+  assert.match(card, /Новое приглашение/);
+  assert.match(card, /Демо: SMS не отправляется/);
+  assert.match(read('assets/doctor.js'), /resolvePhoneConfirm\(/);
+  assert.match(read('assets/doctor.css'), /@media print/);
+});

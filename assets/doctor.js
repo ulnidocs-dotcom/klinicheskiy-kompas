@@ -214,13 +214,52 @@
       if (!items.length) return '';
       return `<section class="card stack" aria-label="${e(title)}"><h2>${e(title)}</h2>${items.slice().reverse().map((m) => `
         <article class="stack" style="border-top:1px solid var(--line);padding-top:10px">
-          <div class="row-between"><span><b>${e(m.fromName || 'Психолог')}</b>${names[m.patientId] ? ` · <a href="patient.html?id=${e(m.patientId)}">${e(names[m.patientId])}</a>` : ''}
-            ${m.kind === 'downgrade' ? ' <span class="badge badge--warn">понижен обязательный маршрут</span>' : ''}</span>
+          <div class="row-between"><span><b>${e(m.kind === 'phone_confirm' ? 'Регистрация по приглашению' : m.fromName || 'Психолог')}</b>${names[m.patientId] ? ` · <a href="patient.html?id=${e(m.patientId)}">${e(names[m.patientId])}</a>` : ''}
+            ${m.kind === 'downgrade' ? ' <span class="badge badge--warn">понижен обязательный маршрут</span>' : ''}${m.kind === 'phone_confirm' ? ' <span class="badge badge--warn">номер отличается от карты</span>' : ''}</span>
             <span class="hint">${ui().fmtDateTime(m.at)}</span></div>
           <p style="white-space:pre-line;margin:0">${e(m.text)}</p>
-          ${m.readAt ? `<span class="hint">Прочитано ${ui().fmtDateTime(m.readAt)}</span>` : `<button class="btn" data-inbox-read="${e(m.id)}">Прочитано</button>`}
+          ${m.kind === 'phone_confirm' ? app.phoneConfirmControls(m) : m.readAt ? `<span class="hint">Прочитано ${ui().fmtDateTime(m.readAt)}</span>` : `<button class="btn" data-inbox-read="${e(m.id)}">Прочитано</button>`}
         </article>`).join('')}</section>`;
     },
+    // «Подтвердите номер пациента»: кнопки, пока запрос ждёт решения; потом — итог.
+    phoneConfirmControls(m) {
+      const e = ui().esc;
+      const st = KK.store && KK.store.phoneConfirmState ? KK.store.phoneConfirmState(m.confirmId) : null;
+      if (st !== 'pending') return `<span class="hint">${e(app.PHONE_CONFIRM_STATE[st] || 'Запрос не найден')}</span>`;
+      return `<div class="row wrap"><button class="btn btn--primary" data-phone-confirm="${e(m.confirmId)}" data-approve="1">Подтвердить</button>
+        <button class="btn" data-phone-confirm="${e(m.confirmId)}" data-approve="0">Отклонить</button></div><p class="hint pc-err" role="alert"></p>`;
+    },
+    // ——— Приглашение пациента в дневник (спек 2026-10-22 §A) ———
+    MAX_BOT: 'kompas_bot', // заглушка: имя бота в MAX появится при подключении
+    // Ссылки приглашения: MAX (startapp) и сайт прототипа (в настоящей версии — /join/<токен>), текст SMS.
+    inviteLinks(token, pageHref) {
+      const t = encodeURIComponent(token);
+      let site = `../patient/onboarding.html?invite=${t}`;
+      try { site = new URL(site, pageHref).href; } catch (e) { /* адрес страницы недоступен — относительная ссылка */ }
+      return { max: `https://max.ru/${app.MAX_BOT}?startapp=inv_${t}`, site,
+        sms: `Ваш врач приглашает вас в дневник самочувствия: ${site}. Ссылка действует 3 дня.` };
+    },
+    // QR-код как встроенный SVG: генерируется на месте (assets/vendor/qrcode.js), ссылка не уходит сторонним сервисам.
+    // Тёмные модули на белом фоне в любой теме — так код читается камерой. Нет библиотеки — пустая строка.
+    qrSvg(text, qrcode = g.qrcode) {
+      if (typeof qrcode !== 'function') return '';
+      const qr = qrcode(0, 'M');
+      qr.addData(String(text));
+      qr.make();
+      const n = qr.getModuleCount(), m = 4, size = n + m * 2;
+      let d = '';
+      for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (qr.isDark(r, c)) d += `M${c + m} ${r + m}h1v1h-1z`;
+      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="200" height="200" shape-rendering="crispEdges" role="img" aria-label="QR-код ссылки приглашения"><rect width="${size}" height="${size}" fill="#fff"/><path d="${d}" fill="#000"/></svg>`;
+    },
+    inviteStatus(inv) {
+      const u = ui();
+      if (!inv) return '';
+      if (inv.state === 'pending') return `Приглашение отправлено ${u.fmtDateTime(inv.createdAt)}, действует до ${u.fmtDateTime(inv.expiresAt)}`;
+      if (inv.state === 'used') return `Приглашение использовано ${u.fmtDateTime(inv.usedAt)}`;
+      if (inv.state === 'expired') return `Приглашение истекло ${u.fmtDateTime(inv.expiresAt)}`;
+      return 'Приглашение отменено';
+    },
+    PHONE_CONFIRM_STATE: { approved: 'Подключение подтверждено', rejected: 'Подключение отклонено, ссылка больше не действует', cancelled: 'Запрос отменён: отправлено новое приглашение' },
     // Откуда пришла отметка — для ленты событий; события без канала (демо-история) без подписи.
     channelLabel: (e) => {
       const L = { max: 'MAX', 'max-chat': 'чат MAX', telegram: 'Telegram', web: 'сайт' };
@@ -237,6 +276,10 @@
       if (a.action === 'channel_linked') return `Пациент подключил дневник: ${CH[a.details && a.details.channel] || ''}`;
       if (a.action === 'channel_unlinked') return `Пациент отключил дневник: ${CH[a.details && a.details.channel] || ''}`;
       if (a.action === 'consents_recorded') return 'Пациент дал согласия при подключении';
+      const INV = { patient_added: 'Врач добавил пациента', invite_created: 'Врач отправил приглашение в дневник', invite_redeemed: 'Пациент зарегистрировался по приглашению',
+        phone_verified: 'Пациент подтвердил номер телефона', phone_confirm_requested: 'Номер при регистрации отличается от карты: ждёт подтверждения врача',
+        phone_confirm_approved: 'Врач подтвердил номер пациента', phone_confirm_rejected: 'Врач отклонил подключение по пересланной ссылке' };
+      if (INV[a.action]) return INV[a.action];
       return a.action;
     },
     ROUTING_PATIENT_MSG: 'Я оформил(а) направление на консультацию к врачу-психиатру. Подробности обсудим по телефону.',
@@ -279,7 +322,7 @@
       const inbox = KK.store.inbox ? KK.store.inbox({ to: doc.id, unread: true }).length : 0;
       ui().mount('#side', `
         <div class="d-brand">${ui().icon('route', 20)}<b>Компас</b><span class="dotrow" aria-hidden="true">· · ·· ····</span></div>
-        ${NAV.map((n) => `<a href="${n.href}" ${n.id === nav ? 'aria-current="page"' : ''}>${ui().icon(n.icon, 18)}<span>${n.label}</span>${n.id === 'alerts' && open.length ? `<span class="count ${crit ? 'count--crit' : ''}">${open.length}</span>` : ''}${n.id === 'messages' && inbox ? `<span class="count" title="Непрочитанные сообщения от психолога">${inbox}</span>` : ''}</a>`).join('')}
+        ${NAV.map((n) => `<a href="${n.href}" ${n.id === nav ? 'aria-current="page"' : ''}>${ui().icon(n.icon, 18)}<span>${n.label}</span>${n.id === 'alerts' && open.length ? `<span class="count ${crit ? 'count--crit' : ''}">${open.length}</span>` : ''}${n.id === 'messages' && inbox ? `<span class="count" title="Непрочитанные входящие: от психолога и запросы подтверждения номера">${inbox}</span>` : ''}</a>`).join('')}
         <div class="d-me"><div class="d-me__who"><b>${ui().esc(doc.name)}</b><span class="hint">${ui().esc(doc.specialty)} · ${doc.mode === 'psychiatrist' ? 'режим специалиста' : 'режим с подсказками'}</span>${doc.signedIn ? '<a class="hint" href="../auth/login.html?as=staff" data-logout>Выйти</a>' : ''}</div>
           ${KK.theme ? KK.theme.toggleHtml() : ''}</div>`);
     },
@@ -365,6 +408,14 @@
           else KK.store.ackAlert(id, ack.dataset.action, modal.actor);
         }
         if (root && ev.target.closest('[data-close]') && root.contains(ev.target)) app.closeCriticalModal();
+        // Решение по номеру пациента (карточка и «Сообщения»). Ошибка — рядом с кнопками; успех перерисует страницу.
+        const pc = ev.target.closest('[data-phone-confirm]');
+        if (pc) {
+          try { KK.store.resolvePhoneConfirm(pc.dataset.phoneConfirm, pc.dataset.approve === '1', app.me().id); } catch (err) {
+            const box = pc.closest('article') && pc.closest('article').querySelector('.pc-err');
+            if (box) box.textContent = err.message;
+          }
+        }
       });
       document.addEventListener('keydown', (ev) => {
         const root = document.getElementById('modal-root');
