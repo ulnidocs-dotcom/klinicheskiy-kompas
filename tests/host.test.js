@@ -65,7 +65,7 @@ test('patient start() resets the closing guard; scale.js enables it only after t
   const read = (f) => fs.readFileSync(require('node:path').join(__dirname, '..', f), 'utf8');
   const p = read('assets/patient.js');
   assert.ok(p.indexOf('KK.host.init();') < p.indexOf('KK.host.guardClose(false);'));
-  assert.ok(p.indexOf('KK.host.guardClose(false);') < p.indexOf('const pid = app.pid();'));
+  assert.ok(p.indexOf('KK.host.guardClose(false);') < p.indexOf('const pid = app.pid('));
   const s = read('patient/scale.js');
   assert.ok(s.indexOf("if (!def) {") < s.indexOf('KK.host.guardClose(true);'));
 });

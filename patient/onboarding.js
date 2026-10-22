@@ -1,18 +1,68 @@
 (function () {
   const { ui, store, patientApp } = KK;
-  const ctx = patientApp.start({ tab: null, requireLink: false, help: false });
+  // Одноразовое приглашение врача (?invite=<токен> или startapp=inv_<токен>): пациента определяет токен,
+  // шаг «Код от врача» пропускается. Ссылка с параметром invite, но без верного токена — «не найдена».
+  const rawInvite = ui.param('invite');
+  const token = patientApp.inviteToken(rawInvite, KK.host.startParam());
+  const invite = token ? store.patientInviteInfo(token) : rawInvite != null ? { state: 'unknown' } : null;
+  // Номер отличался от карты и ждёт врача: запрос помним во вкладке, чтобы повторное открытие ссылки показало ожидание
+  // (и завершило подключение, если врач уже подтвердил — тогда ссылка уже погашена).
+  const WAIT_KEY = token ? `kk:phone-confirm:${token}` : null;
+  const waitGet = () => { try { return WAIT_KEY ? sessionStorage.getItem(WAIT_KEY) : null; } catch (e) { return null; } };
+  const waitSet = (v) => { try { if (WAIT_KEY) { if (v) sessionStorage.setItem(WAIT_KEY, v); else sessionStorage.removeItem(WAIT_KEY); } } catch (e) { /* приватный режим */ } };
+  const waitRec = waitGet() ? store.phoneConfirms({}).find((c) => c.id === waitGet() && c.token === token) || null : null;
+  const ctx = patientApp.start({ tab: null, requireLink: false, help: false,
+    pid: invite && invite.state === 'pending' ? invite.patientId : waitRec ? waitRec.patientId : null });
   if (!ctx) return;
   const p = ctx.patient();
-  let step = 0;
+  let step = waitRec ? 'wait' : invite && invite.state !== 'pending' ? 'invite_bad' : 0;
   // Экран помощи открывается и до подключения (help.js: requireLink: false).
   const helpLink = `<a class="hint" href="help.html?p=${encodeURIComponent(ctx.pid)}">${ui.icon('heart', 16)} Нужна помощь сейчас</a>`;
-  const state = { phone: (p.phone || ''), phoneSent: false, demo: '', code: '', consents: { pd: false, doctor: false, notEmergency: false } };
+  // По приглашению номер из карты не подставляем: ссылку могли переслать, номер в карте — не для чужих глаз.
+  const state = { phone: invite ? '' : (p.phone || ''), phoneSent: false, demo: '', code: '', consents: { pd: false, doctor: false, notEmergency: false },
+    inviteText: invite && invite.state !== 'pending' ? store.patientInviteText(invite.state) : '', confirmId: waitRec ? waitRec.id : null, waitNote: '' };
   const fromLink = patientApp.inviteFromStart(KK.host.startParam());
   if (fromLink) state.code = fromLink;
   const C = patientApp.MOVE_COPY;
   if (ui.param('site') === '1') step = 'site';
+  const WAIT_TEXT = 'Номер отличается от указанного в карте. Врач подтвердит подключение';
+  function finishLinked(pid) {
+    step = 'done'; // до записей в хранилище: подписка checkWait не должна сработать повторно
+    waitSet(null);
+    patientApp.link(pid);
+    store.sendMessage(pid, 'system', 'Пациент подключился к дневнику по приглашению');
+    location.href = `index.html?p=${encodeURIComponent(pid)}`;
+  }
+  // Проверка решения врача: по кнопке и при записи из другой вкладки (кабинет врача в том же браузере демо).
+  function checkWait(manual) {
+    if (step !== 'wait' || !state.confirmId) return;
+    const st = store.phoneConfirmState(state.confirmId);
+    if (st === 'approved') { finishLinked(ctx.pid); return; }
+    if (st === 'rejected' || st === 'cancelled' || !st) {
+      waitSet(null);
+      state.inviteText = st === 'rejected' ? 'Врач не подтвердил подключение с этим номером. Попросите врача прислать новое приглашение' : store.patientInviteText('revoked');
+      step = 'invite_bad'; render(); return;
+    }
+    if (manual) { state.waitNote = 'Врач пока не подтвердил подключение. Загляните сюда позже.'; render(); }
+  }
 
   function view() {
+    if (step === 'invite_bad') return `
+      <section class="stack-l" style="padding-top:8vh">
+        <h1>Ссылка не подходит</h1>
+        <p class="muted">${ui.esc(state.inviteText)}</p>
+        <p class="hint">Если дневник уже подключён, войдите по номеру телефона.</p>
+        ${helpLink}
+      </section>`;
+    if (step === 'wait') return `
+      <section class="stack-l" style="padding-top:8vh">
+        <h1>Почти готово</h1>
+        <p class="muted">${ui.esc(WAIT_TEXT)}.</p>
+        <p class="hint">Так мы защищаем дневник, если ссылку переслали другому человеку. Когда врач подтвердит, дневник откроется на этом устройстве.</p>
+        <p class="hint" role="status">${ui.esc(state.waitNote)}</p>
+        <button class="btn btn--pill btn--block" data-wait-check>Проверить ещё раз</button>
+        ${helpLink}
+      </section>`;
     if (step === 'site') return `
       <section class="stack-l" style="padding-top:8vh">
         <h1>${ui.esc(C[3])}</h1>
@@ -92,7 +142,8 @@
       } catch (err) { document.getElementById('err').textContent = err.message; }
       return;
     }
-    if (e.target.closest('[data-next]')) { step = 1; render(); }
+    if (e.target.closest('[data-wait-check]')) { checkWait(true); return; }
+    if (e.target.closest('[data-next]')) { step = invite ? 'phone' : 1; render(); }
     if (e.target.closest('[data-check]')) {
       state.code = document.getElementById('code').value.trim().toUpperCase();
       if (state.code !== p.inviteCode) { document.getElementById('err').textContent = 'Код не подошёл. Проверьте буквы и цифры или спросите у врача.'; return; }
@@ -116,13 +167,25 @@
     if (e.target.closest('[data-phone-verify]')) {
       try {
         store.verifyOtp(state.phone, 'patient_register', document.getElementById('otp').value);
-        store.setPatientPhone(ctx.pid, state.phone);
+        // По приглашению номер записывается только при завершении регистрации (redeemPatientInvite):
+        // другой номер не должен заменить номер в карте до решения врача.
+        if (!invite) store.setPatientPhone(ctx.pid, state.phone);
       } catch (err) { document.getElementById('err').textContent = err.message; return; }
       step = 2; render();
       return;
     }
     if (e.target.closest('[data-done]')) {
       if (!Object.values(state.consents).every(Boolean)) { document.getElementById('err').textContent = 'Отметьте все пункты, чтобы продолжить.'; return; }
+      if (invite) {
+        let r;
+        try { r = store.redeemPatientInvite(token, { phone: state.phone, consents: ['data_processing', 'doctor_access', 'not_emergency'] }); } catch (err) {
+          if (['expired', 'used', 'revoked', 'unknown'].includes(err.reason)) { state.inviteText = err.message; step = 'invite_bad'; render(); return; }
+          document.getElementById('err').textContent = err.message; return;
+        }
+        if (r.status === 'linked') { finishLinked(r.patientId); return; }
+        state.confirmId = r.confirmId; waitSet(r.confirmId); step = 'wait'; render();
+        return;
+      }
       store.recordConsents(ctx.pid, ['data_processing', 'doctor_access', 'not_emergency']);
       patientApp.link(ctx.pid);
       store.sendMessage(ctx.pid, 'system', 'Пациент подключился к дневнику');
@@ -144,5 +207,7 @@
     const k = e.target.dataset.c;
     if (k) { state.consents[k] = e.target.checked; render(); }
   });
+  store.subscribe(() => checkWait(false));
   render();
+  checkWait(false); // ожидание из прошлого открытия: врач мог уже решить
 })();

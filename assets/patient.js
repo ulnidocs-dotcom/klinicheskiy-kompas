@@ -15,7 +15,9 @@
   const DEFAULT_PREFS = { scaleEveryDays: 14, reminders: true };
 
   const app = {
-    pid() {
+    // forced — пациент, которого определила страница (токен приглашения); запоминается для вкладки, как ?p=.
+    pid(forced) {
+      if (forced && KK.store.patient(forced)) { try { sessionStorage.setItem('kk:pid', forced); } catch (e) { /* */ } return forced; }
       const fromUrl = KK.ui.param('p');
       if (fromUrl) { if (KK.store.patient(fromUrl)) { try { sessionStorage.setItem('kk:pid', fromUrl); } catch (e) { /* */ } } return fromUrl; }
       try { const s = sessionStorage.getItem('kk:pid'); if (s) return s; } catch (e) { /* */ }
@@ -40,6 +42,12 @@
     },
     // Ссылка врача в MAX: max.ru/<бот>?startapp=inv_KMP-7302 → код приглашения KMP-7302 (в демо код = токен).
     inviteFromStart: (sp) => { const m = /^inv_([A-Za-z]{3}-\d{4})$/.exec(sp || ''); return m ? m[1].toUpperCase() : null; },
+    // Одноразовое приглашение врача (спек 2026-10-22 §A): сайт ?invite=<токен> или MAX startapp=inv_<токен>, токен — 24 [A-Za-z0-9].
+    inviteToken(param, sp) {
+      if (typeof param === 'string' && /^[A-Za-z0-9]{24}$/.test(param)) return param;
+      const m = /^inv_([A-Za-z0-9]{24})$/.exec(sp || '');
+      return m ? m[1] : null;
+    },
     MOVE_COPY: [
       'Открыть дневник на сайте',
       'Откройте на компьютере адрес ниже и введите код. Код действует 10 минут и подходит один раз.',
@@ -50,10 +58,11 @@
     prefs: (pid) => Object.assign({}, DEFAULT_PREFS, LS.get(`kk:prefs:${pid}`, {})),
     setPrefs(pid, patch) { LS.set(`kk:prefs:${pid}`, Object.assign(app.prefs(pid), patch)); },
 
-    start({ tab = document.body.dataset.tab, requireLink = true, help = true, back = null } = {}) {
+    // pid — пациент, заданный страницей (регистрация по приглашению: пациента определяет токен, а не ?p=).
+    start({ tab = document.body.dataset.tab, requireLink = true, help = true, back = null, pid: forced = null } = {}) {
       KK.host.init();
       KK.host.guardClose(false); // каждая страница начинает без подтверждения закрытия; анкеты включают его сами
-      const pid = app.pid();
+      const pid = app.pid(forced);
       if (!KK.store.patient(pid)) { location.href = '../index.html'; return null; }
       if (requireLink && !app.linked(pid)) { location.replace(`onboarding.html?p=${pid}`); return null; }
       if (app.linked(pid) && KK.store.channels(pid).length === 0) { try { KK.store.linkChannel(pid, KK.host.platform); } catch (e) { /* */ } }

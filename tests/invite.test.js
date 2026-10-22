@@ -276,3 +276,32 @@ test('pages: doctor list and card are wired for invites', () => {
   assert.match(read('assets/doctor.js'), /resolvePhoneConfirm\(/);
   assert.match(read('assets/doctor.css'), /@media print/);
 });
+
+test('patientApp reads the invite token from ?invite= and from startapp=inv_<token>', () => {
+  const A = KK.patientApp;
+  const tok = 'AbCdEfGhJkMnPqRsTuVwXyZ2';
+  assert.equal(A.inviteToken(tok, null), tok);
+  assert.equal(A.inviteToken(null, `inv_${tok}`), tok);
+  assert.equal(A.inviteToken(null, 'inv_KMP-4821'), null); // старый код врача — отдельный путь
+  assert.equal(A.inviteToken('short', null), null);
+  assert.equal(A.inviteToken('<script>alert(1)</script>aaaaaaaa', null), null);
+  assert.equal(A.inviteFromStart('inv_KMP-4821'), 'KMP-4821');
+});
+
+test('onboarding by invite: token picks the patient, code step skipped, card phone not shown, mismatch waits for the doctor', () => {
+  const onb = read('patient/onboarding.js');
+  assert.doesNotThrow(() => new Function(onb));
+  assert.match(onb, /patientApp\.inviteToken\(rawInvite, KK\.host\.startParam\(\)\)/);
+  assert.match(onb, /const rawInvite = ui\.param\('invite'\)/);
+  assert.match(onb, /pid: invite && invite\.state === 'pending' \? invite\.patientId : waitRec \? waitRec\.patientId : null/);
+  assert.match(onb, /c\.token === token/); // ожидание из sessionStorage — только для этой же ссылки
+  assert.match(onb, /step = invite \? 'phone' : 1/);
+  assert.match(onb, /phone: invite \? '' :/);
+  assert.match(onb, /if \(!invite\) store\.setPatientPhone\(/);
+  assert.match(onb, /redeemPatientInvite\(/);
+  assert.match(onb, /patientInviteText\(/);
+  assert.match(onb, /Номер отличается от указанного в карте\. Врач подтвердит подключение/);
+  assert.match(onb, /step = 'done'; \/\/ до записей/);
+  assert.match(read('assets/patient.js'), /pid: forced = null/);
+  assert.match(read('assets/patient.js'), /const pid = app\.pid\(forced\);/);
+});
