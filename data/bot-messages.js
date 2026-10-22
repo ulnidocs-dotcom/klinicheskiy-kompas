@@ -8,5 +8,11 @@
       buttons: [{ type: 'open_app', text: 'Отметить' }] },
     { id: 'doctor_reply', when: 'новое сообщение врача', text: 'Врач ответил вам.',
       buttons: [{ type: 'open_app', text: 'Открыть переписку' }] },
+    // Ассистент с частыми вопросами (спек 2026-10-22 §C): меню тем по команде /help или любому сообщению в чате бота.
+    // Ответ на кнопку темы — список вопросов из KK.data.faq; сам бот не врач, подпись — как в мини-приложении.
+    { id: 'topics_menu', when: 'команда /help или сообщение в чате бота', text: 'Ассистент, не врач. Выберите тему или откройте дневник, чтобы написать врачу.',
+      buttons: [{ type: 'callback', text: 'Лечение', payload: 'faq_topic:treatment' }, { type: 'callback', text: 'Побочные эффекты', payload: 'faq_topic:side' },
+        { type: 'callback', text: 'Как пользоваться', payload: 'faq_topic:howto' }, { type: 'callback', text: 'Связь с врачом', payload: 'faq_topic:contact' },
+        { type: 'open_app', text: 'Открыть дневник' }] },
   ];
 })(typeof window !== 'undefined' ? window : globalThis);

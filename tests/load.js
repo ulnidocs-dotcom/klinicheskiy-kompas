@@ -12,6 +12,8 @@ const FILES = [
   'data/questionnaires.js',
   'data/cto.js',
   'data/bot-messages.js',
+  'data/faq.js',
+  'assets/assistant.js',
   'assets/scales.js',
   'assets/therapy.js',
   'assets/adherence.js',

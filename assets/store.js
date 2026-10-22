@@ -13,6 +13,7 @@
   const BACKDATE_TYPES = ['checkin'];
   const BACKDATE_DAYS = 7;
   const CHANNELS = ['max', 'telegram', 'web'];
+  const MSG_REASONS = ['treatment_change', 'unknown', 'not_helped']; // почему ассистент передал вопрос врачу
   const LINK_CODE_TTL = 10 * 60000; // код переезда на сайт: 10 минут, одно гашение
   const CONSENT_VERSION = '1';
   const PLAN_LOCKED = ['status', 'confirmedAt', 'cancelledAt', 'offLabel'];
@@ -494,6 +495,11 @@
         }
         const m = { id: KK.util.uid('msg'), at: nowIso(), from, text: String(text).slice(0, 2000) };
         if (opts && opts.clientId) m.clientId = String(opts.clientId);
+        // Вопрос, переданный ассистентом (спек 2026-10-22 §C): метка для врача «передано ассистентом» и причина.
+        if (opts && opts.via === 'assistant') {
+          m.via = 'assistant';
+          if (MSG_REASONS.includes(opts.reason)) m.reason = opts.reason;
+        }
         (db.messages[patientId] = db.messages[patientId] || []).push(m);
         write();
         return m;

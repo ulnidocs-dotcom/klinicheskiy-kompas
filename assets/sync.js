@@ -24,7 +24,7 @@
       send(items) {
         return items.map((it) => {
           try {
-            if (it.type === 'message') return { clientId: it.clientId, status: 'accepted', event: store.sendMessage(it.patientId, 'patient', it.payload.text, { clientId: it.clientId }) };
+            if (it.type === 'message') return { clientId: it.clientId, status: 'accepted', event: store.sendMessage(it.patientId, 'patient', it.payload.text, { clientId: it.clientId, via: it.payload.via, reason: it.payload.reason }) };
             const event = store.addEvent(it.patientId, it.type, it.payload, Object.assign({}, it.opts, { clientId: it.clientId, channel: it.channel }));
             return { clientId: it.clientId, status: 'accepted', event };
           } catch (err) {
