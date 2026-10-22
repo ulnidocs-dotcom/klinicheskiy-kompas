@@ -3,7 +3,7 @@
 (function (g) {
   const PAGES = [
     '/', '/ui-kit.html', '/variants.html',
-    '/auth/login.html', '/auth/login.html?as=staff', '/auth/recover.html', '/admin/index.html',
+    '/auth/login.html', '/auth/login.html?as=staff', '/auth/recover.html', '/auth/demo.html', '/admin/index.html',
     '/patient/index.html?p=p_olga', '/patient/path.html?p=p_olga', '/patient/therapy.html?p=p_olga',
     '/patient/chat.html?p=p_olga', '/patient/materials.html?p=p_olga', '/patient/material.html?p=p_olga&id=breathing',
     '/patient/help.html?p=p_olga', '/patient/profile.html?p=p_olga', '/patient/scale.html?p=p_olga&id=gad7',

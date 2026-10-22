@@ -1,6 +1,8 @@
 (function () {
   const { ui, store, auth, authPage: A } = KK;
-  const st = { tab: ui.param('as') === 'staff' ? 'staff' : 'patient', step: 'start', phone: '', email: '', staffId: null, staffPhone: '', demo: '' };
+  const st = { tab: ui.param('as') === 'staff' ? 'staff' : 'patient', step: 'start',
+    // Номер или почту можно передать в ссылке (витрина демо, письмо клиники) — пользователю останется нажать «Продолжить».
+    phone: KK.auth.normalizePhone(ui.param('phone')) || '', email: KK.auth.normalizeEmail(ui.param('email')), staffId: null, staffPhone: '', demo: '' };
   const STAFF_EMAILS = 'elena.ivanova@clinic.demo, maria.belova@clinic.demo, admin@clinic.demo';
 
   function patientView() {

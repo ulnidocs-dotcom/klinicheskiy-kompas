@@ -32,3 +32,16 @@ test('patient onboarding confirms the phone and uses the site layout in a browse
 });
 
 test('admin page is wired', () => checkPage('admin/index.html', 'admin/index.js'));
+
+test('demo hub page is wired and covers every cabinet', () => {
+  checkPage('auth/demo.html', 'auth/demo.js');
+  const js = read('auth/demo.js');
+  for (const role of ['patient', 'doctor', 'psychologist', 'admin']) assert.match(js, new RegExp(`id: '${role}'`), role);
+  assert.match(read('index.html'), /auth\/demo\.html/);
+});
+
+test('login page takes the phone or email from the link', () => {
+  const js = read('auth/login.js');
+  assert.match(js, /ui\.param\('phone'\)/);
+  assert.match(js, /ui\.param\('email'\)/);
+});
