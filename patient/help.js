@@ -8,11 +8,14 @@
   const fromIntake = ui.param('from') === 'intake' && store.alerts({ patientId: ctx.pid, open: true }).some((a) => a.ruleId === 'cssrs_risk');
   // После ответа «да» в анкете до приёма: «уведомлены» — только при открытом алерте previsit_selfharm.
   const fromPrevisit = ui.param('from') === 'previsit' && store.alerts({ patientId: ctx.pid, open: true }).some((a) => a.ruleId === 'previsit_selfharm');
-  // Из чата с ассистентом (спек 2026-10-22 §C): «уведомлены» — только при открытом алерте по кнопке SOS.
-  const fromAssistant = ui.param('from') === 'assistant' && store.alerts({ patientId: ctx.pid, open: true }).some((a) => a.ruleId === 'sos');
+  // Из чата с ассистентом (спек 2026-10-22 §C): «уведомлены» — только если есть событие SOS этой реплики (id в адресе);
+  // failed=1 — SOS не ушёл (нет связи).
+  const sosId = ui.param('sos');
+  const fromAssistant = ui.param('from') === 'assistant' && !!sosId
+    && store.events(ctx.pid, 'sos').some((e) => e.id === sosId && e.payload && e.payload.source === 'assistant');
   const offline = ui.param('from') === 'offline';
   let sent = fromPhq || fromIntake || fromPrevisit || fromAssistant;
-  let failed = false;
+  let failed = ui.param('from') === 'assistant' && ui.param('failed') === '1';
   let g = -1;
   const GROUND = ['5 вещей, которые вы видите', '4 вещи, которых можете коснуться', '3 звука, которые слышите', '2 запаха вокруг', '1 вкус, который чувствуете'];
 

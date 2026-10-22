@@ -12,12 +12,16 @@ function memStorage() {
   return { getItem: (k) => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: (k) => m.delete(k) };
 }
 
-function boot({ search = '', online = true } = {}) {
+function boot({ search = '', online = true, page = 'patient/chat.js' } = {}) {
   const store = KK.createStore({ storage: memStorage(), clock: () => new Date() });
   store.reset();
-  const net = { online };
+  const net = { online, broken: false };
   const local = KK.syncLocalTransport(store);
-  const transport = { send(items) { if (!net.online) { const e = new Error('offline'); e.retryable = true; throw e; } return local.send(items); } };
+  const transport = { send(items) {
+    if (!net.online) { const e = new Error('offline'); e.retryable = true; throw e; }
+    if (net.broken && items.some((i) => i.type === 'message')) throw new Error('server error'); // сломана только отправка сообщений
+    return local.send(items);
+  } };
   const sync = KK.createSync({ storage: memStorage(), transport, schedule: () => 1 });
   const app = { innerHTML: '' };
   const fields = {};
@@ -33,8 +37,9 @@ function boot({ search = '', online = true } = {}) {
   const toasts = [];
   const saved = { store: KK.store, sync: KK.sync, patientApp: KK.patientApp };
   KK.store = store; KK.sync = sync;
-  KK.patientApp = { start: () => ({ pid: 'p_olga' }), toast: (t) => toasts.push(t), SYNC_PENDING: 'pending' };
-  new Function(fs.readFileSync(path.join(root, 'patient/chat.js'), 'utf8'))();
+  KK.patientApp = { start: () => ({ pid: 'p_olga' }), toast: (t) => toasts.push(t), SYNC_PENDING: 'pending', phqAlertOpen: () => false };
+  const run = () => new Function(fs.readFileSync(path.join(root, page), 'utf8'))();
+  run();
   const fire = (type, target) => (handlers[type] || []).forEach((fn) => fn({ type, target, preventDefault() {} }));
   // Кнопка по data-атрибуту: closest возвращает объект с dataset только для своего селектора.
   const click = (attr, value) => {
@@ -43,7 +48,9 @@ function boot({ search = '', online = true } = {}) {
   };
   const ask = (text) => { fields.ta = { id: 'ta', value: text }; fire('submit', { id: 'fa' }); };
   const restore = () => Object.assign(KK, saved);
-  return { store, sync, net, app, loc, click, ask, toasts, restore };
+  // Открыть другую страницу с тем же стором (экран помощи после кризиса).
+  const open = (other, query) => { loc.search = query; page = other; for (const k of Object.keys(handlers)) delete handlers[k]; run(); };
+  return { store, sync, net, app, loc, click, ask, toasts, restore, open };
 }
 
 test('chat page: assistant by default, label, topics, switch to doctor', () => {
@@ -98,11 +105,59 @@ test('chat page: crisis raises SOS from the assistant and opens the help screen'
   const p = boot({ search: '?mode=assistant' });
   try {
     p.ask('я не хочу жить');
-    assert.equal(p.loc.href, 'help.html?from=assistant');
     const sos = p.store.events('p_olga', 'sos').at(-1);
+    assert.equal(p.loc.href, `help.html?from=assistant&sos=${sos.id}`);
     assert.equal(sos.payload.source, 'assistant');
+    p.open('patient/help.js', `?from=assistant&sos=${sos.id}`);
+    assert.match(p.app.innerHTML, /Сообщение отправлено врачу/);
+    assert.match(p.app.innerHTML, /tel:112/);
+    // Другой или чужой id SOS — «отправлено» не показываем.
+    p.open('patient/help.js', '?from=assistant&sos=ev_other');
+    assert.doesNotMatch(p.app.innerHTML, /Сообщение отправлено врачу/);
     assert.ok(p.store.alerts({ patientId: 'p_olga', open: true }).some((a) => a.ruleId === 'sos'));
     assert.equal(p.store.messages('p_olga').filter((m) => m.via === 'assistant').length, 0);
+  } finally { p.restore(); }
+});
+
+test('chat page: offline crisis goes to help with failed=1 and «не отправлено»', () => {
+  const p = boot({ search: '?mode=assistant', online: false });
+  try {
+    p.ask('хочу сдохнуть');
+    assert.equal(p.loc.href, 'help.html?from=assistant&failed=1');
+    assert.equal(p.store.events('p_olga', 'sos').length, 0);
+    p.open('patient/help.js', '?from=assistant&failed=1');
+    assert.ok(p.app.innerHTML.includes('Сообщение не отправлено.</b> Нет связи. Если опасно сейчас — звоните 112.'));
+    assert.doesNotMatch(p.app.innerHTML, /Сообщение отправлено врачу/);
+  } finally { p.restore(); }
+});
+
+test('chat page: emergency shows a 112 button and forwards; a failed forward never says «Передал»', () => {
+  const p = boot({ search: '?mode=assistant' });
+  try {
+    p.ask('болит в груди');
+    assert.match(p.app.innerHTML, /href="tel:112"/);
+    assert.equal(p.store.messages('p_olga').find((m) => m.text === 'болит в груди').reason, 'emergency');
+    p.net.broken = true;
+    p.ask('Какая погода завтра?');
+    const last = p.store.events('p_olga', 'assistant').at(-1);
+    assert.doesNotMatch(last.payload.reply, /Передал/);
+    assert.match(p.app.innerHTML, /data-ask="/);
+    p.net.broken = false;
+    p.click('ask', last.id);
+    const m = p.store.messages('p_olga').find((x) => x.text === 'Какая погода завтра?');
+    assert.equal(m.ref, last.payload.ref);
+  } finally { p.restore(); }
+});
+
+test('chat page: same question twice — each turn tracks its own forward by ref', () => {
+  const p = boot({ search: '?mode=assistant' });
+  try {
+    p.ask('плохо сплю');
+    p.ask('плохо сплю');
+    const [a, b] = p.store.events('p_olga', 'assistant');
+    p.click('ask', a.id);
+    assert.equal((p.app.innerHTML.match(/Не помогло — спросить врача/g) || []).length, 1);
+    assert.match(p.app.innerHTML, new RegExp(`data-ask="${b.id}"`));
   } finally { p.restore(); }
 });
 

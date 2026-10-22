@@ -27,12 +27,15 @@
     const waiting = KK.sync.queued(ctx.pid).filter((q) => q.type === 'assistant').map((q) => ({ id: q.clientId, at: q.queuedAt, p: q.payload, pending: true }));
     return sent.concat(waiting);
   }
-  // Передан ли вопрос врачу: 'sent' — сообщение у врача, 'pending' — ждёт связи, '' — нет.
-  function forwardState(q) {
-    if (store.messages(ctx.pid).some((m) => m.via === 'assistant' && m.text === q)) return 'sent';
-    if (KK.sync.queued(ctx.pid).some((x) => x.type === 'message' && x.payload.via === 'assistant' && x.payload.text === q)) return 'pending';
+  // Передан ли вопрос реплики врачу: 'sent' — сообщение у врача, 'pending' — ждёт связи, '' — нет.
+  // Сообщение находится по метке реплики ref (не по тексту: одинаковые вопросы — разные реплики).
+  function forwardState(p) {
+    const own = (pl) => (p.ref ? pl.ref === p.ref : pl.text === p.q); // реплики без ref — из ранней версии демо
+    if (store.messages(ctx.pid).some((m) => m.via === 'assistant' && own(m))) return 'sent';
+    if (KK.sync.queued(ctx.pid).some((x) => x.type === 'message' && x.payload.via === 'assistant' && own(x.payload))) return 'pending';
     return '';
   }
+  const FORWARD_KINDS = ['treatment_change', 'unknown', 'emergency', 'pregnancy'];
 
   const switchHtml = () => `<div class="seg seg--2" role="group" aria-label="С кем переписка">
       <button data-mode="assistant" aria-pressed="${mode === 'assistant'}">Ассистент</button>
@@ -61,13 +64,14 @@
   function turnHtml(t) {
     const p = t.p;
     const entry = p.entryId ? A.byId(p.entryId) : null;
-    const fw = forwardState(p.q);
+    const fw = forwardState(p);
     let tail = '';
     if (p.kind === 'crisis') {
       tail = '<a class="btn btn--block" href="help.html?from=assistant">Открыть экран помощи</a>';
-    } else if (p.kind === 'treatment_change' || p.kind === 'unknown') {
+    } else if (FORWARD_KINDS.includes(p.kind)) {
       if (fw === 'pending') tail = `<p class="t">${ui.esc(T.pending)}</p>`;
-      else if (!fw) tail = `<p class="t">Вопрос пока не передан.</p><button class="btn btn--ghost" data-ask="${ui.esc(t.id)}">Спросить врача</button>`;
+      else if (!fw) tail = `<button class="btn btn--ghost" data-ask="${ui.esc(t.id)}">Спросить врача</button>`;
+      if (p.kind === 'emergency') tail = `<a class="btn btn--primary btn--block" href="tel:112">Позвонить 112</a>${tail}`;
     } else if (p.kind === 'faq') {
       tail = fw === 'sent' ? `<p class="t">${ui.esc(T.forwarded)}</p>` : fw === 'pending' ? `<p class="t">${ui.esc(T.pending)}</p>`
         : `<button class="btn btn--ghost" data-ask="${ui.esc(t.id)}">${ui.esc(T.notHelped)}</button>`;
@@ -106,10 +110,10 @@
   function record(question, r, extra) {
     try { KK.sync.submit(ctx.pid, 'assistant', A.turn(question, r, extra)); } catch (err) { /* переписка с ассистентом — не критичные данные */ }
   }
-  // Передать вопрос врачу сообщением с меткой «передано ассистентом». false — не получилось.
-  function forward(text, reason) {
+  // Передать вопрос врачу сообщением с меткой «передано ассистентом» и меткой реплики. false — не получилось.
+  function forward(text, reason, ref) {
     try {
-      const r = KK.sync.submit(ctx.pid, 'message', { text: String(text).slice(0, 2000), via: 'assistant', reason });
+      const r = KK.sync.submit(ctx.pid, 'message', Object.assign({ text: String(text).slice(0, 2000), via: 'assistant', reason }, ref ? { ref } : {}));
       if (r && r.pending) app.toast(app.SYNC_PENDING);
       return true;
     } catch (err) { app.toast('Не получилось передать вопрос. Попробуйте ещё раз'); return false; }
@@ -119,12 +123,16 @@
     if (r.kind === 'crisis') {
       // Кризис: никакого FAQ — короткий текст поддержки, критический сигнал врачу и экран помощи с 112.
       record(text, r);
-      try { KK.sync.submit(ctx.pid, 'sos', { source: 'assistant' }); } catch (err) { /* без связи: экран помощи предложит сообщить ещё раз */ }
-      location.href = 'help.html?from=assistant';
+      let sos = null;
+      try { sos = KK.sync.submit(ctx.pid, 'sos', { source: 'assistant' }); } catch (err) { /* без связи: экран помощи скажет «не отправлено» */ }
+      // «Сообщение отправлено врачу» на экране помощи — только по событию SOS этой реплики.
+      location.href = sos && sos.id ? `help.html?from=assistant&sos=${encodeURIComponent(sos.id)}` : 'help.html?from=assistant&failed=1';
       return;
     }
-    if (r.forward) forward(text, r.kind);
-    record(text, r);
+    const ref = KK.util.uid('as');
+    // Если передать врачу не получилось — в ответе нет «Передал…», есть кнопка «Спросить врача».
+    const sent = r.forward ? forward(text, r.kind, ref) : true;
+    record(text, sent ? r : Object.assign({}, r, { reply: A.unsent(r.reply) }), { ref });
     topic = null;
     render();
   }
@@ -143,13 +151,13 @@
     const f = e.target.closest('[data-faq]');
     if (f) {
       const entry = A.byId(f.dataset.faq);
-      if (entry) { record(entry.q, A.answerEntry(entry)); topic = null; render(); }
+      if (entry) { record(entry.q, A.answerEntry(entry), { ref: KK.util.uid('as') }); topic = null; render(); }
       return;
     }
     const a = e.target.closest('[data-ask]');
     if (a) {
       const t = turns().find((x) => x.id === a.dataset.ask);
-      if (t && !forwardState(t.p.q)) { forward(t.p.q, t.p.kind === 'faq' ? 'not_helped' : t.p.kind); render(); }
+      if (t && !forwardState(t.p)) { forward(t.p.q, t.p.kind === 'faq' ? 'not_helped' : t.p.kind, t.p.ref); render(); }
     }
   });
   document.addEventListener('submit', (e) => {
