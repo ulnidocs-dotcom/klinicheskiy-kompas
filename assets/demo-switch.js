@@ -41,7 +41,7 @@
   nav.innerHTML = `<span class="tag">Демо</span>
     <a href="${base}patient/index.html?p=${encodeURIComponent(pid)}" data-demo-role="patient" ${inPatient ? 'aria-current="page"' : ''}>Пациент</a>
     <a href="${base}doctor/patient.html?id=${encodeURIComponent(pid)}" ${inDoctor ? 'aria-current="page"' : ''}>Врач</a>
-    <a href="${base}${KK.store.patient(pid)?.intake ? `psych/patient.html?id=${encodeURIComponent(pid)}` : 'psych/index.html'}" ${inPsych ? 'aria-current="page"' : ''}>Психолог</a>
+    <a href="${base}psych/${KK.store.patient(pid)?.intake ? 'patient' : 'watch'}.html?id=${encodeURIComponent(pid)}" ${inPsych ? 'aria-current="page"' : ''}>Психолог</a>
     <a href="${base}auth/demo.html" ${inAuth ? 'aria-current="page"' : ''}>Вход</a>
     <a href="${base}styles.html" ${inStyles ? 'aria-current="page"' : ''}>Стили</a>`;
   document.body.appendChild(nav);

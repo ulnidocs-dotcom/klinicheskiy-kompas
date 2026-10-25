@@ -13,6 +13,12 @@
     { id: 'topics_menu', when: 'команда /help или сообщение в чате бота', text: 'Ассистент, не врач. Выберите тему или откройте дневник, чтобы написать врачу.',
       buttons: [{ type: 'callback', text: 'Лечение', payload: 'faq_topic:treatment' }, { type: 'callback', text: 'Побочные эффекты', payload: 'faq_topic:side' },
         { type: 'callback', text: 'Как пользоваться', payload: 'faq_topic:howto' }, { type: 'callback', text: 'Связь с врачом', payload: 'faq_topic:contact' },
-        { type: 'open_app', text: 'Открыть дневник' }] },
+        { type: 'callback', text: 'Записаться на приём', payload: 'booking:start' }, { type: 'open_app', text: 'Открыть дневник' }] },
+    // Запись через администратора клиники: бот собирает «к кому» и «когда удобно», заявка уходит администратору.
+    // Ответ администратора приходит в чат; на заблокированном экране — без специальности, только дата и время.
+    { id: 'booking_confirmed', when: 'администратор записал пациента по заявке', text: 'Запись подтверждена: {дата}, {время}. Специалист: {имя}.',
+      buttons: [{ type: 'callback', text: 'Не смогу прийти', payload: 'booking:start' }] },
+    { id: 'booking_declined', when: 'администратор не смог записать по заявке', text: 'Администратор клиники не смог записать вас: «{причина}». Можно оставить новую заявку.',
+      buttons: [{ type: 'callback', text: 'Записаться на приём', payload: 'booking:start' }] },
   ];
 })(typeof window !== 'undefined' ? window : globalThis);

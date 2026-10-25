@@ -47,8 +47,8 @@
           <button class="btn" data-previsit="doctor">Посмотреть у врача</button></div>
       </article>
       <article class="card stack demo-card">
-        <div><h2>Чат-бот в мессенджере</h2><p class="hint">Как бот выглядит в MAX или Telegram: меню тем, автоматические ответы ассистента, напоминания о приёме с кнопкой «Принял».</p></div>
-        <div class="row wrap"><a class="btn btn--primary" href="../patient/bot.html?p=p_olga">Открыть чат с ботом</a></div>
+        <div><h2>Чат-бот в мессенджере</h2><p class="hint">Как бот выглядит в MAX или Telegram: меню тем, автоматические ответы ассистента, напоминания о приёме с кнопкой «Принял», запись к психологу или психиатру через администратора.</p></div>
+        <div class="row wrap"><a class="btn btn--primary" href="../patient/bot.html?p=p_olga">Открыть чат с ботом</a><a class="btn" href="../admin/requests.html">Заявки у администратора</a></div>
       </article>
       <div class="row wrap"><button class="btn btn--ghost" data-reset>Сбросить демо</button>
         <span class="hint">Вернёт пациентов и сотрудников в исходное состояние в этом браузере.</span></div>

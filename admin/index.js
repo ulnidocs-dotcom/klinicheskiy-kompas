@@ -2,19 +2,10 @@
   const { ui, store, auth } = KK;
   const ROLE = { doctor: 'Врач', psychologist: 'Клинический психолог', admin: 'Администратор' };
   const STATE = { pending: ['badge--info', 'приглашён'], expired: ['badge--warn', 'приглашение истекло'], revoked: ['badge--info', 'отозвано'] };
-  const me = () => auth.staff('admin') || store.staff().find((s) => s.role === 'admin' && s.status === 'active');
+  const me = KK.adminApp.me;
   let flash = '';
   const inviteLink = (token) => new URL(`../auth/invite.html?token=${encodeURIComponent(token)}`, location.href).href;
-
-  function side() {
-    const m = me();
-    ui.mount('#side', `
-      <div class="d-brand">${ui.icon('route', 20)}<b>Компас</b><span class="dotrow" aria-hidden="true">· · ·· ····</span></div>
-      <a href="index.html" aria-current="page">${ui.icon('users', 18)}<span>Сотрудники</span></a>
-      <div class="d-me"><div class="d-me__who"><b>${ui.esc(m.name)}</b><span class="hint">администратор · ${ui.esc(store.clinicInfo().name)}</span>
-        ${auth.session && auth.session.get() ? '<a class="hint" href="../auth/login.html?as=staff" data-logout>Выйти</a>' : ''}</div>
-        ${KK.theme ? KK.theme.toggleHtml() : ''}</div>`);
-  }
+  const side = () => KK.adminApp.side('staff');
   function staffRow(s) {
     const self = s.id === me().id;
     return `<tr><td><b>${ui.esc(s.name)}</b><br><span class="hint">${ui.esc(s.email)}</span></td>

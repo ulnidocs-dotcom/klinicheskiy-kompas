@@ -6,6 +6,7 @@
   const esc = (t) => KK.ui.esc(t);
   const NAV = [
     { id: 'queue', href: 'index.html', label: 'Очередь', icon: 'users' },
+    { id: 'observe', href: 'observe.html', label: 'Наблюдение', icon: 'heart' },
     { id: 'materials', href: 'materials.html', label: 'Материалы', icon: 'book' },
     { id: 'profile', href: 'profile.html', label: 'Профиль', icon: 'settings' },
   ];
@@ -60,6 +61,46 @@
         dec && dec.note && !dec.overridden ? `Комментарий: ${dec.note}` : '',
         `Психолог: ${psy.name}, ${psy.specialty}`,
       ].filter(Boolean).join('\n');
+    },
+
+    // ——— Наблюдение между визитами к психиатру ———
+    // Под наблюдением психолога: пациенты психиатра (есть приём или маршрут «обязательно») и те, по кому психолог принял решение.
+    observed(patients) {
+      return (patients || []).filter((p) => {
+        const v = KK.store.visits(p.id);
+        return !!(v.last || v.next || p.routing === 'required' || (p.intake && p.intake.decision));
+      });
+    },
+    // Настроение за последние 7 дней против 7 дней до них (среднее по отметкам 1–5; нужно ≥ 2 отметок в каждой неделе).
+    moodTrend(checkins, nowIso = new Date().toISOString()) {
+      const t = +new Date(nowIso), wk = 7 * 864e5;
+      const avg = (from, to) => { const xs = checkins.filter((c) => +new Date(c.at) > t - to && +new Date(c.at) <= t - from).map((c) => c.payload.mood); return xs.length >= 2 ? xs.reduce((a, b) => a + b, 0) / xs.length : null; };
+      const now = avg(0, wk), before = avg(wk, 2 * wk);
+      if (now == null || before == null) return { code: 'few', label: 'мало отметок' };
+      const d = now - before;
+      return d >= 0.5 ? { code: 'better', label: 'настроение лучше' } : d <= -0.5 ? { code: 'worse', label: 'настроение хуже' } : { code: 'same', label: 'без заметных изменений' };
+    },
+    visitLine(v) {
+      const u = ui();
+      const d = (iso) => u.fmtDate(iso);
+      const next = v.next ? `следующий — ${d(v.next.scheduledAt)}, через ${Math.max(0, KK.util.daysBetween(new Date().toISOString(), v.next.scheduledAt))} дн.` : 'следующий не назначен';
+      return `${v.last ? `был ${d(v.last.scheduledAt)}` : 'приёмов ещё не было'} · ${next}`;
+    },
+    // Открытые критические сигналы с кнопкой «Связалась с пациентом» (подтверждение психолога, у врача сигнал остаётся).
+    criticalBanner(p) {
+      return app.openCritical(p).map((a) => `<div class="psy-banner" role="alert">${ui().icon('alert', 20)}<p><b>${esc(a.title)}.</b> ${esc(a.text)}</p>
+        <button class="btn" data-ack="${esc(a.id)}" data-action="Связалась с пациентом">Связалась с пациентом</button></div>`).join('');
+    },
+    // Строка ленты наблюдения: что пациент отметил сам.
+    feedText(e) {
+      const p = e.payload || {};
+      if (e.type === 'checkin') return `настроение ${p.mood}/5, беспокойство ${p.anxiety}/5, сон ${p.sleep}/5`;
+      if (e.type === 'scale') { const s = KK.data.scales[p.scaleId]; return `${s ? s.title.split(' —')[0] : p.scaleId}${p.total != null ? `: ${p.total}` : ''}${p.band && p.band.doctorLabel ? ` — ${p.band.doctorLabel}` : ''}`; }
+      if (e.type === 'ae') return `нежелательные явления: ${(p.items || []).map((i) => `${i.label} (${i.severity === 'severe' ? 'сильно' : 'немного'})`).join(', ')}${p.note ? ` · «${p.note}»` : ''}`;
+      if (e.type === 'change') return p.changed ? `замечает улучшения или ухудшения${p.note ? ` · «${p.note}»` : ''}` : 'изменений на лечении не замечает';
+      if (e.type === 'sos') return 'нажал(а) «Мне тяжело» или написал(а) о кризисе';
+      if (e.type === 'previsit') return 'заполнил(а) анкету до приёма';
+      return '';
     },
 
     // ——— Построители сводки ———

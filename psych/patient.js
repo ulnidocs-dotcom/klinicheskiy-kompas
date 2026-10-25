@@ -12,8 +12,7 @@
     const band = it.cssrs && it.cssrs.band;
     const crit = band && (band.code === 'moderate' || band.code === 'high');
     // Все открытые для психолога критические сигналы по пациенту (подтверждение психолога не закрывает их у врача).
-    const banner = P.openCritical(p).map((a) => `<div class="psy-banner" role="alert">${ui.icon('alert', 20)}<p><b>${ui.esc(a.title)}.</b> ${ui.esc(a.text)}</p>
-        <button class="btn" data-ack="${ui.esc(a.id)}" data-action="Связалась с пациентом">Связалась с пациентом</button></div>`).join('');
+    const banner = P.criticalBanner(p);
     return { banner, html: `<section class="card stack"><div class="row-between"><h2>Безопасность · C-SSRS</h2>${it.at.cssrs ? `<span class="hint">${ui.fmtDateTime(it.at.cssrs)}</span>` : ''}</div>
       ${band ? `<p>${crit ? '<span class="badge badge--critical">Критично</span> ' : band.code === 'none' ? '<span class="badge badge--ok">Риск не выявлен</span> ' : '<span class="badge badge--warn">Есть положительные ответы</span> '}${ui.esc(band.doctorLabel)}</p>`
         : '<p class="hint">Скрининг ещё не пройден.</p>'}

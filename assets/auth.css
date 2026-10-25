@@ -49,3 +49,9 @@
 .admin-table{table-layout:fixed;width:100%}
 .admin-table .btn{white-space:normal;text-align:left;line-height:1.2;padding-block:4px}
 .admin-table th:nth-child(1){width:30%}.admin-table th:nth-child(2){width:20%}.admin-table th:nth-child(3){width:16%}.admin-table th:nth-child(4){width:14%}
+/* Заявки на запись (admin/requests.html): строка формы «Записать / Отказать» на всю ширину таблицы. */
+.req-table{width:100%}
+.req-table td .row{gap:8px}
+.req-table .badge{white-space:nowrap}
+.req-table tr.req-form td{background:var(--surface-2);border-radius:12px}
+.req-table tr.req-form .field{min-width:160px}

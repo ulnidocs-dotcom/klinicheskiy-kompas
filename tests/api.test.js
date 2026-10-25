@@ -12,7 +12,9 @@ test('bot messages: no drug, diagnosis or scores on the lock screen; known butto
     assert.doesNotMatch(m.text, /F\d\d|балл|PHQ|GAD|тревожн|депресс/i, m.id);
     for (const b of m.buttons) assert.ok(['callback', 'open_app'].includes(b.type), `${m.id}: ${b.type}`);
   }
-  assert.deepEqual(KK.data.botMessages.map((m) => m.id), ['dose_reminder', 'checkin_reminder', 'doctor_reply', 'topics_menu']);
+  assert.deepEqual(KK.data.botMessages.map((m) => m.id), ['dose_reminder', 'checkin_reminder', 'doctor_reply', 'topics_menu', 'booking_confirmed', 'booking_declined']);
+  // Ответ на заявку виден на заблокированном экране: без специальности (психолог, психиатр).
+  for (const m of KK.data.botMessages.filter((x) => x.id.startsWith('booking_'))) assert.doesNotMatch(m.text, /психолог|психиатр/i, m.id);
 });
 
 test('OpenAPI contract lists every endpoint from the spec', () => {

@@ -276,6 +276,33 @@
       audit(p.id, 'invite_redeemed', {}, actor);
     }
 
+    // Заявки на запись к психологу или психиатру (чат-бот, психолог). Обрабатывает администратор клиники: ему нужны
+    // имя, телефон и пожелание по времени — без медицинских данных. Появляются лениво; демо-заявки — при первом обращении.
+    const BOOK_TO = ['psychologist', 'psychiatrist', 'unsure'];
+    const BOOK_WHEN = ['soon', 'morning', 'evening', 'any'];
+    const BOOK_SOURCES = ['bot', 'psychologist', 'app'];
+    function bookingsDb() {
+      if (db.bookings) return db.bookings;
+      const at = (days, h) => { const d = new Date(+clock() + days * 864e5); d.setHours(h, 0, 0, 0); return d.toISOString(); };
+      const ago = (hours) => new Date(+clock() - hours * 36e5).toISOString();
+      db.bookings = [];
+      const seed = (b) => db.bookings.push(Object.assign({ note: '', when: 'any', urgent: false, clientId: null, declineReason: null, notifiedAt: null,
+        handledAt: null, handledBy: null, scheduledAt: null, specialist: null }, b));
+      // Ольга наблюдается у психиатра: прошлый приём и следующий уже назначены.
+      if (has('p_olga')) {
+        seed({ id: 'bk_seed1', patientId: 'p_olga', to: 'psychiatrist', source: 'app', by: 'adm1', status: 'scheduled', createdAt: at(-26, 10),
+          scheduledAt: at(-19, 11), specialist: 'Павел Ершов', handledAt: at(-25, 12), handledBy: 'adm1', notifiedAt: at(-25, 12) });
+        seed({ id: 'bk_seed2', patientId: 'p_olga', to: 'psychiatrist', source: 'app', by: 'adm1', status: 'scheduled', createdAt: at(-19, 12),
+          scheduledAt: at(11, 15), specialist: 'Павел Ершов', handledAt: at(-19, 12), handledBy: 'adm1', notifiedAt: at(-19, 12) });
+      }
+      if (has('p_sergey')) seed({ id: 'bk_seed3', patientId: 'p_sergey', to: 'psychologist', when: 'evening', note: 'Хочу обсудить тревогу перед работой',
+        source: 'bot', by: 'patient', status: 'new', createdAt: ago(3) });
+      // Без уведомления подписчиков: заявки создаются при чтении, часто посреди отрисовки.
+      storage.setItem(KEY, JSON.stringify(db));
+      return db.bookings;
+    }
+    const findBooking = (id) => bookingsDb().find((b) => b.id === id) || null;
+
     const api = {
       reset,
       doctor: () => need().doctor,
@@ -935,6 +962,77 @@
         r.usedAt = nowIso();
         write();
         return api.staffById(r.staffId);
+      },
+      bookings({ patientId, status } = {}) {
+        need();
+        return bookingsDb().filter((b) => (!patientId || b.patientId === patientId) && (!status || b.status === status))
+          .map(copy).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+      },
+      // Заявка пациента или психолога. Повтор с тем же clientId (очередь отправки) не создаёт вторую заявку;
+      // открытая заявка того же пациента к тому же специалисту дополняется, а не дублируется (duplicate: true).
+      requestBooking(patientId, { to, when = 'any', note = '', source = 'bot', urgent = false, by = 'patient', clientId = null } = {}) {
+        need();
+        if (!has(patientId)) throw new Error(`Unknown patient ${patientId}`);
+        if (!BOOK_TO.includes(to)) throw new Error('Укажите, к какому специалисту записать');
+        if (!BOOK_WHEN.includes(when)) throw new Error('Неизвестное пожелание по времени');
+        if (!BOOK_SOURCES.includes(source)) throw new Error('Неизвестный источник заявки');
+        const list = bookingsDb();
+        if (clientId) { const dup = list.find((b) => b.clientId === String(clientId)); if (dup) return copy(dup); }
+        const text = String(note || '').trim().slice(0, 500);
+        const open = list.find((b) => b.patientId === patientId && b.to === to && b.status === 'new');
+        if (open) {
+          if (text) open.note = open.note ? `${open.note}\n${text}`.slice(-1000) : text;
+          if (urgent) open.urgent = true;
+          if (when !== 'any') open.when = when;
+          write();
+          return Object.assign(copy(open), { duplicate: true });
+        }
+        const b = { id: KK.util.uid('bk'), patientId, to, when, note: text, source, urgent: !!urgent, by, clientId: clientId ? String(clientId) : null,
+          status: 'new', createdAt: nowIso(), scheduledAt: null, specialist: null, handledAt: null, handledBy: null, declineReason: null, notifiedAt: null };
+        list.push(b);
+        audit(patientId, 'booking_requested', { to, source, urgent: b.urgent }, by);
+        write();
+        return copy(b);
+      },
+      scheduleBooking(id, { at, specialist } = {}, by = 'adm1') {
+        need();
+        const b = findBooking(id);
+        if (!b) throw new Error('Заявка не найдена');
+        if (b.status !== 'new') throw new Error('Заявка уже обработана');
+        const t = new Date(at);
+        if (!at || Number.isNaN(+t) || +t <= +clock()) throw new Error('Выберите дату и время в будущем');
+        const who = String(specialist || '').trim();
+        if (!who) throw new Error('Выберите специалиста');
+        Object.assign(b, { status: 'scheduled', scheduledAt: t.toISOString(), specialist: who.slice(0, 120), handledAt: nowIso(), handledBy: by });
+        audit(b.patientId, 'booking_scheduled', { to: b.to, at: b.scheduledAt }, by);
+        write();
+        return copy(b);
+      },
+      declineBooking(id, reason, by = 'adm1') {
+        need();
+        const b = findBooking(id);
+        if (!b) throw new Error('Заявка не найдена');
+        if (b.status !== 'new') throw new Error('Заявка уже обработана');
+        const r = String(reason || '').trim();
+        if (r.length < 3) throw new Error('Напишите пациенту причину');
+        Object.assign(b, { status: 'declined', declineReason: r.slice(0, 300), handledAt: nowIso(), handledBy: by });
+        audit(b.patientId, 'booking_declined', { to: b.to }, by);
+        write();
+        return copy(b);
+      },
+      // Бот сообщил пациенту о решении по заявке.
+      markBookingNotified(id) {
+        need();
+        const b = findBooking(id);
+        if (b && !b.notifiedAt) { b.notifiedAt = nowIso(); write(); }
+      },
+      // Прошлый и ближайший назначенные приёмы пациента у специалиста (по заявкам на запись).
+      visits(patientId, to = 'psychiatrist') {
+        need();
+        const now = +clock();
+        const sch = bookingsDb().filter((b) => b.patientId === patientId && b.to === to && b.status === 'scheduled')
+          .sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt));
+        return { last: copy(sch.filter((b) => +new Date(b.scheduledAt) <= now).at(-1)), next: copy(sch.find((b) => +new Date(b.scheduledAt) > now)) };
       },
       subscribe(fn) {
         listeners.add(fn);

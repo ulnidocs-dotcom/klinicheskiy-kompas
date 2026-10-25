@@ -208,7 +208,7 @@ test('assistant turns are events: kept in the store and do not raise signals; cr
 test('bot topics menu passes the lock-screen rules', () => {
   const t = KK.data.botMessages.find((x) => x.id === 'topics_menu');
   assert.ok(t);
-  assert.deepEqual(t.buttons.filter((b) => b.type === 'callback').map((b) => b.text), ['Лечение', 'Побочные эффекты', 'Как пользоваться', 'Связь с врачом']);
+  assert.deepEqual(t.buttons.filter((b) => b.type === 'callback').map((b) => b.text), ['Лечение', 'Побочные эффекты', 'Как пользоваться', 'Связь с врачом', 'Записаться на приём']);
 });
 
 test('doctor: forwarded marker only on assistant messages, with the reason', () => {

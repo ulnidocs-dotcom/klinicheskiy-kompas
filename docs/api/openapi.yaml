@@ -267,6 +267,56 @@ paths:
             schema: { type: object, properties: { status: { type: string, enum: [active, blocked] }, frmrChecked: { type: boolean } }, additionalProperties: false }
       responses:
         '200': { description: Обновлено }
+  /v1/patients/{id}/bookings:
+    post:
+      summary: Заявка на запись к психологу или психиатру (чат-бот пациента или психолог). Открытая заявка к тому же специалисту дополняется.
+      parameters: [{ $ref: '#/components/parameters/PatientId' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [to, clientId]
+              properties:
+                to: { type: string, enum: [psychologist, psychiatrist, unsure] }
+                when: { type: string, enum: [soon, morning, evening, any], default: any }
+                note: { type: string, maxLength: 500 }
+                urgent: { type: boolean, description: только от психолога — «записать к психиатру раньше» }
+                clientId: { type: string, description: ключ идемпотентности очереди отправки }
+      responses:
+        '201': { description: Заявка создана }
+        '200': { description: Повтор или дополнение открытой заявки }
+  /v1/bookings:
+    get:
+      summary: Заявки клиники для администратора — имя, телефон, пожелание, без медицинских данных
+      parameters: [{ name: status, in: query, schema: { type: string, enum: [new, scheduled, declined] } }]
+      responses:
+        '200': { description: Список заявок }
+  /v1/bookings/{id}:schedule:
+    post:
+      summary: Администратор записывает пациента; подтверждение уходит в чат-бот
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [at, specialist], properties: { at: { type: string, format: date-time }, specialist: { type: string } } }
+      responses:
+        '200': { description: Записано }
+        '409': { description: Заявка уже обработана }
+  /v1/bookings/{id}:decline:
+    post:
+      summary: Администратор отказывает с причиной; ответ уходит в чат-бот
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [reason], properties: { reason: { type: string, minLength: 3 } } }
+      responses:
+        '200': { description: Отказ отправлен }
+        '409': { description: Заявка уже обработана }
 components:
   securitySchemes:
     session: { type: http, scheme: bearer }
