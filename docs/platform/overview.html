@@ -65,6 +65,21 @@ a{color:var(--accent)}
 .num{font-variant-numeric:tabular-nums}
 @media (max-width:900px){.wrap{grid-template-columns:1fr;gap:28px}nav.toc{position:static;flex-direction:row;flex-wrap:wrap;gap:4px}nav.toc b{width:100%}}
 @media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+/* Печать в PDF: светлая палитра, одна колонка, без оглавления-навигации; блоки не рвутся между страницами. */
+@page{size:A4;margin:16mm 14mm}
+@media print{
+  :root,:root[data-theme="dark"]{--bg:#FFFFFF;--paper:#FFFFFF;--ink:#2F3563;--ink-2:#4F5682;--line:#DDD6EA;--lav:#EFEAF8;--peach:#F7E6D8;--mint:#E3F0E8;--sky:#E7EEF8;--accent:#5E55A0;--new:#A24A6E;--new-tint:#F6E1EA;color-scheme:light}
+  body{font-size:11pt;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .wrap{display:block;max-width:none;padding:0}
+  nav.toc{display:none}
+  main{gap:28px}
+  h1{font-size:30pt} h2{font-size:18pt;break-after:avoid} h3,h4{break-after:avoid}
+  table{min-width:0;font-size:9.5pt} .tbl{overflow:visible}
+  tr,.box,.flow>li,li{break-inside:avoid}
+  .grid2{grid-template-columns:1fr 1fr}
+  #about .grid2{grid-template-columns:1fr 1fr 1fr}
+  p,li{max-width:none}
+}
 </style>
 
 <div class="wrap">
