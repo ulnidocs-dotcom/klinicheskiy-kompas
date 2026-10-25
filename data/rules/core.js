@@ -8,7 +8,9 @@
   // Ответ на вопрос 9 PHQ-9: из flags, а если их нет (старые/внешние данные) — из answers[8].
   const item9 = (r) => (r ? r.flags?.item9 ?? r.answers?.[8] ?? null : null);
   const recentAe = (c, days) => c.events.filter((e) => e.type === 'ae' && within(c, e.at, days * 24));
-  const isMildAe = (e) => (e.payload?.items || []).length > 0 && e.payload.items.every((i) => i.severity === 'mild' || i.severity === 'moderate');
+  // Последний ответ об изменениях на лечении за 7 дней, если это «да».
+  const lastChange = (c) => { const e = c.events.filter((x) => x.type === 'change' && within(c, x.at, 7 * 24)).at(-1); return e && e.payload && e.payload.changed ? e : null; };
+  const isMildAe =(e) => (e.payload?.items || []).length > 0 && e.payload.items.every((i) => i.severity === 'mild' || i.severity === 'moderate');
   const SEV = { mild: 'слабо', moderate: 'умеренно' };
   // Дата для блока «Почему»: правила работают и в Node-тестах, поэтому без KK.ui.
   const d = (iso) => (iso ? `${iso.slice(8, 10)}.${iso.slice(5, 7)}.${iso.slice(0, 4)}` : '—');
@@ -123,6 +125,14 @@
       inputs: (c) => [`последняя отметка о приёме: ${d(c.events.filter((e) => e.type === 'dose' && e.payload?.taken).at(-1)?.at)}`, `дней без отметок: ${c.missedStreak}`, 'порог правила: ≥ 3 дней'],
       missing: () => ['причина пропусков неизвестна: пациент мог принимать препарат, но не отмечать'],
       text: (c) => `Нет отметок о приёме ${c.missedStreak} дн. подряд.` },
+    // Ответ «да» на вопрос «Замечали ли вы улучшения или ухудшения?» (patient/changes.html) за 7 дней; поздний ответ «нет» снимает сигнал.
+    { id: 'patient_change', level: 'task', routing: null, teamRule: true, source: 'Правило команды',
+      title: 'Пациент заметил изменения на лечении',
+      when: (c) => !!lastChange(c),
+      basis: (c) => lastChange(c).at,
+      inputs: (c) => [`ответ пациента от ${d(lastChange(c).at)}: «да»`],
+      missing: (c) => (lastChange(c).payload.note ? ['улучшение это или ухудшение — уточните у пациента'] : ['пациент не описал, что изменилось']),
+      text: (c) => { const n = String(lastChange(c).payload.note || ''); return n ? `«${n.length > 200 ? `${n.slice(0, 200)}…` : n}»` : 'Пациент ответил «да», без подробностей.'; } },
     { id: 'contraindication', level: 'important', routing: null, teamRule: false, source: LABEL,
       title: 'Противопоказание к назначенному препарату',
       when: (c) => c.therapy?.eligible === false,

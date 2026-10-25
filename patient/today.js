@@ -116,6 +116,20 @@
       </section>`;
   }
 
+  // Вопрос об изменениях на лечении — раз в неделю, пока идёт подтверждённая терапия.
+  function changesCard(p) {
+    if (!p.plan || p.plan.status !== 'confirmed') return '';
+    const week = Date.now() - 7 * 864e5;
+    const answered = store.events(p.id, 'change').some((e) => new Date(e.at) > week)
+      || KK.sync.queued(p.id).some((q) => q.type === 'change');
+    if (answered) return '';
+    return `
+      <a class="tile aura aura--lavender" href="changes.html">
+        <span class="label">Раз в неделю · 1 минута</span>
+        <p class="tile-title">Замечали ли вы изменения на лечении?</p>
+        <span class="btn btn--pill" aria-hidden="true">Ответить</span></a>`;
+  }
+
   function scalesCard(p) {
     const due = app.dueScales(p.latest, new Date().toISOString(), app.prefs(p.id).scaleEveryDays);
     if (!due.length) return '';
@@ -191,7 +205,7 @@
     const keep = active && active.dataset && active.dataset.day ? `[data-day="${active.dataset.day}"]` : null;
     ui.mount('#app', `
       ${header(p, now)}
-      <div class="stack">${previsitCard(p)}${intakeCard(p)}${checkinCard(p)}${medsCard(p)}
+      <div class="stack">${previsitCard(p)}${intakeCard(p)}${checkinCard(p)}${medsCard(p)}${changesCard(p)}
         <div class="tile-grid">${scalesCard(p)}${practiceCard()}${helpCard()}</div></div>`);
     const target = st.focus === 'q' ? document.getElementById('q')
       : st.focus ? document.querySelector(st.focus) : keep ? document.querySelector(keep) : null;

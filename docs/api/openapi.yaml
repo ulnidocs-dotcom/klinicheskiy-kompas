@@ -291,7 +291,7 @@ components:
       required: [clientId, type, payload]
       properties:
         clientId: { type: string, maxLength: 64 }
-        type: { type: string, enum: [checkin, dose, scale, ae, sos, intake_form, cto] }
+        type: { type: string, enum: [checkin, dose, scale, ae, change, sos, intake_form, cto] }
         at: { type: string, format: date-time, description: только для checkin, не раньше 7 дней }
         channel: { type: string, enum: [max, max-chat, telegram, web] }
         payload: { type: object, additionalProperties: true }

@@ -27,6 +27,8 @@
           <div class="slots">${slots.map(app.slotHtml).join('')}</div></section>
         <section class="card stack"><p class="q-title">Важно помнить</p>
           <ul class="stack" style="margin:0;padding-left:18px">${drug.patientNotes.map((n) => `<li>${ui.esc(n)}</li>`).join('')}</ul></section>
+        <section class="card stack"><p class="q-title">Замечали ли вы какие-либо улучшения или ухудшения состояния?</p>
+          <a class="btn btn--block" href="changes.html">Ответить</a></section>
         <section class="card stack" aria-labelledby="ae">
           <p class="q-title" id="ae">Как вы себя чувствуете на лечении?</p>
           <p class="hint">Отметьте, если что-то из этого появилось за последние дни.</p>

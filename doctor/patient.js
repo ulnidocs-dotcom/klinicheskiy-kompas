@@ -5,7 +5,7 @@
   if (!store.patient(id)) { location.replace('index.html'); return; }
   const TYPE = { checkin: 'Самочувствие', dose: 'Приём', scale: 'Шкала', ae: 'Нежелательные явления', sos: 'Кнопка «Мне тяжело»',
     intake_form: 'Первичный приём психолога', cto: 'Первичный приём психолога', intake_decision: 'Первичный приём психолога',
-    previsit: 'Анкета до приёма' };
+    previsit: 'Анкета до приёма', change: 'Изменения на лечении' };
   const describe = (e) => {
     if (e.type === 'checkin') {
       const sameDay = store.events(id, 'checkin').filter((x) => KK.util.dayKey(x.at) === KK.util.dayKey(e.at)).length;
@@ -21,6 +21,7 @@
       return e.payload.scaleId === 'cssrs' ? `${head}: ${lbl}` : `${head}: ${e.payload.total} — ${lbl}`;
     }
     if (e.type === 'ae') return e.payload.items.map((i) => `${i.label} (${i.severity === 'severe' ? 'сильно' : i.severity === 'mild' ? 'немного' : i.severity})`).join(', ') + (e.payload.note ? ` · «${e.payload.note}»` : '');
+    if (e.type === 'change') return e.payload.changed ? `замечает улучшения или ухудшения${e.payload.note ? ` · «${e.payload.note}»` : ''}` : 'изменений не замечает';
     if (e.type === 'sos') return e.payload && e.payload.source === 'assistant' ? 'в чате с ассистентом — слова о самоповреждении или суициде; пациенту открыт экран помощи' : 'пациент сообщил, что ему очень плохо';
     if (e.type === 'intake_form') return 'пациент заполнил анкету';
     if (e.type === 'cto') return e.payload.skipped ? 'цветовой тест пропущен (по желанию)' : 'цветовой тест отношений выполнен';

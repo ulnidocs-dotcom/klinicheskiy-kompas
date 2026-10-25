@@ -187,3 +187,14 @@ test('planned tasks sort after important and before info', () => {
   const out = KK.rules.evaluate(KK.rules.buildContext(patient(), [], NOW), [lv('info'), lv('task'), lv('important')]);
   assert.deepEqual(out.map((s) => s.level), ['important', 'task', 'info']);
 });
+
+test('patient_change: «да» об изменениях за 7 дней → плановый сигнал с текстом пациента; поздний «нет» и старый ответ — без сигнала', () => {
+  const yes = { type: 'change', at: at(1), payload: { changed: true, note: 'Стало легче засыпать, днём клонит в сон' } };
+  const s = run(patient(), [...dosesFor(14), yes]).find((x) => x.ruleId === 'patient_change');
+  assert.equal(s.level, 'task');
+  assert.equal(s.routing, null);
+  assert.match(s.text, /легче засыпать/);
+  assert.ok(!run(patient(), [...dosesFor(14), yes, { type: 'change', at: at(0), payload: { changed: false, note: '' } }]).some((x) => x.ruleId === 'patient_change'));
+  assert.ok(!run(patient(), [...dosesFor(14), { type: 'change', at: at(8), payload: { changed: true, note: 'x' } }]).some((x) => x.ruleId === 'patient_change'));
+  assert.ok(!run(patient(), [...dosesFor(14), { type: 'change', at: at(1), payload: { changed: false, note: '' } }]).some((x) => x.ruleId === 'patient_change'));
+});
