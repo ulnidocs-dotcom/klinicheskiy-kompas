@@ -12,8 +12,8 @@
   const HELLO = 'Здравствуйте. Это бот дневника «Компас»: напоминаю о приёме лекарства и ежедневной отметке, отвечаю на частые вопросы и передаю вопросы врачу. Я не врач. В экстренной ситуации звоните 112.';
   const now = () => new Date().toISOString();
   const uid = () => KK.util.uid('bm');
-  // Запись через администратора клиники: «к кому» → «когда удобно» → заявка (KK.sync, тип booking).
-  const TO_TEXT = { psychologist: 'к психологу', psychiatrist: 'к психиатру', unsure: 'к специалисту — поможет выбрать администратор' };
+  // Запись: «к кому» → «когда удобно» → заявка (KK.sync, тип booking). К психологу и «помогите выбрать» записывает психолог, к психиатру — лечащий врач.
+  const TO_TEXT = { psychologist: 'к психологу', psychiatrist: 'к психиатру', unsure: 'к специалисту — поможет выбрать психолог' };
   const WHEN_BTN = [['soon', 'Как можно скорее'], ['morning', 'Утром'], ['evening', 'Вечером'], ['any', 'В любое время']];
   const WHEN_TEXT = { soon: 'как можно скорее', morning: 'утром', evening: 'вечером', any: 'в любое время' };
   // «Записать побочку» и «отметить в дневнике» — не запись на приём.
@@ -74,10 +74,11 @@
           <button class="btn btn--block" data-send="topics_menu">Меню тем</button></div>
         <div class="card stack"><h2>Попробуйте написать</h2>
           <div class="chips">${['Какие побочные эффекты?', 'Можно ли выпить вина?', 'Пропустил приём, что делать?', 'Хочу записаться к психологу', 'Плохо сплю'].map((t) => `<button class="chip" data-try="${ui.esc(t)}">${ui.esc(t)}</button>`).join('')}</div>
-          <p class="hint">Бот отвечает только по проверенной базе. Вопросы об изменении лечения, беременности и всё, чего нет в базе, передаёт врачу. Сообщения о кризисе и опасных симптомах — сразу 112 и сигнал врачу. Просьбу записаться бот передаёт администратору клиники.</p></div>
+          <p class="hint">Бот отвечает только по проверенной базе. Вопросы об изменении лечения, беременности и всё, чего нет в базе, передаёт врачу. Сообщения о кризисе и опасных симптомах — сразу 112 и сигнал врачу. Просьбу записаться бот передаёт психологу или лечащему врачу.</p></div>
         <div class="stack" style="align-items:flex-start;gap:4px"><button class="btn btn--ghost" data-clear>Начать переписку заново</button>
           <a class="btn btn--ghost" href="../doctor/messages.html?id=${encodeURIComponent(pid)}">Что увидит врач</a>
-          <a class="btn btn--ghost" href="../admin/requests.html">Заявки у администратора</a></div>
+          <a class="btn btn--ghost" href="../psych/bookings.html">Заявки у психолога</a>
+          <a class="btn btn--ghost" href="../doctor/bookings.html">Заявки у врача</a></div>
       </aside></div>`);
     const feed = document.getElementById('feed');
     if (feed) feed.scrollTop = feed.scrollHeight;
@@ -101,9 +102,9 @@
         [{ type: 'tel', text: 'Позвонить 112' }, { type: 'open_app', text: 'Экран помощи', app: 'help' }]);
       return;
     }
-    // Просьба записаться — не вопрос врачу: предлагаем оставить заявку администратору.
+    // Просьба записаться — не вопрос о лечении: предлагаем оставить заявку на запись.
     if (r.kind !== 'emergency' && BOOKING_INTENT.test(text)) {
-      botSay('Могу передать заявку на запись администратору клиники — он подберёт время и подтвердит запись здесь, в чате. К кому вас записать?', toButtons());
+      botSay('Могу передать заявку на запись — специалист подберёт время и подтвердит запись здесь, в чате. К кому вас записать?', toButtons());
       return;
     }
     const sent = r.forward ? forward(text, r.kind) : true;
@@ -135,7 +136,7 @@
     if (b.action === 'menu') { botSay(BOT.topics_menu.text, topicsMenu()); return; }
     if (b.payload === 'booking:start') {
       userSay(b.text);
-      botSay('К кому вас записать? Заявку получит администратор клиники — он подберёт время и подтвердит запись здесь, в чате.', toButtons());
+      botSay('К кому вас записать? Специалист подберёт время и подтвердит запись здесь, в чате.', toButtons());
       return;
     }
     if (b.bookTo) {
@@ -151,10 +152,10 @@
         botSay('Не получилось передать заявку. Попробуйте ещё раз.', [{ type: 'callback', text: 'Записаться на приём', payload: 'booking:start' }]);
         return;
       }
-      if (r && r.pending) { botSay('Заявка сохранена и уйдёт администратору, когда появится связь.'); return; }
+      if (r && r.pending) { botSay('Заявка сохранена и уйдёт, когда появится связь.'); return; }
       botSay(r && r.duplicate
-        ? `Заявка ${TO_TEXT[b.bookTo]} уже у администратора — я добавил ваше пожелание: ${WHEN_TEXT[b.bookWhen]}. Он свяжется с вами.`
-        : `Передал заявку администратору клиники: ${TO_TEXT[b.bookTo]}, ${WHEN_TEXT[b.bookWhen]}. Он подберёт время и подтвердит запись здесь, в чате. Если опасно сейчас — звоните 112.`);
+        ? `Заявка ${TO_TEXT[b.bookTo]} уже передана — я добавил ваше пожелание: ${WHEN_TEXT[b.bookWhen]}. Специалист свяжется с вами.`
+        : `Передал заявку на запись ${TO_TEXT[b.bookTo]}, ${WHEN_TEXT[b.bookWhen]}. Специалист подберёт время и подтвердит запись здесь, в чате. Если опасно сейчас — звоните 112.`);
       return;
     }
     if (b.action === 'ask') {
@@ -173,7 +174,7 @@
     }
   }
 
-  // Ответ администратора на заявку приходит в чат один раз (store.markBookingNotified).
+  // Ответ специалиста на заявку приходит в чат один раз (store.markBookingNotified).
   function notifyBookings() {
     const fresh = store.bookings({ patientId: pid }).filter((b) => !b.notifiedAt && (b.status === 'scheduled' || b.status === 'declined')).reverse();
     fresh.forEach((b) => {

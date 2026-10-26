@@ -25,7 +25,7 @@
         return items.map((it) => {
           try {
             if (it.type === 'message') return { clientId: it.clientId, status: 'accepted', event: store.sendMessage(it.patientId, 'patient', it.payload.text, { clientId: it.clientId, via: it.payload.via, reason: it.payload.reason, ref: it.payload.ref }) };
-            // Заявка на запись — не событие дневника: её обрабатывает администратор клиники.
+            // Заявка на запись — не событие дневника: её обрабатывает психолог или врач.
             if (it.type === 'booking') return { clientId: it.clientId, status: 'accepted', event: store.requestBooking(it.patientId, Object.assign({}, it.payload, { clientId: it.clientId, by: 'patient' })) };
             const event = store.addEvent(it.patientId, it.type, it.payload, Object.assign({}, it.opts, { clientId: it.clientId, channel: it.channel }));
             return { clientId: it.clientId, status: 'accepted', event };

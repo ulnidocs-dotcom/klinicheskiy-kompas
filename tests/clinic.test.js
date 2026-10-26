@@ -15,10 +15,10 @@ function mk() {
   return { s, t, later: (ms) => { t.now = new Date(t.now.getTime() + ms); } };
 }
 
-test('demo clinic has an admin, a doctor and a psychologist, all active', () => {
+test('demo clinic has a doctor and a psychologist, all active (no administrator role)', () => {
   const { s } = mk();
   assert.deepEqual(s.staff().map((x) => [x.email, x.role, x.status]), [
-    ['admin@clinic.demo', 'admin', 'active'], ['elena.ivanova@clinic.demo', 'doctor', 'active'], ['maria.belova@clinic.demo', 'psychologist', 'active']]);
+    ['elena.ivanova@clinic.demo', 'doctor', 'active'], ['maria.belova@clinic.demo', 'psychologist', 'active']]);
   assert.equal(s.staffByEmail(' Elena.Ivanova@clinic.demo ').id, 'd1');
 });
 
@@ -114,7 +114,7 @@ test('an old store without clinic data gets the demo clinic lazily', () => {
   delete raw.clinic;
   storage.setItem('kk:v1', JSON.stringify(raw));
   const s2 = KK.createStore({ storage, clock: () => NOW });
-  assert.equal(s2.staff().length, 3);
+  assert.equal(s2.staff().length, 2);
 });
 
 test('regression: no duplicate staff via stale invites', () => {
@@ -132,10 +132,17 @@ test('regression: no duplicate staff via stale invites', () => {
   assert.equal(s.inviteInfo(d.token).state, 'pending');
 });
 
-test('regression: the last active admin cannot be blocked', () => {
-  const { s } = mk();
-  assert.throws(() => s.setStaff('adm1', { status: 'blocked' }), /последнего администратора/);
-  assert.equal(s.staffById('adm1').status, 'active');
+test('no administrator role: cannot be invited; an administrator saved in an old demo is hidden and cannot sign in', () => {
+  const storage = memStorage();
+  const s1 = KK.createStore({ storage, clock: () => NOW });
+  s1.reset();
+  assert.throws(() => s1.inviteStaff('boss@clinic.demo', 'admin'), /Неизвестная роль/);
+  const raw = JSON.parse(storage.getItem('kk:v1'));
+  raw.clinic.staff.push({ id: 'adm1', email: 'admin@clinic.demo', role: 'admin', name: 'Анна Смирнова', status: 'active' });
+  storage.setItem('kk:v1', JSON.stringify(raw));
+  const s2 = KK.createStore({ storage, clock: () => NOW });
+  assert.ok(!s2.staff().some((x) => x.role === 'admin'));
+  assert.throws(() => s2.staffLoginCheck('admin@clinic.demo'), /Не получилось войти/);
 });
 
 test('regression: completeReset refuses a blocked staff member and keeps the token unused', () => {

@@ -31,8 +31,6 @@
 .p-app.p-app--site{max-width:none;padding:0}
 .p-top.p-top--site{max-width:none;position:absolute;right:0;left:auto;background:none}
 .p-top.p-top--site .brand{display:none}
-.admin-table td,.admin-table th{overflow-wrap:normal;word-break:normal}
-.admin-table .badge,.admin-table label.row{white-space:nowrap}
 /* Витрина демо входа: карточка на каждый кабинет */
 .demo-hub{max-width:1040px;margin:0 auto;padding:24px 16px 64px;display:grid;gap:20px;box-sizing:border-box}
 .demo-hub h1{font-size:clamp(28px,5vw,44px);font-weight:300;letter-spacing:-.02em;margin:0}
@@ -42,16 +40,3 @@
 .demo-hub .kv{display:grid;grid-template-columns:auto 1fr;gap:6px 12px;margin:0;font-size:14px}
 .demo-hub .kv dt{color:var(--text-3)}
 .demo-hub .kv dd{margin:0;min-width:0}
-/* Планшет: почты переносятся по символам, кнопки в последней колонке встают столбиком. */
-.admin-table .hint{overflow-wrap:anywhere;word-break:break-all}
-.admin-table td:last-child .row{flex-direction:column;align-items:flex-start;gap:4px}
-.admin-table td:last-child .btn{min-height:32px;padding:0 10px}
-.admin-table{table-layout:fixed;width:100%}
-.admin-table .btn{white-space:normal;text-align:left;line-height:1.2;padding-block:4px}
-.admin-table th:nth-child(1){width:30%}.admin-table th:nth-child(2){width:20%}.admin-table th:nth-child(3){width:16%}.admin-table th:nth-child(4){width:14%}
-/* Заявки на запись (admin/requests.html): строка формы «Записать / Отказать» на всю ширину таблицы. */
-.req-table{width:100%}
-.req-table td .row{gap:8px}
-.req-table .badge{white-space:nowrap}
-.req-table tr.req-form td{background:var(--surface-2);border-radius:12px}
-.req-table tr.req-form .field{min-width:160px}

@@ -16,7 +16,7 @@
       <p class="muted">Укажите рабочую почту — пришлём ссылку для смены пароля.</p>
       <label class="field"><span class="hint">Рабочая почта</span><input id="email" type="email" autocomplete="username"></label>
       ${A.err()}<button class="btn btn--primary btn--block" data-send>Отправить ссылку</button>
-      <p class="hint">Почту сменили или аккаунт заблокирован — обратитесь к администратору клиники.</p>`;
+      <p class="hint">Почту сменили или аккаунт заблокирован — обратитесь в клинику.</p>`;
     if (st.step === 'sent') return `<h1>Проверьте почту</h1>
       <p class="muted">Если такая почта есть в клинике, на неё отправлена ссылка. Она действует 30 минут.</p>
       ${st.link ? `<p class="demo-note" role="status"><b>Демо:</b> письмо не отправляется. Ссылка: <a href="${ui.esc(st.link)}">${ui.esc(st.link)}</a></p>` : ''}`;

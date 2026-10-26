@@ -8,7 +8,7 @@
   const inPatient = /\/patient\//.test(path);
   const inDoctor = /\/doctor\//.test(path);
   const inPsych = /\/psych\//.test(path);
-  const inAuth = /\/(auth|admin)\//.test(path);
+  const inAuth = /\/auth\//.test(path);
   const inStyles = /\/styles\.html$/.test(path);
   const base = inPatient || inDoctor || inPsych || inAuth ? '../' : '';
   const params = new URLSearchParams(location.search);

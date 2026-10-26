@@ -20,7 +20,7 @@
     showErr(text, id = 'err') { const el = document.getElementById(id); if (el) el.textContent = text; },
     // Палитра: пациентская — спокойная, для специалистов — щадящая глаза (data-role управляет токенами).
     setRole(role) { document.documentElement.dataset.role = role; if (KK.theme) KK.theme.apply(); },
-    staffHome: (s) => (s.role === 'doctor' ? '../doctor/index.html' : s.role === 'psychologist' ? '../psych/index.html' : '../admin/index.html'),
+    staffHome: (s) => (s.role === 'psychologist' ? '../psych/index.html' : '../doctor/index.html'),
     // Enter в поле нажимает основную кнопку формы.
     enterSubmits(selector) {
       document.addEventListener('keydown', (e) => {

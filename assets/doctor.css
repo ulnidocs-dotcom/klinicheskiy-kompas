@@ -90,3 +90,11 @@ mark.hl{border-radius:4px;padding:0 2px;color:var(--text)}
   body.print-invite .no-print{display:none}
   body.print-invite .print-only{display:block}
 }
+
+/* Раздел «Запись» (врач, психолог): строка формы «Записать / Отказать» на всю ширину таблицы. */
+.req-table{width:100%}
+.req-table td .row{gap:8px}
+.req-table .badge{white-space:nowrap}
+.req-table tr.req-form td{background:var(--surface-2);border-radius:12px}
+.req-table tr.req-form .field{min-width:160px}
+.req-table .err{color:var(--crit-ink);font-size:13px}

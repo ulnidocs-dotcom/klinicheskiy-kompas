@@ -7,6 +7,7 @@
   const NAV = [
     { id: 'queue', href: 'index.html', label: 'Очередь', icon: 'users' },
     { id: 'observe', href: 'observe.html', label: 'Наблюдение', icon: 'heart' },
+    { id: 'bookings', href: 'bookings.html', label: 'Запись', icon: 'clipboard' },
     { id: 'materials', href: 'materials.html', label: 'Материалы', icon: 'book' },
     { id: 'profile', href: 'profile.html', label: 'Профиль', icon: 'settings' },
   ];
@@ -166,9 +167,10 @@
       const psy = signed || KK.store.psychologist();
       const nav = document.body.dataset.nav;
       const waiting = app.queue(KK.store.patients()).filter((p) => p.intakeStatus === 'completed').length;
+      const booking = KK.store.bookings({ status: 'new' }).filter((b) => b.to === 'psychologist' || b.to === 'unsure').length;
       ui().mount('#side', `
         <div class="d-brand">${ui().icon('route', 20)}<b>Компас</b><span class="dotrow" aria-hidden="true">· · ·· ····</span></div>
-        ${NAV.map((n) => `<a href="${n.href}" ${n.id === nav ? 'aria-current="page"' : ''}>${ui().icon(n.icon, 18)}<span>${n.label}</span>${n.id === 'queue' && waiting ? `<span class="count">${waiting}</span>` : ''}</a>`).join('')}
+        ${NAV.map((n) => `<a href="${n.href}" ${n.id === nav ? 'aria-current="page"' : ''}>${ui().icon(n.icon, 18)}<span>${n.label}</span>${n.id === 'queue' && waiting ? `<span class="count">${waiting}</span>` : ''}${n.id === 'bookings' && booking ? `<span class="count">${booking}</span>` : ''}</a>`).join('')}
         <div class="d-me"><div class="d-me__who"><b>${esc(psy.name)}</b><span class="hint">${esc(psy.specialty)}</span>${signed ? '<a class="hint" href="../auth/login.html?as=staff" data-logout>Выйти</a>' : ''}</div>
           ${KK.theme ? KK.theme.toggleHtml() : ''}</div>`);
     },

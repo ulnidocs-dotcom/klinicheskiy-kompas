@@ -31,12 +31,21 @@ test('patient onboarding confirms the phone and uses the site layout in a browse
   assert.doesNotThrow(() => new Function(js));
 });
 
-test('admin page is wired', () => checkPage('admin/index.html', 'admin/index.js'));
+test('booking pages are wired in the doctor and psychologist cabinets; no administrator pages', () => {
+  for (const [html, js] of [['doctor/bookings.html', 'doctor/bookings.js'], ['psych/bookings.html', 'psych/bookings.js']]) {
+    const h = read(html);
+    assert.match(h, /assets\/bookings\.js/, html);
+    assert.match(h, new RegExp(`src="${path.basename(js)}"`), html);
+    assert.doesNotThrow(() => new Function(read(js)), js);
+  }
+  assert.ok(!fs.existsSync(path.join(__dirname, '..', 'admin')));
+  for (const f of ['index.html', 'auth/demo.js', 'patient/bot.js', 'assets/authpage.js']) assert.doesNotMatch(read(f), /admin\//, f);
+});
 
 test('demo hub page is wired and covers every cabinet', () => {
   checkPage('auth/demo.html', 'auth/demo.js');
   const js = read('auth/demo.js');
-  for (const role of ['patient', 'doctor', 'psychologist', 'admin']) assert.match(js, new RegExp(`id: '${role}'`), role);
+  for (const role of ['patient', 'doctor', 'psychologist']) assert.match(js, new RegExp(`id: '${role}'`), role);
   assert.match(read('index.html'), /auth\/demo\.html/);
 });
 

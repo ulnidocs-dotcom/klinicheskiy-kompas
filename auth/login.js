@@ -3,7 +3,7 @@
   const st = { tab: ui.param('as') === 'staff' ? 'staff' : 'patient', step: 'start',
     // Номер или почту можно передать в ссылке (витрина демо, письмо клиники) — пользователю останется нажать «Продолжить».
     phone: KK.auth.normalizePhone(ui.param('phone')) || '', email: KK.auth.normalizeEmail(ui.param('email')), staffId: null, staffPhone: '', demo: '' };
-  const STAFF_EMAILS = 'elena.ivanova@clinic.demo, maria.belova@clinic.demo, admin@clinic.demo';
+  const STAFF_EMAILS = 'elena.ivanova@clinic.demo, maria.belova@clinic.demo';
 
   function patientView() {
     if (st.step === 'code') return `
@@ -32,13 +32,13 @@
       <button class="btn btn--ghost btn--block" data-back>Назад</button>`;
     return `
       <h1>Вход для специалиста</h1>
-      <p class="muted">Для врачей, психологов и администраторов клиники.</p>
+      <p class="muted">Для врачей и психологов клиники.</p>
       <label class="field"><span class="hint">Рабочая почта</span><input id="email" type="email" autocomplete="username" value="${ui.esc(st.email)}"></label>
       <label class="field"><span class="hint">Пароль</span><input id="pw" type="password" autocomplete="current-password"></label>
       ${A.demoNote(`пароль не проверяется. Почты для входа: ${STAFF_EMAILS}`)}
       ${A.err()}
       <button class="btn btn--primary btn--block" data-login>Продолжить</button>
-      <p class="hint">Нет аккаунта? Специалистов подключает администратор клиники — ссылка-приглашение придёт на рабочую почту.</p>`;
+      <p class="hint">Нет аккаунта? Специалистов подключает клиника — ссылка-приглашение придёт на рабочую почту.</p>`;
   }
   function render() {
     A.setRole(st.tab === 'staff' ? 'doctor' : 'patient');
@@ -86,7 +86,7 @@
     if (e.target.closest('[data-verify]') && st.tab === 'staff') {
       try { store.verifyOtp(st.staffId, 'staff_mfa', code()); } catch (err) { A.showErr(err.message); return; }
       const s = store.staffById(st.staffId);
-      if (!s || s.status !== 'active') { A.showErr('Не получилось войти. Проверьте почту или обратитесь к администратору клиники'); return; }
+      if (!s || s.status !== 'active') { A.showErr('Не получилось войти. Проверьте почту или обратитесь в клинику'); return; }
       auth.session.set({ kind: 'staff', staffId: s.id, role: s.role });
       location.href = A.staffHome(s);
     }

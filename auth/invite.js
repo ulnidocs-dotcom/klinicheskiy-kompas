@@ -2,7 +2,7 @@
   const { ui, store, auth, authPage: A } = KK;
   const token = ui.param('token') || '';
   const info = store.inviteInfo(token);
-  const ROLE = { doctor: 'врач', psychologist: 'клинический психолог', admin: 'администратор клиники' };
+  const ROLE = { doctor: 'врач', psychologist: 'клинический психолог' };
   const SPECS = ['терапевт', 'врач общей практики', 'невролог', 'кардиолог', 'эндокринолог', 'психиатр', 'психотерапевт'];
   const STEPS = ['invite', 'profile', 'password', 'mfa', 'oath'];
   const st = { step: info.state === 'pending' ? 'invite' : 'bad', name: '', specialty: SPECS[0], phone: '', pwOk: false, demo: '', oath: false };

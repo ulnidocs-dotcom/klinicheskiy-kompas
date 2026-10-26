@@ -5,6 +5,7 @@
     { id: 'patients', href: 'index.html', label: 'Пациенты', icon: 'users' },
     { id: 'alerts', href: 'alerts.html', label: 'Алерты', icon: 'bell' },
     { id: 'messages', href: 'messages.html', label: 'Сообщения', icon: 'chat' },
+    { id: 'bookings', href: 'bookings.html', label: 'Запись', icon: 'clipboard' },
     { id: 'import', href: 'import.html', label: 'Импорт истории', icon: 'upload' },
     { id: 'materials', href: 'materials.html', label: 'Материалы', icon: 'book' },
     { id: 'profile', href: 'profile.html', label: 'Профиль', icon: 'settings' },
@@ -407,9 +408,10 @@
       const doc = app.me();
       const nav = document.body.dataset.nav;
       const inbox = KK.store.inbox ? KK.store.inbox({ to: doc.id, unread: true }).length : 0;
+      const booking = KK.store.bookings ? KK.store.bookings({ status: 'new' }).filter((b) => b.to === 'psychiatrist').length : 0; // заявки к психиатру ведёт врач
       ui().mount('#side', `
         <div class="d-brand">${ui().icon('route', 20)}<b>Компас</b><span class="dotrow" aria-hidden="true">· · ·· ····</span></div>
-        ${NAV.map((n) => `<a href="${n.href}" ${n.id === nav ? 'aria-current="page"' : ''}>${ui().icon(n.icon, 18)}<span>${n.label}</span>${n.id === 'alerts' && open.length ? `<span class="count ${crit ? 'count--crit' : ''}">${open.length}</span>` : ''}${n.id === 'messages' && inbox ? `<span class="count" title="Непрочитанные входящие: от психолога и запросы подтверждения номера">${inbox}</span>` : ''}</a>`).join('')}
+        ${NAV.map((n) => `<a href="${n.href}" ${n.id === nav ? 'aria-current="page"' : ''}>${ui().icon(n.icon, 18)}<span>${n.label}</span>${n.id === 'alerts' && open.length ? `<span class="count ${crit ? 'count--crit' : ''}">${open.length}</span>` : ''}${n.id === 'messages' && inbox ? `<span class="count" title="Непрочитанные входящие: от психолога и запросы подтверждения номера">${inbox}</span>` : ''}${n.id === 'bookings' && booking ? `<span class="count" title="Новые заявки на запись к психиатру">${booking}</span>` : ''}</a>`).join('')}
         <div class="d-me"><div class="d-me__who"><b>${ui().esc(doc.name)}</b><span class="hint">${ui().esc(doc.specialty)} · ${doc.mode === 'psychiatrist' ? 'режим специалиста' : 'режим с подсказками'}</span>${doc.signedIn ? '<a class="hint" href="../auth/login.html?as=staff" data-logout>Выйти</a>' : ''}</div>
           ${KK.theme ? KK.theme.toggleHtml() : ''}</div>`);
     },

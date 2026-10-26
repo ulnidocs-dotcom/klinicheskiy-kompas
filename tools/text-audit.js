@@ -4,7 +4,7 @@
 // в свой блок, флажок/радио не на уровне первой строки подписи, поля формы разной высоты в одном ряду.
 (function (g) {
   const PAGES = [
-    '/', '/auth/demo.html', '/auth/login.html', '/auth/login.html?as=staff', '/auth/recover.html', '/admin/index.html',
+    '/', '/auth/demo.html', '/auth/login.html', '/auth/login.html?as=staff', '/auth/recover.html', '/doctor/bookings.html', '/psych/bookings.html',
     '/patient/index.html?p=p_olga', '/patient/path.html?p=p_olga', '/patient/therapy.html?p=p_olga',
     '/patient/chat.html?p=p_olga', '/patient/chat.html?p=p_olga&mode=assistant', '/patient/materials.html?p=p_olga',
     '/patient/material.html?p=p_olga&id=breathing', '/patient/help.html?p=p_olga', '/patient/profile.html?p=p_olga',

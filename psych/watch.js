@@ -1,5 +1,5 @@
 // Наблюдение за пациентом между визитами к психиатру: приёмы, сводка дневника, шкалы, сигналы и лента с прошлого приёма.
-// Действие психолога — «Записать к психиатру раньше»: срочная заявка администратору клиники с причиной.
+// Действие психолога — «Записать к психиатру раньше»: срочная заявка лечащему врачу с причиной.
 (function () {
   const { ui, store, psychApp: P, doctorApp: D } = KK;
   P.start({ nav: 'observe' });
@@ -9,12 +9,12 @@
 
   function earlyBlock(p, v) {
     const open = store.bookings({ patientId: id, status: 'new' }).find((b) => b.to === 'psychiatrist');
-    if (open) return `<p class="hint" role="status">${ui.icon('check', 14)} Заявка на запись к психиатру у администратора с ${ui.fmtDateTime(open.createdAt)}${open.urgent ? ' · раньше срока' : ''}.</p>`;
+    if (open) return `<p class="hint" role="status">${ui.icon('check', 14)} Заявка на запись к психиатру у лечащего врача с ${ui.fmtDateTime(open.createdAt)}${open.urgent ? ' · раньше срока' : ''}.</p>`;
     if (!st.asking) return `<div class="row wrap"><button class="btn btn--primary" data-early>Записать к психиатру раньше</button></div>`;
     return `<div class="stack">
-      <label class="field"><span class="hint">Почему раньше срока — увидит администратор и психиатр</span><textarea id="early-note" rows="3" placeholder="Например: настроение снижается вторую неделю, хуже сон">${ui.esc(st.note)}</textarea></label>
+      <label class="field"><span class="hint">Почему раньше срока — увидят лечащий врач и психиатр</span><textarea id="early-note" rows="3" placeholder="Например: настроение снижается вторую неделю, хуже сон">${ui.esc(st.note)}</textarea></label>
       ${st.error ? `<p class="err" role="alert">${ui.esc(st.error)}</p>` : ''}
-      <div class="row wrap"><button class="btn btn--primary" data-early-send>Отправить заявку администратору</button><button class="btn btn--ghost" data-early-cancel>Отмена</button></div></div>`;
+      <div class="row wrap"><button class="btn btn--primary" data-early-send>Отправить заявку врачу</button><button class="btn btn--ghost" data-early-cancel>Отмена</button></div></div>`;
   }
 
   function render() {
@@ -60,10 +60,10 @@
     if (e.target.closest('[data-early-cancel]')) { Object.assign(st, { asking: false, error: '' }); render(); return; }
     if (e.target.closest('[data-early-send]')) {
       const note = document.getElementById('early-note').value.trim();
-      if (note.length < 5) { st.error = 'Коротко опишите причину — её увидят администратор и психиатр'; render(); document.getElementById('early-note').focus(); return; }
+      if (note.length < 5) { st.error = 'Коротко опишите причину — её увидят лечащий врач и психиатр'; render(); document.getElementById('early-note').focus(); return; }
       try {
         store.requestBooking(id, { to: 'psychiatrist', when: 'soon', note, source: 'psychologist', urgent: true, by: store.psychologist().id });
-        Object.assign(st, { asking: false, note: '', error: '', saved: 'Заявка отправлена администратору клиники. Пациент получит подтверждение записи в чат-боте.' });
+        Object.assign(st, { asking: false, note: '', error: '', saved: 'Заявка отправлена лечащему врачу. Пациент получит подтверждение записи в чат-боте.' });
       } catch (err) { st.error = err.message; }
       render();
     }

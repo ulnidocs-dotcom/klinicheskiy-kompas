@@ -27,19 +27,20 @@
   const DRAFT_PREFIXES = [DRAFT_PREFIX, 'kk:previsit-draft:']; // черновики первичной беседы и анкеты до приёма
   const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
   // Клиника: сотрудники, приглашения, одноразовые коды, ссылки восстановления (спек регистрации §4).
-  const STAFF_ROLES = ['doctor', 'psychologist', 'admin'];
+  // Отдельного администратора в платформе нет: специалистов подключает клиника, записью занимаются сами специалисты.
+  const STAFF_ROLES = ['doctor', 'psychologist'];
   const INVITE_TTL = 72 * 3600000;
   const OTP_TTL = 5 * 60000;
   const OTP_ATTEMPTS = 5;
   const RESET_TTL = 30 * 60000;
   const TOKEN_ABC = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
   const INVITE_TEXT = {
-    expired: 'Срок приглашения истёк. Попросите администратора клиники отправить приглашение ещё раз',
+    expired: 'Срок приглашения истёк. Попросите клинику отправить приглашение ещё раз',
     used: 'Это приглашение уже использовано. Войдите с рабочей почтой',
-    revoked: 'Приглашение отозвано. Попросите администратора клиники отправить новое',
-    unknown: 'Приглашение не найдено. Проверьте ссылку или попросите администратора клиники отправить новое',
+    revoked: 'Приглашение отозвано. Попросите клинику отправить новое',
+    unknown: 'Приглашение не найдено. Проверьте ссылку или попросите клинику отправить новое',
   };
-  const DENIED = 'Не получилось войти. Проверьте почту или обратитесь к администратору клиники';
+  const DENIED = 'Не получилось войти. Проверьте почту или обратитесь в клинику';
   // Приглашение пациента в дневник (спек 2026-10-22 §A): одноразовая ссылка на 72 часа, без персональных данных в токене.
   const PATIENT_INVITE_TTL = 72 * 3600000;
   const PATIENT_CONSENTS = ['data_processing', 'doctor_access', 'not_emergency'];
@@ -68,7 +69,6 @@
   const seedClinic = (now) => ({
     name: 'Клиника «Демо»',
     staff: [
-      { id: 'adm1', email: 'admin@clinic.demo', role: 'admin', name: 'Анна Смирнова', specialty: 'администратор клиники', phone: '+79000000001', status: 'active', frmrChecked: false, createdAt: now, activatedAt: now },
       { id: 'd1', email: 'elena.ivanova@clinic.demo', role: 'doctor', name: 'Елена Иванова', specialty: 'терапевт', phone: '+79000000002', status: 'active', frmrChecked: true, createdAt: now, activatedAt: now },
       { id: 'psy1', email: 'maria.belova@clinic.demo', role: 'psychologist', name: 'Мария Белова', specialty: 'клинический психолог', phone: '+79000000003', status: 'active', frmrChecked: true, createdAt: now, activatedAt: now },
     ],
@@ -276,8 +276,8 @@
       audit(p.id, 'invite_redeemed', {}, actor);
     }
 
-    // Заявки на запись к психологу или психиатру (чат-бот, психолог). Обрабатывает администратор клиники: ему нужны
-    // имя, телефон и пожелание по времени — без медицинских данных. Появляются лениво; демо-заявки — при первом обращении.
+    // Заявки на запись к психологу или психиатру (чат-бот, психолог). Записывают сами специалисты: к психологу
+    // (и «помогите выбрать») — психолог, к психиатру — лечащий врач. Появляются лениво; демо-заявки — при первом обращении.
     const BOOK_TO = ['psychologist', 'psychiatrist', 'unsure'];
     const BOOK_WHEN = ['soon', 'morning', 'evening', 'any'];
     const BOOK_SOURCES = ['bot', 'psychologist', 'app'];
@@ -290,10 +290,10 @@
         handledAt: null, handledBy: null, scheduledAt: null, specialist: null }, b));
       // Ольга наблюдается у психиатра: прошлый приём и следующий уже назначены.
       if (has('p_olga')) {
-        seed({ id: 'bk_seed1', patientId: 'p_olga', to: 'psychiatrist', source: 'app', by: 'adm1', status: 'scheduled', createdAt: at(-26, 10),
-          scheduledAt: at(-19, 11), specialist: 'Павел Ершов', handledAt: at(-25, 12), handledBy: 'adm1', notifiedAt: at(-25, 12) });
-        seed({ id: 'bk_seed2', patientId: 'p_olga', to: 'psychiatrist', source: 'app', by: 'adm1', status: 'scheduled', createdAt: at(-19, 12),
-          scheduledAt: at(11, 15), specialist: 'Павел Ершов', handledAt: at(-19, 12), handledBy: 'adm1', notifiedAt: at(-19, 12) });
+        seed({ id: 'bk_seed1', patientId: 'p_olga', to: 'psychiatrist', source: 'app', by: 'd1', status: 'scheduled', createdAt: at(-26, 10),
+          scheduledAt: at(-19, 11), specialist: 'Павел Ершов', handledAt: at(-25, 12), handledBy: 'd1', notifiedAt: at(-25, 12) });
+        seed({ id: 'bk_seed2', patientId: 'p_olga', to: 'psychiatrist', source: 'app', by: 'd1', status: 'scheduled', createdAt: at(-19, 12),
+          scheduledAt: at(11, 15), specialist: 'Павел Ершов', handledAt: at(-19, 12), handledBy: 'd1', notifiedAt: at(-19, 12) });
       }
       if (has('p_sergey')) seed({ id: 'bk_seed3', patientId: 'p_sergey', to: 'psychologist', when: 'evening', note: 'Хочу обсудить тревогу перед работой',
         source: 'bot', by: 'patient', status: 'new', createdAt: ago(3) });
@@ -681,12 +681,13 @@
         return id;
       },
       clinicInfo: () => ({ name: (need(), clinic()).name }),
-      staff: () => (need(), clinic().staff.map(copy)),
+      // Сотрудники платформы — врачи и психологи (прежнюю роль администратора из сохранённого демо не показываем).
+      staff: () => (need(), clinic().staff.filter((x) => STAFF_ROLES.includes(x.role)).map(copy)),
       staffById: (id) => (need(), copy(clinic().staff.find((x) => x.id === id))),
       staffByEmail: (email) => { need(); const e = String(email || '').trim().toLowerCase(); return copy(clinic().staff.find((x) => x.email === e)); },
       invites: () => (need(), clinic().invites.map((i) => Object.assign({}, i, { state: inviteState(i) }))),
       inviteText: (state) => INVITE_TEXT[state] || INVITE_TEXT.unknown,
-      inviteStaff(email, role, by = 'adm1') {
+      inviteStaff(email, role, by = 'clinic') {
         need();
         const e = String(email || '').trim().toLowerCase();
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e)) throw new Error('Проверьте адрес почты');
@@ -733,16 +734,16 @@
         const nm = String(name || '').trim();
         if (nm.length < 3) throw new Error('Укажите фамилию и имя');
         if (!phone) throw new Error('Укажите телефон для подтверждения входа');
-        const spec = inv.role === 'psychologist' ? 'клинический психолог' : inv.role === 'admin' ? 'администратор клиники' : String(specialty || '').trim();
+        const spec = inv.role === 'psychologist' ? 'клинический психолог' : String(specialty || '').trim();
         if (!spec) throw new Error('Выберите специальность');
-        const prefix = inv.role === 'doctor' ? 'd' : inv.role === 'psychologist' ? 'psy' : 'adm';
+        const prefix = inv.role === 'doctor' ? 'd' : 'psy';
         const s = { id: KK.util.uid(prefix), email: inv.email, role: inv.role, name: nm, specialty: spec, phone, status: 'active', frmrChecked: false, createdAt: inv.createdAt, activatedAt: nowIso() };
         clinic().staff.push(s);
         inv.usedAt = nowIso();
         write();
         return copy(s);
       },
-      // Администратор меняет только статус и отметку ФРМР.
+      // Клиника меняет только статус и отметку ФРМР (в рабочей версии — через учётную систему клиники).
       setStaff(id, patch = {}) {
         need();
         const s = clinic().staff.find((x) => x.id === id);
@@ -750,8 +751,6 @@
         const keys = Object.keys(patch);
         if (keys.some((k) => k !== 'status' && k !== 'frmrChecked')) throw new Error('Нельзя изменить это поле');
         if ('status' in patch && !['active', 'blocked'].includes(patch.status)) throw new Error('Неизвестный статус');
-        if (patch.status === 'blocked' && s.role === 'admin' && s.status === 'active'
-          && !clinic().staff.some((x) => x.id !== id && x.role === 'admin' && x.status === 'active')) throw new Error('Нельзя заблокировать последнего администратора клиники');
         if ('status' in patch) s.status = patch.status;
         if ('frmrChecked' in patch) s.frmrChecked = !!patch.frmrChecked;
         write();
@@ -760,7 +759,7 @@
       // Вход специалиста: пароль в демо не хранится, проверяем только, что сотрудник активен.
       staffLoginCheck(email) {
         const s = api.staffByEmail(email);
-        if (!s || s.status !== 'active') failWith('denied', DENIED);
+        if (!s || s.status !== 'active' || !STAFF_ROLES.includes(s.role)) failWith('denied', DENIED);
         return s;
       },
       requestOtp(target, purpose) {
@@ -994,7 +993,7 @@
         write();
         return copy(b);
       },
-      scheduleBooking(id, { at, specialist } = {}, by = 'adm1') {
+      scheduleBooking(id, { at, specialist } = {}, by = 'd1') {
         need();
         const b = findBooking(id);
         if (!b) throw new Error('Заявка не найдена');
@@ -1008,7 +1007,7 @@
         write();
         return copy(b);
       },
-      declineBooking(id, reason, by = 'adm1') {
+      declineBooking(id, reason, by = 'd1') {
         need();
         const b = findBooking(id);
         if (!b) throw new Error('Заявка не найдена');
