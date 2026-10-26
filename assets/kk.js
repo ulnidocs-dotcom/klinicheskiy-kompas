@@ -32,5 +32,12 @@
       });
       return [...best.values()].map((x) => x.e).sort(KK.util.byDateAsc);
     },
+    // Ответ пациента «Изменения на лечении» одной строкой для ленты врача и психолога.
+    changeText(p) {
+      const q = (s) => (s ? ` · «${s}»` : '');
+      const first = p.changed ? `замечает улучшения или ухудшения${q(p.note)}`
+        : p.noChange === 'none' ? 'изменений совсем нет' : p.noChange === 'early' ? 'изменений нет, пока рано судить' : 'изменений не замечает';
+      return p.unusual ? `${first}; заметил(а) необычное${q(p.unusualNote)}` : first;
+    },
   };
 })(typeof window !== 'undefined' ? window : globalThis);

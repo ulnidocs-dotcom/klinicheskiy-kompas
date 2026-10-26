@@ -198,3 +198,28 @@ test('patient_change: «да» об изменениях за 7 дней → п�
   assert.ok(!run(patient(), [...dosesFor(14), { type: 'change', at: at(8), payload: { changed: true, note: 'x' } }]).some((x) => x.ruleId === 'patient_change'));
   assert.ok(!run(patient(), [...dosesFor(14), { type: 'change', at: at(1), payload: { changed: false, note: '' } }]).some((x) => x.ruleId === 'patient_change'));
 });
+
+test('patient_change: «что-то необычное» тоже даёт плановый сигнал; «изменений совсем нет» на терапии ≥ 28 дней — информационный сигнал', () => {
+  const odd = { type: 'change', at: at(1), payload: { changed: false, note: '', noChange: 'none', unusual: true, unusualNote: 'Яркие сны' } };
+  const sig = run(patient(), [...dosesFor(14), odd]);
+  const s = sig.find((x) => x.ruleId === 'patient_change');
+  assert.equal(s.level, 'task');
+  assert.match(s.text, /Необычное: «Яркие сны»/);
+  const none = sig.find((x) => x.ruleId === 'patient_no_change');
+  assert.equal(none.level, 'info');
+  assert.match(none.text, /изменений нет/);
+  // Рано (меньше 28 дней терапии) и «пока рано судить» — без сигнала об отсутствии эффекта.
+  const early = patient({ plan: { drugId: 'aviandr', status: 'confirmed', confirmedAt: at(10), timesPerDay: 2 } });
+  assert.ok(!run(early, [...dosesFor(9), odd]).some((x) => x.ruleId === 'patient_no_change'));
+  const soon = { type: 'change', at: at(1), payload: { changed: false, note: '', noChange: 'early', unusual: false, unusualNote: '' } };
+  const sig2 = run(patient(), [...dosesFor(14), soon]);
+  assert.ok(!sig2.some((x) => x.ruleId === 'patient_no_change' || x.ruleId === 'patient_change'));
+});
+
+test('changeText: строка ленты для всех вариантов ответа', () => {
+  const t = KK.util.changeText;
+  assert.equal(t({ changed: true, note: 'легче', unusual: false }), 'замечает улучшения или ухудшения · «легче»');
+  assert.equal(t({ changed: false, noChange: 'none', unusual: true, unusualNote: 'сны' }), 'изменений совсем нет; заметил(а) необычное · «сны»');
+  assert.equal(t({ changed: false, noChange: 'early' }), 'изменений нет, пока рано судить');
+  assert.equal(t({ changed: false }), 'изменений не замечает');
+});
