@@ -39,5 +39,11 @@
         : p.noChange === 'none' ? 'изменений совсем нет' : p.noChange === 'early' ? 'изменений нет, пока рано судить' : 'изменений не замечает';
       return p.unusual ? `${first}; заметил(а) необычное${q(p.unusualNote)}` : first;
     },
+    // Строка ленты «нежелательные явления» для врача и психолога: «Сонливость (немного) · «заметка»».
+    aeText(p) {
+      const sev = (s) => (s === 'severe' ? 'сильно' : 'немного');
+      const items = (p.items || []).map((i) => `${i.label} (${sev(i.severity)})`).join(', ');
+      return [items, p.note ? `«${p.note}»` : ''].filter(Boolean).join(' · ');
+    },
   };
 })(typeof window !== 'undefined' ? window : globalThis);

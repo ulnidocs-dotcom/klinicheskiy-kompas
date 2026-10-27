@@ -246,7 +246,8 @@ test('signed-in doctor: side panel and hint mode follow the session', () => {
   const mem = new Map();
   const ss = { getItem: (k) => (mem.has(k) ? mem.get(k) : null), setItem: (k, v) => mem.set(k, String(v)), removeItem: (k) => mem.delete(k) };
   const hadStore = KK.store; const hadSession = KK.auth.session;
-  KK.store = KK.createStore({ storage: memStorage(), clock: () => new Date('2026-10-21T12:00:00Z') });
+  const storage = memStorage(); const clock = () => new Date('2026-10-21T12:00:00Z');
+  KK.store = KK.createStore({ storage, clock });
   KK.store.reset();
   KK.auth.session = KK.auth.createSession(ss);
   try {
@@ -255,7 +256,11 @@ test('signed-in doctor: side panel and hint mode follow the session', () => {
     KK.auth.session.set({ kind: 'staff', staffId: s.id, role: 'doctor' });
     assert.equal(D().mode(), 'psychiatrist');
     assert.equal(D().me().name, 'Пётр Орлов');
-    KK.store.setStaff(s.id, { status: 'blocked' });
+    // Клиника заблокировала сотрудника (статус приходит из её учётной системы).
+    const raw = JSON.parse(storage.getItem('kk:v1'));
+    raw.clinic.staff.find((x) => x.id === s.id).status = 'blocked';
+    storage.setItem('kk:v1', JSON.stringify(raw));
+    KK.store = KK.createStore({ storage, clock });
     assert.equal(D().me().name, 'Елена Иванова');
   } finally { KK.store = hadStore; KK.auth.session = hadSession; }
 });

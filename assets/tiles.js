@@ -72,14 +72,6 @@
       return `<div class="drow" aria-hidden="true">${dots.map((d) => `<i style="left:${d.left}%;opacity:${d.opacity.toFixed(2)}"></i>`).join('')}</div>`;
     },
 
-    miniSpark(values, { max = 5, w = 120, h = 28 } = {}) {
-      const xs = (values || []).map(num).filter((x) => x != null);
-      if (xs.length < 2) return '';
-      const step = (w - 4) / (xs.length - 1);
-      const pts = xs.map((v, i) => `${r1(2 + i * step)},${r1(h - 2 - (tiles.frac(v, max) ?? 0) * (h - 4))}`).join(' ');
-      return `<svg class="mspark" viewBox="0 0 ${w} ${h}" aria-hidden="true"><polyline points="${pts}"/></svg>`;
-    },
-
     // { aura, label, value, unit, note, side, visual (HTML от функций выше), wide, href, sr }
     tile({ aura = 'sage', label = '', value, unit = '', note = '', side = '', visual = '', wide = false, href = '', sr = '' } = {}) {
       const a = AURAS.includes(aura) ? aura : 'sage';

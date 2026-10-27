@@ -216,6 +216,13 @@ test('patient_change: «что-то необычное» тоже даёт пл�
   assert.ok(!sig2.some((x) => x.ruleId === 'patient_no_change' || x.ruleId === 'patient_change'));
 });
 
+test('aeText: одна строка нежелательных явлений для врача и психолога', () => {
+  const t = KK.util.aeText;
+  assert.equal(t({ items: [{ label: 'Сонливость', severity: 'mild' }, { label: 'Тошнота', severity: 'severe' }] }), 'Сонливость (немного), Тошнота (сильно)');
+  assert.equal(t({ items: [{ label: 'Головная боль', severity: 'mild' }], note: 'по утрам' }), 'Головная боль (немного) · «по утрам»');
+  assert.equal(t({ note: 'только заметка' }), '«только заметка»');
+});
+
 test('changeText: строка ленты для всех вариантов ответа', () => {
   const t = KK.util.changeText;
   assert.equal(t({ changed: true, note: 'легче', unusual: false }), 'замечает улучшения или ухудшения · «легче»');

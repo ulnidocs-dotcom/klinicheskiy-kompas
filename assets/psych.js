@@ -97,7 +97,7 @@
       const p = e.payload || {};
       if (e.type === 'checkin') return `настроение ${p.mood}/5, беспокойство ${p.anxiety}/5, сон ${p.sleep}/5`;
       if (e.type === 'scale') { const s = KK.data.scales[p.scaleId]; return `${s ? s.title.split(' —')[0] : p.scaleId}${p.total != null ? `: ${p.total}` : ''}${p.band && p.band.doctorLabel ? ` — ${p.band.doctorLabel}` : ''}`; }
-      if (e.type === 'ae') return `нежелательные явления: ${(p.items || []).map((i) => `${i.label} (${i.severity === 'severe' ? 'сильно' : 'немного'})`).join(', ')}${p.note ? ` · «${p.note}»` : ''}`;
+      if (e.type === 'ae') return `нежелательные явления: ${KK.util.aeText(p)}`;
       if (e.type === 'change') return KK.util.changeText(p);
       if (e.type === 'sos') return 'нажал(а) «Мне тяжело» или написал(а) о кризисе';
       if (e.type === 'previsit') return 'заполнил(а) анкету до приёма';

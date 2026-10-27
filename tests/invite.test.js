@@ -98,7 +98,6 @@ test('redeem with the card phone links the patient once; the second use fails', 
   const id = s.addPatient(NEW);
   const inv = s.createPatientInvite(id);
   at(10 * H);
-  assert.equal(s.invitePhoneMatches(inv.token, '+79123456789'), true);
   const r = s.redeemPatientInvite(inv.token, { phone: '+79123456789', consents: ALL });
   assert.deepEqual(r, { status: 'linked', patientId: id });
   const p = s.patient(id);
@@ -127,7 +126,6 @@ test('card without a phone takes the confirmed phone on redeem', () => {
   s.restore({ patient });
   const inv = s.createPatientInvite('p_nophone');
   assert.equal(s.patient('p_nophone').phone, undefined);
-  assert.equal(s.invitePhoneMatches(inv.token, '+79876543210'), true);
   assert.equal(s.redeemPatientInvite(inv.token, { phone: '+79876543210', consents: ALL }).status, 'linked');
   assert.equal(s.patient('p_nophone').phone, '+79876543210');
 });
@@ -136,7 +134,6 @@ test('phone mismatch: pending confirmation, doctor inbox entry, invite stays unu
   const { s } = mk();
   const id = s.addPatient(NEW);
   const inv = s.createPatientInvite(id);
-  assert.equal(s.invitePhoneMatches(inv.token, '+79990001122'), false);
   const r = s.redeemPatientInvite(inv.token, { phone: '+79990001122', consents: ALL });
   assert.equal(r.status, 'pending');
   assert.equal(r.patientId, id);

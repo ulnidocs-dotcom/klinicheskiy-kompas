@@ -20,7 +20,7 @@
       const lbl = e.payload.band?.doctorLabel || 'форма заполнена не полностью';
       return e.payload.scaleId === 'cssrs' ? `${head}: ${lbl}` : `${head}: ${e.payload.total} — ${lbl}`;
     }
-    if (e.type === 'ae') return e.payload.items.map((i) => `${i.label} (${i.severity === 'severe' ? 'сильно' : i.severity === 'mild' ? 'немного' : i.severity})`).join(', ') + (e.payload.note ? ` · «${e.payload.note}»` : '');
+    if (e.type === 'ae') return KK.util.aeText(e.payload);
     if (e.type === 'change') return KK.util.changeText(e.payload);
     if (e.type === 'sos') return e.payload && e.payload.source === 'assistant' ? 'в чате с ассистентом — слова о самоповреждении или суициде; пациенту открыт экран помощи' : 'пациент сообщил, что ему очень плохо';
     if (e.type === 'intake_form') return 'пациент заполнил анкету';

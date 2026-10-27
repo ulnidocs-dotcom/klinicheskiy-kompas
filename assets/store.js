@@ -310,7 +310,6 @@
       setPsychologist(patch) { need(); db.psychologist = Object.assign({}, PSYCHOLOGIST, db.psychologist, patch); write(); },
       setDoctor(patch) { need(); Object.assign(db.doctor, patch); write(); },
       activePatientId: () => need().activePatientId,
-      setActivePatient(id) { need(); db.activePatientId = id; write(); },
       patients() {
         need();
         return Object.keys(db.patients).map(view).sort((a, b) => {
@@ -680,7 +679,6 @@
         write();
         return id;
       },
-      clinicInfo: () => ({ name: (need(), clinic()).name }),
       // Сотрудники платформы — врачи и психологи (прежнюю роль администратора из сохранённого демо не показываем).
       staff: () => (need(), clinic().staff.filter((x) => STAFF_ROLES.includes(x.role)).map(copy)),
       staffById: (id) => (need(), copy(clinic().staff.find((x) => x.id === id))),
@@ -705,26 +703,6 @@
         if (!inv) return { state: 'unknown' };
         return { state: inviteState(inv), email: inv.email, role: inv.role, clinic: clinic().name, expiresAt: inv.expiresAt };
       },
-      resendInvite(token) {
-        need();
-        const inv = findInvite(token);
-        const st = inv ? inviteState(inv) : 'unknown';
-        if (st !== 'pending' && st !== 'expired') failWith(st, INVITE_TEXT[st] || INVITE_TEXT.unknown);
-        if (clinic().staff.some((x) => x.email === inv.email)) throw new Error('Сотрудник с этой почтой уже есть в клинике');
-        clinic().invites.filter((i) => i.email === inv.email && inviteState(i) === 'pending').forEach((i) => { i.revokedAt = nowIso(); });
-        inv.revokedAt = nowIso();
-        const next = newInvite(inv.email, inv.role, inv.by);
-        write();
-        return Object.assign({}, next, { state: 'pending' });
-      },
-      revokeInvite(token) {
-        need();
-        const inv = findInvite(token);
-        if (!inv || inviteState(inv) !== 'pending') return false;
-        inv.revokedAt = nowIso();
-        write();
-        return true;
-      },
       acceptInvite(token, { name, specialty, phone } = {}) {
         need();
         const inv = findInvite(token);
@@ -740,19 +718,6 @@
         const s = { id: KK.util.uid(prefix), email: inv.email, role: inv.role, name: nm, specialty: spec, phone, status: 'active', frmrChecked: false, createdAt: inv.createdAt, activatedAt: nowIso() };
         clinic().staff.push(s);
         inv.usedAt = nowIso();
-        write();
-        return copy(s);
-      },
-      // Клиника меняет только статус и отметку ФРМР (в рабочей версии — через учётную систему клиники).
-      setStaff(id, patch = {}) {
-        need();
-        const s = clinic().staff.find((x) => x.id === id);
-        if (!s) throw new Error(`Нет сотрудника ${id}`);
-        const keys = Object.keys(patch);
-        if (keys.some((k) => k !== 'status' && k !== 'frmrChecked')) throw new Error('Нельзя изменить это поле');
-        if ('status' in patch && !['active', 'blocked'].includes(patch.status)) throw new Error('Неизвестный статус');
-        if ('status' in patch) s.status = patch.status;
-        if ('frmrChecked' in patch) s.frmrChecked = !!patch.frmrChecked;
         write();
         return copy(s);
       },
@@ -858,14 +823,6 @@
         return state === 'pending' ? { state, patientId: inv.patientId, expiresAt: inv.expiresAt } : { state };
       },
       patientInviteText: (state) => PATIENT_INVITE_TEXT[state] || PATIENT_INVITE_TEXT.unknown,
-      // Совпадает ли подтверждённый кодом номер с номером в карте (в карте нет номера — совпадает).
-      invitePhoneMatches(token, phone) {
-        need();
-        const inv = findPInvite(token);
-        if (!inv || inviteState(inv) !== 'pending' || !has(inv.patientId)) return false;
-        const cur = db.patients[inv.patientId].phone;
-        return !cur || cur === normPhone(phone);
-      },
       // Завершение регистрации по приглашению (после подтверждения номера кодом и согласий).
       // Номер совпал с картой → { status: 'linked' }, ссылка гасится. Номер другой → { status: 'pending', confirmId }:
       // пациент не подключён, ссылка не гасится, врачу — запись во входящих «Подтвердите номер пациента».

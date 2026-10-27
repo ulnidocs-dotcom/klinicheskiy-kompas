@@ -14,6 +14,13 @@ function mk() {
   s.reset();
   return { s, t, later: (ms) => { t.now = new Date(t.now.getTime() + ms); } };
 }
+// Блокировка сотрудника приходит из учётной системы клиники: в тесте правим сохранённые данные и открываем стор заново.
+function withStaffStatus(storage, id, status) {
+  const raw = JSON.parse(storage.getItem('kk:v1'));
+  raw.clinic.staff.find((x) => x.id === id).status = status;
+  storage.setItem('kk:v1', JSON.stringify(raw));
+  return KK.createStore({ storage, clock: () => NOW });
+}
 
 test('demo clinic has a doctor and a psychologist, all active (no administrator role)', () => {
   const { s } = mk();
@@ -38,14 +45,13 @@ test('invite: 72 hours, single use, creates an active staff member', () => {
   assert.throws(() => s.acceptInvite(late.token, { name: 'Ира Котова', phone: '+79123450000' }), (e) => e.reason === 'expired');
 });
 
-test('invite: resend replaces the token, revoke blocks it, active email is refused', () => {
+test('invite: a new invite for the same email revokes the old one, active email is refused', () => {
   const { s } = mk();
   const a = s.inviteStaff('x@clinic.demo', 'psychologist');
-  const b = s.resendInvite(a.token);
+  const b = s.inviteStaff('x@clinic.demo', 'psychologist');
   assert.notEqual(a.token, b.token);
   assert.equal(s.inviteInfo(a.token).state, 'revoked');
-  s.revokeInvite(b.token);
-  assert.equal(s.inviteInfo(b.token).state, 'revoked');
+  assert.equal(s.inviteInfo(b.token).state, 'pending');
   assert.throws(() => s.inviteStaff('elena.ivanova@clinic.demo', 'doctor'), /уже есть/);
   assert.throws(() => s.inviteStaff('not-an-email', 'doctor'), /почты/);
   assert.equal(s.inviteInfo('nope').state, 'unknown');
@@ -83,14 +89,13 @@ test('patient phone: one number per patient; demo Olga has a phone', () => {
 });
 
 test('staff login check: blocked or unknown is refused with one neutral message', () => {
-  const { s } = mk();
+  const storage = memStorage();
+  const s = KK.createStore({ storage, clock: () => NOW });
+  s.reset();
   assert.equal(s.staffLoginCheck('elena.ivanova@clinic.demo').id, 'd1');
-  s.setStaff('d1', { status: 'blocked' });
-  assert.throws(() => s.staffLoginCheck('elena.ivanova@clinic.demo'), /Не получилось войти/);
-  assert.throws(() => s.staffLoginCheck('nobody@clinic.demo'), /Не получилось войти/);
-  s.setStaff('psy1', { frmrChecked: false });
-  assert.equal(s.staffById('psy1').frmrChecked, false);
-  assert.throws(() => s.setStaff('psy1', { role: 'admin' }), /Нельзя изменить/);
+  const blocked = withStaffStatus(storage, 'd1', 'blocked');
+  assert.throws(() => blocked.staffLoginCheck('elena.ivanova@clinic.demo'), /Не получилось войти/);
+  assert.throws(() => blocked.staffLoginCheck('nobody@clinic.demo'), /Не получилось войти/);
 });
 
 test('password reset link: 30 minutes, single use, silent for unknown email', () => {
@@ -123,11 +128,12 @@ test('regression: no duplicate staff via stale invites', () => {
   later(72 * 3600000 + 1);
   const b = s.inviteStaff('dup@clinic.demo', 'doctor');
   s.acceptInvite(b.token, { name: 'Пётр Орлов', specialty: 'психиатр', phone: '+79123456789' });
-  assert.throws(() => s.resendInvite(a.token), /уже есть/);
+  assert.throws(() => s.acceptInvite(a.token, { name: 'Пётр Орлов', specialty: 'психиатр', phone: '+79123456789' }));
+  assert.throws(() => s.inviteStaff('dup@clinic.demo', 'doctor'), /уже есть/);
   assert.equal(s.staff().filter((x) => x.email === 'dup@clinic.demo').length, 1);
-  // resend revokes other pending invites for the same email
-  const c = s.inviteStaff('two@clinic.demo', 'psychologist');
-  const d = s.resendInvite(c.token);
+  // a repeated invite leaves only one pending invite for the email
+  s.inviteStaff('two@clinic.demo', 'psychologist');
+  const d = s.inviteStaff('two@clinic.demo', 'psychologist');
   assert.equal(s.invites().filter((i) => i.email === 'two@clinic.demo' && i.state === 'pending').length, 1);
   assert.equal(s.inviteInfo(d.token).state, 'pending');
 });
@@ -146,12 +152,12 @@ test('no administrator role: cannot be invited; an administrator saved in an old
 });
 
 test('regression: completeReset refuses a blocked staff member and keeps the token unused', () => {
-  const { s } = mk();
+  const storage = memStorage();
+  const s = KK.createStore({ storage, clock: () => NOW });
+  s.reset();
   const r = s.createReset('maria.belova@clinic.demo');
-  s.setStaff('psy1', { status: 'blocked' });
-  assert.throws(() => s.completeReset(r.token), /недействительна/);
-  s.setStaff('psy1', { status: 'active' });
-  assert.equal(s.completeReset(r.token).id, 'psy1');
+  assert.throws(() => withStaffStatus(storage, 'psy1', 'blocked').completeReset(r.token), /недействительна/);
+  assert.equal(withStaffStatus(storage, 'psy1', 'active').completeReset(r.token).id, 'psy1');
 });
 
 test('regression: falsy phone never matches or saves', () => {

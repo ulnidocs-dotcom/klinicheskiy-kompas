@@ -16,7 +16,6 @@
   const bookingsUi = {
     // Какие заявки видит роль: психолог — к психологу и «помогите выбрать», врач — к психиатру.
     scope: (role) => (role === 'psychologist' ? ['psychologist', 'unsure'] : ['psychiatrist']),
-    newCount: (role) => KK.store.bookings({ status: 'new' }).filter((b) => bookingsUi.scope(role).includes(b.to)).length,
     // role: 'doctor' | 'psychologist'; actor: id специалиста для журнала.
     mount(root, { role, actor }) {
       const { ui, store } = KK;
