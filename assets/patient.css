@@ -66,11 +66,13 @@ a.tile{min-height:120px;display:flex;flex-direction:column;justify-content:space
 .steps li{counter-increment:s;display:flex;gap:12px;padding:10px 0}
 .steps li::before{content:counter(s);flex:none;width:28px;height:28px;border-radius:50%;border:1px solid var(--line);color:var(--text);display:flex;align-items:center;justify-content:center;font-size:.85em}
 
-/* Дыхательный пейсер: сфера-аура растёт на вдохе и сжимается на выдохе */
+/* Дыхательный пейсер: большой шар-аура заметно надувается на вдохе и сдувается на выдохе */
 .breath-wrap{display:flex;flex-direction:column;align-items:center;gap:14px;padding:18px 0 6px}
-.breath{position:relative;width:180px;height:180px;margin:18px auto;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--text);transition:transform 4s ease-in-out;transform:scale(.82);
-  background:radial-gradient(circle at 50% 50%,rgb(var(--aura-core) / var(--aura-core-alpha)) 0 28%,rgb(var(--aura-teal) / var(--orb-alpha)) 52%,rgb(var(--aura-blue) / calc(var(--orb-alpha) * .5)) 68%,rgb(var(--aura-blue) / 0) 71%)}
-.breath.in{transform:scale(1.18)}
+.breath{position:relative;width:250px;height:250px;margin:34px auto;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--text);transition:transform 4s ease-in-out;transform:scale(.6);
+  background:radial-gradient(circle at 40% 32%,rgb(var(--aura-core) / calc(.8 * var(--aura-core-alpha))) 0,rgb(var(--aura-core) / 0) 34%),
+    radial-gradient(circle at 50% 50%,rgb(var(--aura-core) / var(--aura-core-alpha)) 0 24%,rgb(var(--aura-teal) / var(--orb-alpha)) 50%,rgb(var(--aura-blue) / calc(var(--orb-alpha) * .6)) 68%,rgb(var(--aura-blue) / 0) 71%);
+  box-shadow:0 0 60px 10px rgb(var(--aura-teal) / calc(var(--orb-alpha) * .35))}
+.breath.in{transform:scale(1.15)}
 .breath .num{font-size:48px}
 .breath .label{color:var(--text);font-size:.95em}
 
