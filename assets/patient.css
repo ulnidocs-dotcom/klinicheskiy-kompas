@@ -191,6 +191,12 @@ html[data-style][data-theme="dark"]{--soft-k:.32}
 html[data-style="sunset"] body{background:linear-gradient(180deg,rgb(var(--soft-lilac) / calc(.55 * var(--soft-k))) 0,rgb(var(--soft-rose) / calc(.45 * var(--soft-k))) 220px,rgb(var(--soft-peach) / calc(.45 * var(--soft-k))) 420px,var(--bg) 680px) no-repeat,var(--bg)}
 html[data-style="sunset"] .tile.aura{background:linear-gradient(180deg,rgb(var(--soft-peach) / calc(.42 * var(--soft-k))),rgb(var(--soft-butter) / calc(.30 * var(--soft-k)))),var(--surface)}
 html[data-style="sunset"] .p-app h1{font-weight:300;letter-spacing:-.02em}
+/* Закат: большой шар цвета заката — заметно сдувается на выдохе и надувается на вдохе */
+html[data-style="sunset"] .breath{--ball-a:calc(.25 + .75 * var(--soft-k));width:250px;height:250px;margin:34px auto;transform:scale(.6);
+  background:radial-gradient(circle at 40% 32%,rgb(var(--soft-ivory) / calc(.9 * var(--ball-a))) 0,rgb(var(--soft-ivory) / 0) 34%),
+    radial-gradient(circle at 50% 50%,rgb(var(--soft-butter) / var(--ball-a)) 0,rgb(var(--soft-peach) / var(--ball-a)) 34%,rgb(var(--soft-rose) / var(--ball-a)) 56%,rgb(var(--soft-lilac) / var(--ball-a)) 70%,rgb(var(--soft-lilac) / 0) 71%);
+  box-shadow:0 0 60px 10px rgb(var(--soft-peach) / calc(.45 * var(--soft-k)))}
+html[data-style="sunset"] .breath.in{transform:scale(1.15)}
 html[data-style="widgets"] .tile.aura{border-radius:26px;--w-a:var(--soft-mint);--w-b:var(--soft-lime);background:radial-gradient(circle at 30% 80%,rgb(var(--soft-ivory) / calc(.55 * var(--soft-k))) 0,transparent 55%),linear-gradient(155deg,rgb(var(--w-a) / calc(.75 * var(--soft-k))),rgb(var(--w-b) / calc(.85 * var(--soft-k)))),var(--surface)}
 html[data-style="widgets"] .tile.aura:nth-of-type(6n+2){--w-a:var(--soft-lilac);--w-b:var(--soft-rose)}
 html[data-style="widgets"] .tile.aura:nth-of-type(6n+3){--w-a:var(--soft-butter);--w-b:var(--soft-peach)}
