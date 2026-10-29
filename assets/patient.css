@@ -66,15 +66,31 @@ a.tile{min-height:120px;display:flex;flex-direction:column;justify-content:space
 .steps li{counter-increment:s;display:flex;gap:12px;padding:10px 0}
 .steps li::before{content:counter(s);flex:none;width:28px;height:28px;border-radius:50%;border:1px solid var(--line);color:var(--text);display:flex;align-items:center;justify-content:center;font-size:.85em}
 
-/* Дыхательный пейсер: большой шар-аура заметно надувается на вдохе и сдувается на выдохе */
-.breath-wrap{display:flex;flex-direction:column;align-items:center;gap:14px;padding:18px 0 6px}
-.breath{position:relative;width:250px;height:250px;margin:34px auto;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--text);transition:transform 4s ease-in-out;transform:scale(.6);
-  background:radial-gradient(circle at 40% 32%,rgb(var(--aura-core) / calc(.8 * var(--aura-core-alpha))) 0,rgb(var(--aura-core) / 0) 34%),
-    radial-gradient(circle at 50% 50%,rgb(var(--aura-core) / var(--aura-core-alpha)) 0 24%,rgb(var(--aura-teal) / var(--orb-alpha)) 50%,rgb(var(--aura-blue) / calc(var(--orb-alpha) * .6)) 68%,rgb(var(--aura-blue) / 0) 71%);
-  box-shadow:0 0 60px 10px rgb(var(--aura-teal) / calc(var(--orb-alpha) * .35))}
-.breath.in{transform:scale(1.15)}
-.breath .num{font-size:48px}
-.breath .label{color:var(--text);font-size:.95em}
+/* Дыхательный пейсер. По умолчанию — «Аура»: тёмная карточка, шкала-циферблат из делений и жемчужный шар,
+   который надувается на вдохе и сдувается на выдохе. «Закат» и «Виджеты» перекрашивают его в блоке стилей ниже. */
+/* Палитра «Ауры» из «Вариаций дизайна» (RGB-тройки): индиго-фон, светлые чернила, приглушённая подпись, шалфейное свечение */
+.breath-wrap{--c-bg:75 84 139;--ink:233 231 226;--c-mute:122 127 155;--c-sage:151 166 156;
+  display:flex;flex-direction:column;align-items:center;gap:10px;padding:22px 18px 20px;color:rgb(var(--ink));
+  background:radial-gradient(circle at 50% 38%,rgb(var(--c-sage) / .65) 0,rgb(var(--c-sage) / 0) 62%),rgb(var(--c-bg));
+  --pill-bg:rgb(255 255 255 / .12);--pill-text:rgb(var(--ink));--pill-dot:rgb(var(--ink));--pill-ink:rgb(var(--c-bg))}
+.breath-cap{margin:0;font-size:.9em;color:rgb(var(--ink) / .75)}
+.breath-stage{position:relative;width:260px;height:260px;max-width:100%;display:grid;place-items:center;margin:6px auto}
+.breath-deco{position:absolute;inset:0;border-radius:50%}
+.breath-deco::before,.breath-deco::after{content:"";position:absolute;inset:0;border-radius:50%}
+.breath-deco::before{background:repeating-conic-gradient(rgb(var(--ink) / .45) 0 .6deg,transparent .6deg 5deg);
+  -webkit-mask:radial-gradient(circle,transparent 0 calc(50% - 9px),black calc(50% - 9px) 50%,transparent 50%);mask:radial-gradient(circle,transparent 0 calc(50% - 9px),black calc(50% - 9px) 50%,transparent 50%)}
+.breath-deco::after{background:repeating-conic-gradient(rgb(var(--ink) / .9) 0 1deg,transparent 1deg 30deg);
+  -webkit-mask:radial-gradient(circle,transparent 0 calc(50% - 18px),black calc(50% - 18px) 50%,transparent 50%);mask:radial-gradient(circle,transparent 0 calc(50% - 18px),black calc(50% - 18px) 50%,transparent 50%)}
+.breath-deco i{display:none}
+.breath{position:relative;width:170px;height:170px;border-radius:50%;transition:transform 4s ease-in-out;transform:scale(.62);
+  background:radial-gradient(circle at 40% 35%,rgb(255 255 255) 0,rgb(var(--ink)) 35%,rgb(var(--c-sage)) 82%,rgb(var(--c-bg) / .9) 100%);
+  box-shadow:0 0 56px 12px rgb(255 255 255 / .16),0 18px 40px -10px rgb(var(--c-bg) / .8)}
+.breath.in{transform:scale(1)}
+.breath-read{display:flex;flex-direction:column;align-items:center;gap:2px;min-height:86px}
+.breath-read .label{font-size:1.45em;font-weight:300;color:inherit}
+.breath-read .num{font-size:46px;line-height:1.1;font-variant-numeric:tabular-nums}
+.breath-meta,.breath-bar{display:none}
+@keyframes kk-ring-turn{to{transform:rotate(360deg)}}
 
 .toast{position:fixed;left:50%;bottom:140px;transform:translate(-50%,20px);opacity:0;background:var(--text);color:var(--bg);padding:10px 18px;border-radius:999px;transition:all var(--dur);pointer-events:none;z-index:40}
 .toast.on{opacity:1;transform:translate(-50%,0)}
@@ -89,7 +105,7 @@ a.tile{min-height:120px;display:flex;flex-direction:column;justify-content:space
 .help-call svg{flex:none}
 .hello-orb{width:120px;height:120px;border-radius:50%;
   background:radial-gradient(circle at 50% 50%,rgb(var(--aura-core) / var(--aura-core-alpha)) 0 22%,rgb(var(--aura-teal) / var(--orb-alpha)) 48%,rgb(var(--aura-blue) / calc(var(--orb-alpha) * .5)) 66%,rgb(var(--aura-blue) / 0) 71%)}
-@media (prefers-reduced-motion:reduce){.breath{transition:none!important;transform:none!important}}
+@media (prefers-reduced-motion:reduce){.breath{transition:none!important;transform:none!important}.breath-deco{animation:none!important}}
 @media (max-width:360px){.day .num{font-size:52px}.tile-grid{grid-template-columns:1fr}}
 .tile-link{display:inline-flex;align-items:center;min-height:var(--tap);margin:-12px -6px -12px 0;padding:0 6px;font-size:.75em;color:var(--text)}
 .tile-grid>:last-child:nth-child(odd){grid-column:1/-1;min-height:110px}
@@ -187,18 +203,59 @@ html[data-style]{
   --soft-peach: 233 196 170; --soft-rose: 228 186 204; --soft-lilac: 206 190 236; --soft-sky: 186 204 238;
   --soft-mint: 176 220 204; --soft-lime: 204 228 176; --soft-butter: 238 228 186; --soft-ivory: 248 243 232;
   --soft-k: 1;
+  /* Палитры дыхания из «Вариаций дизайна»: закатный орб и полоса цикла; лаймовая карточка, пилюля и шесть сфер кольца «Виджетов» */
+  --sun-cream: 240 226 200; --sun-peach: 233 197 171; --sun-apricot: 220 158 124; --sun-lilac: 203 182 236;
+  --sun-bar-a: 230 211 161; --sun-bar-c: 201 214 241;
+  --w-pear: 226 231 163; --w-leaf: 178 217 147; --w-jade: 112 204 179; --w-ink: 75 84 139; --w-pill: 212 222 131;
+  --bead-1: 220 158 124; --bead-2: 194 152 228; --bead-3: 141 167 225; --bead-4: 112 204 179; --bead-5: 230 204 161; --bead-6: 225 144 179;
 }
 html[data-style][data-theme="dark"]{--soft-k:.32}
 @media (prefers-color-scheme: dark){html[data-style]:not([data-theme="light"]){--soft-k:.32}}
 html[data-style="sunset"] body{background:linear-gradient(180deg,rgb(var(--soft-lilac) / calc(.55 * var(--soft-k))) 0,rgb(var(--soft-rose) / calc(.45 * var(--soft-k))) 220px,rgb(var(--soft-peach) / calc(.45 * var(--soft-k))) 420px,var(--bg) 680px) no-repeat,var(--bg)}
 html[data-style="sunset"] .tile.aura{background:linear-gradient(180deg,rgb(var(--soft-peach) / calc(.42 * var(--soft-k))),rgb(var(--soft-butter) / calc(.30 * var(--soft-k)))),var(--surface)}
 html[data-style="sunset"] .p-app h1{font-weight:300;letter-spacing:-.02em}
-/* Закат: большой шар цвета заката — заметно сдувается на выдохе и надувается на вдохе */
-html[data-style="sunset"] .breath{--ball-a:calc(.25 + .75 * var(--soft-k));width:250px;height:250px;margin:34px auto;transform:scale(.6);
-  background:radial-gradient(circle at 40% 32%,rgb(var(--soft-ivory) / calc(.9 * var(--ball-a))) 0,rgb(var(--soft-ivory) / 0) 34%),
-    radial-gradient(circle at 50% 50%,rgb(var(--soft-butter) / var(--ball-a)) 0,rgb(var(--soft-peach) / var(--ball-a)) 34%,rgb(var(--soft-rose) / var(--ball-a)) 56%,rgb(var(--soft-lilac) / var(--ball-a)) 70%,rgb(var(--soft-lilac) / 0) 71%);
-  box-shadow:0 0 60px 10px rgb(var(--soft-peach) / calc(.45 * var(--soft-k)))}
-html[data-style="sunset"] .breath.in{transform:scale(1.15)}
+/* Закат: белая карточка, крупный закатный орб, слово фазы крупно, ритм в подписях и полоса цикла */
+html[data-style="sunset"] .breath-wrap{--ball-a:calc(.75 + .25 * var(--soft-k));background:var(--surface);color:var(--text);align-items:stretch;--pill-bg:var(--text);--pill-text:var(--bg);--pill-dot:var(--bg);--pill-ink:var(--text)}
+html[data-style="sunset"] .breath-cap{color:var(--text-3);font-size:.72em;letter-spacing:.14em;text-transform:uppercase}
+html[data-style="sunset"] .breath-deco{display:none}
+html[data-style="sunset"] .breath{width:240px;height:240px;
+  background:radial-gradient(circle at 46% 30%,rgb(var(--sun-cream) / var(--ball-a)) 0,rgb(var(--sun-cream) / 0) 38%),
+    radial-gradient(circle at 50% 50%,rgb(var(--sun-peach) / var(--ball-a)) 0,rgb(var(--sun-apricot) / var(--ball-a)) 52%,rgb(var(--sun-apricot) / var(--ball-a)) 64%,rgb(var(--sun-lilac) / calc(.5 * var(--ball-a))) 69%,rgb(var(--sun-lilac) / 0) 71%);
+  box-shadow:none;filter:blur(1px)}
+html[data-style="sunset"] .breath-read .label{font-size:42px;font-weight:600;letter-spacing:-.02em}
+html[data-style="sunset"] .breath-read .num{font-size:15px;color:var(--text-3);letter-spacing:.1em}
+html[data-style="sunset"] .breath-meta{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:6px}
+html[data-style="sunset"] .breath-meta .hint{display:block;font-size:.72em;letter-spacing:.12em;text-transform:uppercase}
+html[data-style="sunset"] .breath-meta b{font-weight:400;font-size:1.1em}
+html[data-style="sunset"] .breath-bar{display:block;height:8px;border-radius:999px;background:var(--surface-2);overflow:hidden;margin:4px 0 8px}
+html[data-style="sunset"] .breath-bar span{display:block;height:100%;width:0;border-radius:inherit;
+  background:linear-gradient(90deg,rgb(var(--sun-bar-a) / var(--ball-a)),rgb(var(--sun-peach) / var(--ball-a)) 45%,rgb(var(--sun-bar-c) / var(--ball-a)))}
+html[data-style="sunset"] .breath-wrap .btn--pill{align-self:center}
+/* Виджеты: лаймовая карточка, кольцо из двенадцати сфер вокруг дышащего светлого орба, жёлтая пилюля */
+html[data-style="widgets"] .breath-wrap{--w-a:calc(.35 + .65 * var(--soft-k));border-radius:26px;align-items:stretch;color:rgb(var(--w-ink));
+  background:radial-gradient(circle at 35% 75%,rgb(var(--w-pear) / var(--w-a)) 0,rgb(var(--w-pear) / 0) 55%),linear-gradient(160deg,rgb(var(--w-leaf) / var(--w-a)),rgb(var(--w-jade) / var(--w-a))),var(--surface);
+  --pill-bg:rgb(var(--w-pill));--pill-text:rgb(var(--w-ink));--pill-dot:rgb(var(--soft-ivory));--pill-ink:rgb(var(--w-ink))}
+html[data-style="widgets"][data-theme="dark"] .breath-wrap{color:var(--text)}
+html[data-style="widgets"] .breath-cap{color:inherit;font-weight:600;font-size:.95em}
+html[data-style="widgets"] .breath-stage{margin:14px auto 4px}
+html[data-style="widgets"] .breath-deco::before,html[data-style="widgets"] .breath-deco::after{display:none}
+html[data-style="widgets"] .breath-wrap.running .breath-deco{animation:kk-ring-turn 60s linear infinite}
+html[data-style="widgets"] .breath-deco i{--bead:var(--bead-1);display:block;position:absolute;left:50%;top:50%;width:28px;height:28px;margin:-14px 0 0 -14px;border-radius:50%;
+  transform:rotate(calc(var(--i) * 30deg)) translateY(-114px) rotate(calc(var(--i) * -30deg));
+  background:radial-gradient(circle at 35% 30%,rgb(var(--soft-ivory)) 0,rgb(var(--bead)) 45%,rgb(var(--w-ink)) 100%);box-shadow:0 3px 8px rgb(var(--w-ink) / .2)}
+html[data-style="widgets"] .breath-deco i:nth-child(6n+2){--bead:var(--bead-2)}
+html[data-style="widgets"] .breath-deco i:nth-child(6n+3){--bead:var(--bead-3)}
+html[data-style="widgets"] .breath-deco i:nth-child(6n+4){--bead:var(--bead-4)}
+html[data-style="widgets"] .breath-deco i:nth-child(6n+5){--bead:var(--bead-5)}
+html[data-style="widgets"] .breath-deco i:nth-child(6n){--bead:var(--bead-6)}
+html[data-style="widgets"] .breath{width:150px;height:150px;
+  background:radial-gradient(circle at 40% 35%,rgb(var(--soft-ivory)) 0,rgb(var(--w-pear)) 40%,rgb(var(--soft-ivory) / .1) 72%);
+  box-shadow:0 0 44px 10px rgb(var(--w-pear) / calc(.7 * var(--soft-k)))}
+html[data-style="widgets"] .breath-read{flex-direction:row;justify-content:center;align-items:baseline;gap:10px;min-height:48px}
+html[data-style="widgets"] .breath-read .label{font-size:28px;text-transform:lowercase}
+html[data-style="widgets"] .breath-read .label::after{content:" ·"}
+html[data-style="widgets"] .breath-read .num{font-size:28px;font-weight:300}
+html[data-style="widgets"] .breath-wrap .btn--pill{align-self:center}
 html[data-style="widgets"] .tile.aura{border-radius:26px;--w-a:var(--soft-mint);--w-b:var(--soft-lime);background:radial-gradient(circle at 30% 80%,rgb(var(--soft-ivory) / calc(.55 * var(--soft-k))) 0,transparent 55%),linear-gradient(155deg,rgb(var(--w-a) / calc(.75 * var(--soft-k))),rgb(var(--w-b) / calc(.85 * var(--soft-k)))),var(--surface)}
 html[data-style="widgets"] .tile.aura:nth-of-type(6n+2){--w-a:var(--soft-lilac);--w-b:var(--soft-rose)}
 html[data-style="widgets"] .tile.aura:nth-of-type(6n+3){--w-a:var(--soft-butter);--w-b:var(--soft-peach)}
